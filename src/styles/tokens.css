@@ -4,20 +4,20 @@
   --font-scale: 1;
 
   /* Surfaces */
-  --bg: #f7fbff;
+  --bg: #f6f8fb;
   --surface: #ffffff;
-  --surface-soft: #eef8ff;
-  --surface-strong: #d9f0fb;
+  --surface-soft: #eef4f8;
+  --surface-strong: #dceaf1;
 
   /* Text */
-  --text: #172452;
-  --text-secondary: #48577c;
-  --text-muted: #7582a4;
+  --text: #17213d;
+  --text-secondary: #465571;
+  --text-muted: #6f7d91;
 
   /* Brand + semantic colors (Aljouf Health Cluster blue family) */
   --primary: #35a9e0;
   --primary-strong: #253783;
-  --primary-soft: #e8f7ff;
+  --primary-soft: #e7f6fc;
   --blue: #253783;
   --gold: #b9d90f;
   --navy: #07132f;
@@ -26,18 +26,22 @@
   --lime: #b9d90f;
   --danger: #c53030;
   --success: #148a5b;
-  --border: #d9e4f2;
+  --border: #d7e0ea;
+  --brand-ink: #07132f;
+  --brand-line: #35a9e0;
+  --brand-accent: #b9d90f;
+  --brand-panel: #101f4d;
 
   /* Elevation */
-  --shadow-sm: 0 2px 8px rgba(23, 36, 82, 0.06);
-  --shadow-md: 0 8px 24px rgba(23, 36, 82, 0.1);
-  --shadow-lg: 0 18px 48px rgba(23, 36, 82, 0.16);
+  --shadow-sm: 0 1px 2px rgba(7, 19, 47, 0.06);
+  --shadow-md: 0 8px 18px rgba(7, 19, 47, 0.1);
+  --shadow-lg: 0 18px 36px rgba(7, 19, 47, 0.14);
 
   /* Radius scale */
-  --radius-sm: 10px;
-  --radius-md: 16px;
-  --radius-lg: 24px;
-  --radius-xl: 32px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 8px;
 
   font-family: "IBM Plex Sans Arabic", Tahoma, "Segoe UI", Arial, sans-serif;
   color: var(--text);
@@ -46,28 +50,32 @@
 
 /* Dark theme override */
 :root[data-theme="dark"] {
-  --bg: #071c19;
-  --surface: #0e2a25;
-  --surface-soft: #12342e;
-  --surface-strong: #183f38;
-  --text: #f4fbf9;
-  --text-secondary: #b8d0cb;
-  --text-muted: #82a39d;
-  --primary: #32b893;
-  --primary-strong: #5bd6b6;
-  --primary-soft: #143b34;
-  --blue: #5ba4d9;
-  --gold: #e2b95f;
-  --border: #214a43;
-  --shadow-sm: 0 0 0 1px rgba(50, 184, 147, 0.12);
-  --shadow-md: 0 0 0 1px rgba(50, 184, 147, 0.18);
-  --shadow-lg: 0 0 0 1px rgba(50, 184, 147, 0.24);
+  --bg: #07132f;
+  --surface: #101f4d;
+  --surface-soft: #162b63;
+  --surface-strong: #1d3a79;
+  --text: #f7fbff;
+  --text-secondary: #c9d6e8;
+  --text-muted: #95a9c3;
+  --primary: #61c6e9;
+  --primary-strong: #aee8fb;
+  --primary-soft: #132f5e;
+  --blue: #9dc8f0;
+  --gold: #d4ea42;
+  --border: #284477;
+  --brand-ink: #f7fbff;
+  --brand-line: #61c6e9;
+  --brand-accent: #d4ea42;
+  --brand-panel: #07132f;
+  --shadow-sm: 0 0 0 1px rgba(97, 198, 233, 0.12);
+  --shadow-md: 0 0 0 1px rgba(97, 198, 233, 0.18);
+  --shadow-lg: 0 0 0 1px rgba(97, 198, 233, 0.24);
 }
 
 /* High-contrast accessibility override */
 :root[data-contrast="high"] {
-  --primary: #005f46;
-  --primary-strong: #003d2d;
-  --border: #6c817b;
+  --primary: #006c91;
+  --primary-strong: #061949;
+  --border: #4d5f78;
 }
 

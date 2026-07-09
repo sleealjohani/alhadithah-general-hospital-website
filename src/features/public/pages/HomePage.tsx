@@ -24,23 +24,11 @@ export function HomePage() {
     <>
       {isActive("hero") && (
       <section className="home-hero reference-hero">
-        <div className="hero-glow hero-glow-one" aria-hidden="true" />
-        <div className="hero-glow hero-glow-two" aria-hidden="true" />
-        <div className="hero-radar" aria-hidden="true" />
         <div className="container home-hero-grid">
           <div className="home-hero-copy" data-reveal>
             <span className="eyebrow">{t(pageCopy.hero.eyebrow)}</span>
-            <h1>
-              {t(tx("بكم نرتقي بتجربة مستشفى الحديثة الرقمية.", "Together, we elevate Hadetha Hospital's digital experience."))}
-            </h1>
-            <p>
-              {t(
-                tx(
-                  "بوابة رسمية تجمع مسارات المستفيد والموظف والإدارة في تجربة واحدة؛ كل قسم مستقل في وظيفته، لكنه متصل بباقي المنظومة من خلال البحث، الصلاحيات، ومركز المعرفة.",
-                  "An official portal connecting beneficiary, employee, and admin paths in one experience; each section is independent in purpose, yet connected through search, permissions, and the knowledge center."
-                )
-              )}
-            </p>
+            <h1>{t(pageCopy.hero.title)}</h1>
+            <p>{t(pageCopy.hero.description)}</p>
             <div className="hero-actions">
               <Link className="btn btn-primary" to="/services">
                 <HeartPulse size={18} />

@@ -1,9 +1,17 @@
 import { PageHero } from "../../../components/ui/PageHero";
 import { ContentGrid } from "../../../components/ui/ContentGrid";
+import { usePageMeta } from "../../../hooks/usePageMeta";
 import { departments, initiatives, knowledgeItems } from "../../../data/content";
 import { tx } from "../../../utils/i18n";
 
 export function QualityPage() {
+  usePageMeta(
+    tx("مسارات الجودة والتحسين", "Quality and Improvement Paths"),
+    tx(
+      "صفحة تجمع السياسات والمبادرات وروابط OVR و Good Catch عند اعتمادها.",
+      "A page for policies, initiatives, OVR, and Good Catch links once approved."
+    )
+  );
   return (
     <>
       <PageHero

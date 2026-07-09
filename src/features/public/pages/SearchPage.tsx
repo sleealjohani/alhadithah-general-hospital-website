@@ -3,11 +3,19 @@ import { Search } from "lucide-react";
 import { usePortal } from "../../../providers/PortalProvider";
 import { PageHero } from "../../../components/ui/PageHero";
 import { ContentGrid } from "../../../components/ui/ContentGrid";
+import { usePageMeta } from "../../../hooks/usePageMeta";
 import { allPublicContent } from "../../../data/content";
 import { tx } from "../../../utils/i18n";
 
 export function SearchPage() {
   const { t } = usePortal();
+  usePageMeta(
+    tx("بحث موحد داخل البوابة", "Unified Portal Search"),
+    tx(
+      "بحث سريع في المحتوى المبدئي، ويمكن ربطه ببيانات Supabase المنشورة.",
+      "Fast search across starter content, ready to connect to published Supabase records."
+    )
+  );
   const [query, setQuery] = useState("");
   const results = allPublicContent.filter((item) => {
     const text = `${t(item.title)} ${t(item.description)} ${t(item.category)}`.toLowerCase();

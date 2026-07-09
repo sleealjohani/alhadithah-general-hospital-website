@@ -1,8 +1,16 @@
 import { PageHero } from "../../../components/ui/PageHero";
 import { PublicForm } from "../components/PublicForm";
+import { usePageMeta } from "../../../hooks/usePageMeta";
 import { tx } from "../../../utils/i18n";
 
 export function ExperiencePage() {
+  usePageMeta(
+    tx("شاركنا ملاحظتك", "Share Your Feedback"),
+    tx(
+      "نموذج آمن للملاحظات العامة. لا تطلب البوابة بيانات طبية حساسة.",
+      "A safe form for general feedback. The portal does not request sensitive medical information."
+    )
+  );
   return (
     <>
       <PageHero

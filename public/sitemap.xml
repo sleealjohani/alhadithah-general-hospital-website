@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Replace REPLACE-WITH-PRODUCTION-DOMAIN below with the real deployed domain
+  before going live — search engines require absolute URLs in a sitemap.
+  This lists the static public routes only. CMS pages created under
+  /admin/pages (served at /pages/:slug) are dynamic and are not included
+  here; add an entry per published page as needed, or generate this file
+  from the `pages` table at build time in a future iteration.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://REPLACE-WITH-PRODUCTION-DOMAIN/</loc></url>
+  <url><loc>https://REPLACE-WITH-PRODUCTION-DOMAIN/about</loc></url>
+  <url><loc>https://REPLACE-WITH-PRODUCTION-DOMAIN/services</loc></url>
+  <url><loc>https://REPLACE-WITH-PRODUCTION-DOMAIN/departments</loc></url>
+  <url><loc>https://REPLACE-WITH-PRODUCTION-DOMAIN/knowledge</loc></url>
+  <url><loc>https://REPLACE-WITH-PRODUCTION-DOMAIN/links</loc></url>
+  <url><loc>https://REPLACE-WITH-PRODUCTION-DOMAIN/news</loc></url>
+  <url><loc>https://REPLACE-WITH-PRODUCTION-DOMAIN/initiatives</loc></url>
+  <url><loc>https://REPLACE-WITH-PRODUCTION-DOMAIN/experience</loc></url>
+  <url><loc>https://REPLACE-WITH-PRODUCTION-DOMAIN/quality</loc></url>
+  <url><loc>https://REPLACE-WITH-PRODUCTION-DOMAIN/nursing</loc></url>
+  <url><loc>https://REPLACE-WITH-PRODUCTION-DOMAIN/reports</loc></url>
+  <url><loc>https://REPLACE-WITH-PRODUCTION-DOMAIN/employees</loc></url>
+  <url><loc>https://REPLACE-WITH-PRODUCTION-DOMAIN/contact</loc></url>
+  <url><loc>https://REPLACE-WITH-PRODUCTION-DOMAIN/faq</loc></url>
+</urlset>

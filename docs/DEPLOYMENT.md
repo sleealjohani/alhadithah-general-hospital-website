@@ -5,6 +5,10 @@
 1. Apply both Supabase migrations and the seed file — see `docs/SUPABASE_SETUP.md`.
 2. Create the first admin user and assign `super_admin`.
 3. Run `npm run typecheck && npm run lint && npm run build` locally to confirm a clean build.
+4. Replace every `REPLACE-WITH-PRODUCTION-DOMAIN` placeholder in
+   `public/robots.txt` and `public/sitemap.xml` with the real production
+   domain once it's known — search engines require absolute URLs there, and
+   this repo doesn't have a domain to fill in yet.
 
 ## Netlify
 

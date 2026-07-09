@@ -2,10 +2,18 @@ import { PageHero } from "../../../components/ui/PageHero";
 import { SectionHeading } from "../../../components/ui/SectionHeading";
 import { ContentGrid } from "../../../components/ui/ContentGrid";
 import { PublicForm } from "../components/PublicForm";
+import { usePageMeta } from "../../../hooks/usePageMeta";
 import { initiatives } from "../../../data/content";
 import { tx } from "../../../utils/i18n";
 
 export function InitiativesPage() {
+  usePageMeta(
+    tx("إرسال ومتابعة المبادرات", "Submit and Review Initiatives"),
+    tx(
+      "النماذج لا تنشر المشاركات للعامة، بل تحفظها للمراجعة الإدارية.",
+      "Forms do not publish submissions publicly; they store them for admin review."
+    )
+  );
   return (
     <>
       <PageHero

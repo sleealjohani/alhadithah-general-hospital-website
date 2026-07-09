@@ -1,0 +1,240 @@
+.info-card,
+.mini-card,
+.rich-panel,
+.portal-form,
+.admin-panel,
+.submission-card,
+.admin-metric,
+.faq-item {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.info-card {
+  display: flex;
+  min-height: 260px;
+  flex-direction: column;
+  gap: 14px;
+  padding: 24px;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.info-card::after {
+  content: "";
+  position: absolute;
+  inset: auto 24px 18px auto;
+  width: 34px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--primary);
+  opacity: 0;
+  transform: scaleX(0.4);
+  transform-origin: right;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.info-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.info-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-md);
+}
+
+.info-card:hover::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.info-card.is-disabled {
+  cursor: default;
+}
+
+.info-card.is-disabled:hover {
+  transform: none;
+}
+
+.info-card-elevated {
+  min-height: 280px;
+}
+
+.card-icon {
+  display: inline-grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border-radius: var(--radius-md);
+  background: var(--primary-soft);
+  color: var(--primary-strong);
+}
+
+.card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-muted);
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.card-meta strong {
+  border-radius: 999px;
+  padding: 2px 8px;
+  background: #fff6e2;
+  color: var(--gold);
+}
+
+.info-card h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.info-card p {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.card-action {
+  margin-top: auto;
+  color: var(--primary-strong);
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.two-column,
+.split-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.8fr);
+  gap: 28px;
+  align-items: start;
+}
+
+.stacked-cards {
+  display: grid;
+  gap: 16px;
+}
+
+.rich-panel,
+.mini-card {
+  padding: 28px;
+}
+
+.rich-panel h2,
+.mini-card h3 {
+  margin-top: 0;
+}
+
+.directory-tools,
+.admin-toolbar,
+.tab-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.search-field {
+  display: flex;
+  flex: 1;
+  min-width: min(100%, 320px);
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  padding: 0 14px;
+}
+
+.search-field input {
+  width: 100%;
+  min-height: 48px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  outline: 0;
+}
+
+.search-field-large {
+  margin-bottom: 28px;
+}
+
+select,
+input,
+textarea {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  padding: 11px 13px;
+}
+
+textarea {
+  min-height: 132px;
+  resize: vertical;
+}
+
+.portal-form,
+.admin-form {
+  display: grid;
+  gap: 16px;
+}
+
+.portal-form {
+  padding: 24px;
+}
+
+.form-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.form-header h2 {
+  margin: 0;
+}
+
+.form-grid,
+.admin-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+label {
+  display: grid;
+  gap: 7px;
+  color: var(--text-secondary);
+  font-weight: 750;
+}
+
+.portal-form label:has(textarea),
+.admin-form textarea,
+.admin-form .btn,
+.admin-form label:has(textarea) {
+  grid-column: 1 / -1;
+}
+
+.faq-list {
+  display: grid;
+  gap: 14px;
+}
+
+.faq-item {
+  padding: 18px 22px;
+}
+
+.faq-item summary {
+  cursor: pointer;
+  font-weight: 850;
+}
+
+.faq-item p {
+  color: var(--text-secondary);
+}
+

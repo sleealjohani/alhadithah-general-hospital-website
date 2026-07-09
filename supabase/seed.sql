@@ -116,3 +116,35 @@ on conflict (slug) do update set
   icon = excluded.icon,
   status = excluded.status,
   sort_order = excluded.sort_order;
+
+insert into public.navigation_items
+  (label_ar, label_en, path, icon, location, sort_order)
+values
+  ('الرئيسية', 'Home', '/', 'Home', 'header', 10),
+  ('عن المستشفى', 'About', '/about', 'FileText', 'header', 20),
+  ('الخدمات', 'Services', '/services', 'HeartPulse', 'header', 30),
+  ('الأقسام', 'Departments', '/departments', 'Building2', 'header', 40),
+  ('مركز المعرفة', 'Knowledge', '/knowledge', 'Library', 'header', 50),
+  ('النماذج والروابط', 'Forms & Links', '/links', 'ClipboardList', 'header', 60),
+  ('الأخبار', 'News', '/news', 'Newspaper', 'header', 70),
+  ('تواصل معنا', 'Contact', '/contact', 'Send', 'header', 80);
+
+insert into public.quick_links
+  (title_ar, title_en, description_ar, description_en, icon, path, audience, sort_order)
+values
+  ('مسار المستفيد', 'Beneficiary Path', 'الوصول السريع للخدمات الصحية، التعليمات، الروابط المهمة، ونموذج الملاحظات.', 'Quick access to health services, instructions, important links, and feedback.', 'HeartPulse', '/services', 'public', 10),
+  ('بوابة الموظفين', 'Employee Portal', 'منطقة منظمة للسياسات والنماذج والتعاميم وروابط الجودة وسلامة المرضى.', 'A structured area for policies, forms, circulars, and quality links.', 'BriefcaseBusiness', '/employees', 'employee', 20),
+  ('مركز المعرفة', 'Knowledge Center', 'ملفات وسياسات وأدلة وإجراءات قابلة للإدارة من لوحة التحكم.', 'Files, policies, guides, and procedures managed from the admin panel.', 'Library', '/knowledge', 'all', 30),
+  ('لوحة التحكم', 'Admin Console', 'إدارة المحتوى والرسائل والصلاحيات عبر تسجيل دخول Supabase.', 'Manage content, messages, and roles through Supabase authentication.', 'ShieldCheck', '/admin', 'admin', 40);
+
+insert into public.homepage_sections (section_key, is_active, sort_order)
+values
+  ('hero', true, 10),
+  ('quick_access', true, 20),
+  ('institution', true, 30),
+  ('strategy', true, 40),
+  ('interactive_path', true, 50),
+  ('digital_services', true, 60),
+  ('journey', true, 70),
+  ('knowledge_and_news', true, 80)
+on conflict (section_key) do nothing;

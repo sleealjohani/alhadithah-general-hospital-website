@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { supabase } from "./supabase";
-import type { FormKind } from "./data";
+import { supabase } from "./supabase/client";
+import type { FormKind } from "../types";
 
 export type PortalFormPayload = {
   name?: string;

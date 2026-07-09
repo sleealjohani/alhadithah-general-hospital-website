@@ -1,28 +1,5 @@
-export type Locale = "ar" | "en";
-
-export type LocalizedText = {
-  ar: string;
-  en: string;
-};
-
-export type PortalItem = {
-  id: string;
-  title: LocalizedText;
-  description: LocalizedText;
-  category: LocalizedText;
-  icon: string;
-  path?: string;
-  url?: string;
-  badge?: LocalizedText;
-  audience?: "public" | "employee" | "admin" | "all";
-  status?: "published" | "draft";
-  fileType?: string;
-  updatedAt?: string;
-};
-
-export type FormKind = "contact" | "experience" | "initiative" | "good_catch";
-
-export const tx = (ar: string, en: string): LocalizedText => ({ ar, en });
+import { tx } from "../utils/i18n";
+import type { LocalizedText, PortalItem } from "../types";
 
 export const identity = {
   name: tx("مستشفى الحديثة العام", "Hadetha General Hospital"),
@@ -45,6 +22,45 @@ export const navItems = [
   { path: "/links", label: tx("النماذج والروابط", "Forms & Links") },
   { path: "/news", label: tx("الأخبار", "News") },
   { path: "/contact", label: tx("تواصل معنا", "Contact") }
+];
+
+export const pageCopy = {
+  common: {
+    noOfficialLinks: tx("لا يوجد رابط رسمي معتمد حاليًا.", "No approved official link is available yet."),
+    editable: tx("قابل للإدارة من لوحة التحكم", "Manageable from the admin panel"),
+    empty: tx("لا يوجد محتوى منشور حاليًا.", "No published content is available yet.")
+  },
+  hero: {
+    eyebrow: tx("بوابة رقمية رسمية", "Official Digital Portal"),
+    title: tx("مستشفى الحديثة العام", "Hadetha General Hospital"),
+    description: tx(
+      "منصة عربية أولًا، ثنائية اللغة، تجمع الخدمات العامة، مركز المعرفة، النماذج، المبادرات، وتواصل المستفيد في تجربة واضحة قابلة للنشر.",
+      "An Arabic-first bilingual portal for public services, knowledge, forms, initiatives, and beneficiary communication in a deployable experience."
+    )
+  }
+};
+
+export const journeySteps = [
+  {
+    title: tx("يدخل المستخدم", "User enters"),
+    text: tx("واجهة واضحة تحدد المسار المناسب مباشرة.", "A clear interface identifies the right path immediately."),
+    icon: "Home"
+  },
+  {
+    title: tx("يختار المسار", "Chooses a path"),
+    text: tx("خدمات، موظفين، معرفة، تواصل، أو مبادرات.", "Services, employees, knowledge, contact, or initiatives."),
+    icon: "ListChecks"
+  },
+  {
+    title: tx("يتخذ إجراء", "Takes action"),
+    text: tx("فتح رابط، إرسال نموذج، البحث عن ملف، أو قراءة إعلان.", "Open a link, submit a form, find a file, or read an announcement."),
+    icon: "Zap"
+  },
+  {
+    title: tx("تتابع الإدارة", "Admin follows up"),
+    text: tx("تظهر الطلبات والمحتوى داخل لوحة التحكم مع صلاحيات واضحة.", "Submissions and content appear in the admin console with clear roles."),
+    icon: "LayoutDashboard"
+  }
 ];
 
 export const quickAccess: PortalItem[] = [
@@ -463,7 +479,9 @@ export const allPublicContent = [
 export const contentTables = [
   { table: "services", label: tx("الخدمات", "Services") },
   { table: "departments", label: tx("الأقسام", "Departments") },
+  { table: "clinics", label: tx("العيادات", "Clinics") },
   { table: "news_posts", label: tx("الأخبار", "News") },
+  { table: "events", label: tx("الفعاليات", "Events") },
   { table: "knowledge_items", label: tx("مركز المعرفة", "Knowledge") },
   { table: "important_links", label: tx("الروابط", "Links") },
   { table: "faqs", label: tx("الأسئلة الشائعة", "FAQ") }

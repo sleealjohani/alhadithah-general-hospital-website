@@ -16,6 +16,7 @@ import { EmployeesPage } from "../features/public/pages/EmployeesPage";
 import { ContactPage } from "../features/public/pages/ContactPage";
 import { FaqPage } from "../features/public/pages/FaqPage";
 import { SearchPage } from "../features/public/pages/SearchPage";
+import { CmsPage } from "../features/public/pages/CmsPage";
 import { NotFoundPage } from "../features/public/pages/NotFoundPage";
 import { AdminLoginPage } from "../features/auth/AdminLoginPage";
 import { ProtectedRoute } from "../features/auth/ProtectedRoute";
@@ -41,6 +42,7 @@ export function AppRoutes() {
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/faq" element={<FaqPage />} />
         <Route path="/search" element={<SearchPage />} />
+        <Route path="/pages/:slug" element={<CmsPage />} />
       </Route>
       <Route path="/admin/login" element={<AdminLoginPage />} />
       <Route

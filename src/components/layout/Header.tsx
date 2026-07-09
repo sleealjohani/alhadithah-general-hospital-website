@@ -2,17 +2,19 @@ import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { Accessibility, Languages, LockKeyhole, Menu, Moon, Search, Sun, X } from "lucide-react";
 import { usePortal } from "../../providers/PortalProvider";
-import { identity, navItems } from "../../data/content";
+import { identity } from "../../data/content";
+import { useNavigationItems } from "../../hooks/useNavigationItems";
 import { tx } from "../../utils/i18n";
 
 export function Header() {
   const { t, locale, setLocale, theme, setTheme, highContrast, setHighContrast } = usePortal();
   const [open, setOpen] = useState(false);
-  const coreNav = navItems.filter((item) =>
-    ["/", "/about", "/services", "/departments", "/knowledge", "/contact"].includes(item.path)
+  const headerNav = useNavigationItems("header");
+  const coreNav = headerNav.filter((item) =>
+    ["/", "/about", "/services", "/departments", "/knowledge", "/contact"].includes(item.path || "")
   );
   const secondaryNav = [
-    ...navItems.filter((item) => ["/links", "/news"].includes(item.path)),
+    ...headerNav.filter((item) => ["/links", "/news"].includes(item.path || "")),
     { path: "/initiatives", label: tx("المبادرات", "Initiatives") },
     { path: "/faq", label: tx("الأسئلة الشائعة", "FAQ") }
   ];
@@ -45,7 +47,7 @@ export function Header() {
 
         <nav className={`primary-nav ${open ? "is-open" : ""}`} aria-label="Primary">
           {coreNav.map((item) => (
-            <NavLink key={item.path} to={item.path} onClick={() => setOpen(false)}>
+            <NavLink key={item.path} to={item.path || "/"} onClick={() => setOpen(false)}>
               {t(item.label)}
             </NavLink>
           ))}
@@ -53,7 +55,7 @@ export function Header() {
             <summary>{t(tx("المزيد", "More"))}</summary>
             <div>
               {secondaryNav.map((item) => (
-                <NavLink key={item.path} to={item.path} onClick={() => setOpen(false)}>
+                <NavLink key={item.path} to={item.path || "/"} onClick={() => setOpen(false)}>
                   {t(item.label)}
                 </NavLink>
               ))}

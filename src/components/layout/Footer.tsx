@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
 import { usePortal } from "../../providers/PortalProvider";
-import { identity, navItems } from "../../data/content";
+import { identity } from "../../data/content";
+import { useNavigationItems } from "../../hooks/useNavigationItems";
 import { tx } from "../../utils/i18n";
 
 export function Footer() {
   const { t } = usePortal();
+  const headerNav = useNavigationItems("header");
   return (
     <footer className="site-footer">
       <div className="container footer-grid">
@@ -16,9 +18,9 @@ export function Footer() {
         <div>
           <h3>{t(tx("روابط رئيسية", "Main Links"))}</h3>
           <ul>
-            {navItems.slice(1, 7).map((item) => (
+            {headerNav.slice(1, 7).map((item) => (
               <li key={item.path}>
-                <Link to={item.path}>{t(item.label)}</Link>
+                <Link to={item.path || "/"}>{t(item.label)}</Link>
               </li>
             ))}
           </ul>

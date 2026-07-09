@@ -6,6 +6,7 @@ import { Icon } from "../../../components/ui/Icon";
 import { SectionHeading } from "../../../components/ui/SectionHeading";
 import { ContentGrid } from "../../../components/ui/ContentGrid";
 import { usePublishedItems } from "../../../hooks/usePublishedItems";
+import { useHomepageSectionVisibility } from "../../../hooks/useHomepageSectionVisibility";
 import { identity, journeySteps, knowledgeItems, newsItems, pageCopy, quickAccess, services } from "../../../data/content";
 import { tx } from "../../../utils/i18n";
 
@@ -15,9 +16,11 @@ export function HomePage() {
   const liveNews = usePublishedItems("news_posts", newsItems);
   const [activePathId, setActivePathId] = useState(quickAccess[0].id);
   const activePath = quickAccess.find((item) => item.id === activePathId) || quickAccess[0];
+  const isActive = useHomepageSectionVisibility();
 
   return (
     <>
+      {isActive("hero") && (
       <section className="home-hero reference-hero">
         <div className="hero-glow hero-glow-one" aria-hidden="true" />
         <div className="hero-glow hero-glow-two" aria-hidden="true" />
@@ -54,7 +57,9 @@ export function HomePage() {
           <HeroExperiencePanel />
         </div>
       </section>
+      )}
 
+      {isActive("quick_access") && (
       <section className="quick-ribbon" aria-label={t(tx("روابط رئيسية", "Primary links"))}>
         <div className="quick-ribbon-shape" aria-hidden="true" />
         <div className="container quick-ribbon-grid">
@@ -68,7 +73,9 @@ export function HomePage() {
           ))}
         </div>
       </section>
+      )}
 
+      {isActive("institution") && (
       <section className="institution-section">
         <div className="container institution-grid">
           <div className="vision-stack" data-reveal>
@@ -98,7 +105,9 @@ export function HomePage() {
           </div>
         </div>
       </section>
+      )}
 
+      {isActive("strategy") && (
       <section className="strategy-board-section">
         <div className="container">
           <SectionHeading
@@ -131,7 +140,9 @@ export function HomePage() {
           </div>
         </div>
       </section>
+      )}
 
+      {isActive("interactive_path") && (
       <section className="interactive-path-section">
         <div className="container">
           <SectionHeading
@@ -170,7 +181,9 @@ export function HomePage() {
           </div>
         </div>
       </section>
+      )}
 
+      {isActive("digital_services") && (
       <section className="digital-services-stage">
         <div className="container">
           <SectionHeading
@@ -196,7 +209,9 @@ export function HomePage() {
           </div>
         </div>
       </section>
+      )}
 
+      {isActive("journey") && (
       <section className="journey-section">
         <div className="container">
           <SectionHeading
@@ -219,7 +234,9 @@ export function HomePage() {
           </div>
         </div>
       </section>
+      )}
 
+      {isActive("knowledge_and_news") && (
       <section className="section">
         <div className="container two-column">
           <div data-reveal>
@@ -246,6 +263,7 @@ export function HomePage() {
           </div>
         </div>
       </section>
+      )}
     </>
   );
 }

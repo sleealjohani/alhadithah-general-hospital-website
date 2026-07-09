@@ -43,6 +43,13 @@ export type Profile = {
   created_at: string;
 };
 
+export type NavMenuItem = {
+  path?: string;
+  url?: string;
+  label: LocalizedText;
+  icon?: string;
+};
+
 export type PublicContentRow = {
   id: string;
   title_ar: string;

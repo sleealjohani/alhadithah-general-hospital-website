@@ -1,8 +1,16 @@
 import { PageHero } from "../../../components/ui/PageHero";
 import { PublicForm } from "../components/PublicForm";
+import { usePageMeta } from "../../../hooks/usePageMeta";
 import { tx } from "../../../utils/i18n";
 
 export function ContactPage() {
+  usePageMeta(
+    tx("نموذج تواصل بدون بيانات عامة مزيفة", "Contact Form Without Fake Public Data"),
+    tx(
+      "يستقبل النموذج الرسائل العامة. معلومات الهاتف والبريد لا تظهر حتى تعتمد من الإعدادات.",
+      "The form accepts general messages. Phone and email details stay hidden until approved in settings."
+    )
+  );
   return (
     <>
       <PageHero

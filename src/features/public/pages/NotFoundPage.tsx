@@ -1,9 +1,11 @@
 import { Link } from "react-router-dom";
 import { PublicLayout } from "../../../components/layout/PublicLayout";
 import { PageHero } from "../../../components/ui/PageHero";
+import { usePageMeta } from "../../../hooks/usePageMeta";
 import { tx } from "../../../utils/i18n";
 
 export function NotFoundContent() {
+  usePageMeta(tx("الصفحة غير موجودة", "Page Not Found"));
   return (
     <PageHero
       eyebrow={tx("404", "404")}

@@ -4,6 +4,7 @@ import { usePortal } from "../../../providers/PortalProvider";
 import { PageHero } from "../../../components/ui/PageHero";
 import { ContentGrid } from "../../../components/ui/ContentGrid";
 import { usePublishedItems } from "../../../hooks/usePublishedItems";
+import { usePageMeta } from "../../../hooks/usePageMeta";
 import { tx } from "../../../utils/i18n";
 import type { LocalizedText, PortalItem } from "../../../types";
 
@@ -21,6 +22,7 @@ export function DirectoryPage({
   description: LocalizedText;
 }) {
   const { t } = usePortal();
+  usePageMeta(title, description);
   const items = usePublishedItems(table, fallback);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");

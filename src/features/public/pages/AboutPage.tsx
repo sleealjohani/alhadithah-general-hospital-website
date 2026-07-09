@@ -1,11 +1,19 @@
 import { PageHero } from "../../../components/ui/PageHero";
 import { SectionHeading } from "../../../components/ui/SectionHeading";
 import { ContentGrid } from "../../../components/ui/ContentGrid";
+import { usePageMeta } from "../../../hooks/usePageMeta";
 import { identity } from "../../../data/content";
 import { tx } from "../../../utils/i18n";
 import type { PortalItem } from "../../../types";
 
 export function AboutPage() {
+  usePageMeta(
+    tx("عن مستشفى الحديثة العام", "About Hadetha General Hospital"),
+    tx(
+      "صفحة تعريفية رسمية قابلة للتحرير من لوحة التحكم، بدون أرقام أو بيانات غير معتمدة.",
+      "An official profile page editable from the admin panel, without unapproved numbers or data."
+    )
+  );
   const values: PortalItem[] = [
     {
       id: "trust",

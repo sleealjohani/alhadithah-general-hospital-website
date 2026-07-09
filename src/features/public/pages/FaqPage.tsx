@@ -1,11 +1,19 @@
 import { usePortal } from "../../../providers/PortalProvider";
 import { PageHero } from "../../../components/ui/PageHero";
 import { usePublishedItems } from "../../../hooks/usePublishedItems";
+import { usePageMeta } from "../../../hooks/usePageMeta";
 import { faqs } from "../../../data/content";
 import { tx } from "../../../utils/i18n";
 
 export function FaqPage() {
   const { t } = usePortal();
+  usePageMeta(
+    tx("إجابات مختصرة وواضحة", "Short, Clear Answers"),
+    tx(
+      "أسئلة قابلة للإدارة من لوحة التحكم وتدعم البحث والتصنيف.",
+      "Questions are manageable from the admin panel and support search and categorization."
+    )
+  );
   const items = usePublishedItems("faqs", faqs);
   return (
     <>

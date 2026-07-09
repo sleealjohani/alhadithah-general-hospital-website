@@ -12,6 +12,7 @@ import { AdminPages } from "./AdminPages";
 import { AdminNavigation } from "./AdminNavigation";
 import { AdminHomepageSections } from "./AdminHomepageSections";
 import { AdminDoctors } from "./AdminDoctors";
+import { AdminMedia } from "./AdminMedia";
 import { AdminSubmissions } from "./AdminSubmissions";
 import { AdminTools } from "./AdminTools";
 import { AdminSettings } from "./AdminSettings";
@@ -64,6 +65,7 @@ export function AdminLayout() {
           <Route path="navigation" element={<AdminNavigation />} />
           <Route path="homepage" element={<AdminHomepageSections />} />
           <Route path="doctors" element={<AdminDoctors />} />
+          <Route path="media" element={<AdminMedia />} />
           <Route path="submissions" element={<AdminSubmissions />} />
           <Route path="tools" element={<AdminTools />} />
           <Route path="settings" element={<AdminSettings />} />

@@ -6,10 +6,11 @@ The app is built for Netlify + Supabase and can be previewed locally from VS Cod
 
 ## Stack
 
-- React + Vite + TypeScript
-- Supabase Database + Auth + Storage + RLS
+- React + Vite + TypeScript, organized as a modular feature-based app (see `docs/ARCHITECTURE.md`)
+- Supabase Database + Auth + Storage + RLS, with a full CMS content model
 - Netlify static deployment
-- CSS variables for light/dark/high contrast themes
+- CSS variables for light/dark/high contrast themes, split into a design-token
+  system under `src/styles/`
 - Browser-side QR generation and Excel-compatible CSV export
 
 ## Local Run
@@ -54,13 +55,35 @@ The publishable key is safe for frontend use. Do not place service-role keys in 
 - No hard-coded admin credentials exist in the codebase.
 - If Supabase is unavailable, public pages use safe preview content and forms save to local browser storage.
 
+## Content Management
+
+Nearly every part of the public site is editable from `/admin` without touching code:
+
+- **Content** — services, departments, clinics, news, events, knowledge items, links, FAQs
+- **Pages** — freeform pages rendered at `/pages/:slug`, with SEO title/description
+- **Navigation** — header/footer menu items, including parent nesting
+- **Homepage Sections** — show/hide each homepage section
+- **Doctors** — staff profiles linked to departments
+- **Media Library** — file uploads to Supabase Storage (public or private bucket)
+- **Submissions** — contact/feedback/initiative/Good Catch form entries
+- **Settings** — site-wide `site_settings` key/value store (e.g. public contact visibility)
+
+See `docs/ADMIN_GUIDE.md` for the full walkthrough.
+
 ## Key Files
 
-- `src/App.tsx` - public site, forms, admin shell, QR/export tools.
-- `src/lib/data.ts` - safe bilingual fallback content.
-- `src/lib/supabase.ts` - Supabase client and content fetching.
-- `supabase/migrations/202607090001_initial_schema.sql` - database, RLS, storage policies.
+- `src/app/App.tsx` / `src/app/routes.tsx` - app shell and route table.
+- `src/features/public/` - public pages and shared public components.
+- `src/features/admin/` - admin dashboard screens (one file per resource).
+- `src/features/auth/` - Supabase Auth context, protected routes, login page.
+- `src/lib/supabase/` - Supabase client plus per-domain query helpers.
+- `src/data/content.ts` - safe bilingual fallback content used when Supabase is unreachable.
+- `src/styles/` - design tokens and cascade-ordered CSS partials (see `index.css`).
+- `supabase/migrations/202607090001_initial_schema.sql` - core schema, roles, RLS, storage buckets.
+- `supabase/migrations/202607090002_cms_content_model.sql` - pages, navigation, homepage sections, quick links, doctors, clinics, events.
 - `supabase/seed.sql` - starter content without fake contact details.
+- `docs/ARCHITECTURE.md` - folder structure and data-flow guide.
 - `docs/SUPABASE_SETUP.md` - first admin and Supabase setup.
 - `docs/DEPLOYMENT.md` - Netlify deployment.
 - `docs/ADMIN_GUIDE.md` - admin operation guide.
+- `docs/CONTENT_GUIDE.md` - content tone and publishing rules.

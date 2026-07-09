@@ -1,5 +1,11 @@
 # Deployment
 
+## Before First Deploy
+
+1. Apply both Supabase migrations and the seed file — see `docs/SUPABASE_SETUP.md`.
+2. Create the first admin user and assign `super_admin`.
+3. Run `npm run typecheck && npm run lint && npm run build` locally to confirm a clean build.
+
 ## Netlify
 
 1. Push this repository to GitHub.

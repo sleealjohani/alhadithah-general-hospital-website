@@ -7,14 +7,16 @@ import { SectionHeading } from "../../../components/ui/SectionHeading";
 import { ContentGrid } from "../../../components/ui/ContentGrid";
 import { usePublishedItems } from "../../../hooks/usePublishedItems";
 import { useHomepageSectionVisibility } from "../../../hooks/useHomepageSectionVisibility";
-import { identity, journeySteps, knowledgeItems, newsItems, pageCopy, quickAccess, services } from "../../../data/content";
+import { useQuickLinks } from "../../../hooks/useQuickLinks";
+import { identity, journeySteps, knowledgeItems, newsItems, pageCopy, services } from "../../../data/content";
 import { tx } from "../../../utils/i18n";
 
 export function HomePage() {
   const { t } = usePortal();
   const liveServices = usePublishedItems("services", services);
   const liveNews = usePublishedItems("news_posts", newsItems);
-  const [activePathId, setActivePathId] = useState(quickAccess[0].id);
+  const quickAccess = useQuickLinks();
+  const [activePathId, setActivePathId] = useState(quickAccess[0]?.id);
   const activePath = quickAccess.find((item) => item.id === activePathId) || quickAccess[0];
   const isActive = useHomepageSectionVisibility();
 

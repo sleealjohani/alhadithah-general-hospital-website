@@ -11,6 +11,7 @@ import { AdminContentManager } from "./AdminContentManager";
 import { AdminPages } from "./AdminPages";
 import { AdminNavigation } from "./AdminNavigation";
 import { AdminHomepageSections } from "./AdminHomepageSections";
+import { AdminQuickLinks } from "./AdminQuickLinks";
 import { AdminDoctors } from "./AdminDoctors";
 import { AdminMedia } from "./AdminMedia";
 import { AdminSubmissions } from "./AdminSubmissions";
@@ -64,6 +65,7 @@ export function AdminLayout() {
           <Route path="pages" element={<AdminPages />} />
           <Route path="navigation" element={<AdminNavigation />} />
           <Route path="homepage" element={<AdminHomepageSections />} />
+          <Route path="quick-links" element={<AdminQuickLinks />} />
           <Route path="doctors" element={<AdminDoctors />} />
           <Route path="media" element={<AdminMedia />} />
           <Route path="submissions" element={<AdminSubmissions />} />

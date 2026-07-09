@@ -79,8 +79,8 @@ See `docs/ADMIN_GUIDE.md` for the full walkthrough.
 - `src/lib/supabase/` - Supabase client plus per-domain query helpers.
 - `src/data/content.ts` - safe bilingual fallback content used when Supabase is unreachable.
 - `src/styles/` - design tokens and cascade-ordered CSS partials (see `index.css`).
-- `supabase/migrations/202607090001_initial_schema.sql` - core schema, roles, RLS, storage buckets.
-- `supabase/migrations/202607090002_cms_content_model.sql` - pages, navigation, homepage sections, quick links, doctors, clinics, events.
+- `supabase/migrations/20260709120000_initial_schema.sql` - core schema, roles, RLS, storage buckets.
+- `supabase/migrations/20260709121000_cms_content_model.sql` - pages, navigation, homepage sections, quick links, doctors, clinics, events.
 - `supabase/seed.sql` - starter content without fake contact details.
 - `docs/ARCHITECTURE.md` - folder structure and data-flow guide.
 - `docs/SUPABASE_SETUP.md` - first admin and Supabase setup.

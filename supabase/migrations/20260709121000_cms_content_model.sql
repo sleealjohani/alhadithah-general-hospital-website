@@ -1,7 +1,7 @@
 -- Expands the initial schema with the remaining content-management tables:
 -- generic pages, homepage/navigation structure, quick links, doctors,
 -- clinics, and events. Reuses public.set_updated_at() and
--- public.has_admin_role() from 202607090001_initial_schema.sql.
+-- public.has_admin_role() from 20260709120000_initial_schema.sql.
 
 create table if not exists public.pages (
   id uuid primary key default gen_random_uuid(),

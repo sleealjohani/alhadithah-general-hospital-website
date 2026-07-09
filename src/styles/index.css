@@ -1,0 +1,14 @@
+/* Design system entry point. Import order matters — it mirrors the original
+   cascade, so keep this sequence when adding new partials. */
+@import "./tokens.css";
+@import "./base.css";
+@import "./header-nav.css";
+@import "./hero.css";
+@import "./home-sections.css";
+@import "./sections-generic.css";
+@import "./cards-forms.css";
+@import "./footer.css";
+@import "./utility-widgets.css";
+@import "./admin-auth.css";
+@import "./motion-utilities.css";
+@import "./responsive.css";

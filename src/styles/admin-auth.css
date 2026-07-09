@@ -1,0 +1,260 @@
+.login-page,
+.loading-page {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  background:
+    radial-gradient(circle at top, rgba(14, 122, 95, 0.2), transparent 34rem),
+    var(--bg);
+  padding: 24px;
+}
+
+.login-card {
+  width: min(460px, 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  padding: 30px;
+}
+
+.login-card.wide {
+  width: min(820px, 100%);
+}
+
+.login-card img {
+  width: 180px;
+  border-radius: var(--radius-md);
+  background: #071c19;
+  padding: 10px;
+}
+
+.login-card form {
+  display: grid;
+  gap: 14px;
+  margin: 22px 0;
+}
+
+.admin-shell {
+  display: grid;
+  grid-template-columns: 290px minmax(0, 1fr);
+  min-height: 100vh;
+  background: #f4f8f7;
+  color: #102a27;
+}
+
+:root[data-theme="dark"] .admin-shell {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.admin-sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: auto;
+  background: #0b2f29;
+  color: white;
+  padding: 22px;
+}
+
+.admin-brand {
+  margin-bottom: 28px;
+  font-weight: 850;
+}
+
+.admin-brand img {
+  width: 76px;
+  padding: 6px;
+}
+
+.admin-sidebar nav {
+  display: grid;
+  gap: 8px;
+}
+
+.admin-sidebar a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: var(--radius-md);
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.admin-sidebar a.active,
+.admin-sidebar a:hover {
+  background: rgba(50, 184, 147, 0.18);
+  color: white;
+}
+
+.admin-main {
+  min-width: 0;
+  padding: 26px;
+}
+
+.admin-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.admin-topbar h1 {
+  margin: 8px 0 0;
+}
+
+.admin-page {
+  display: grid;
+  gap: 22px;
+}
+
+.admin-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.admin-metric {
+  display: grid;
+  gap: 10px;
+  padding: 20px;
+}
+
+.admin-metric svg {
+  color: var(--primary);
+}
+
+.admin-metric span {
+  color: var(--text-secondary);
+  font-weight: 700;
+}
+
+.admin-metric strong {
+  font-size: 1.7rem;
+}
+
+.admin-panel {
+  padding: 22px;
+}
+
+.check-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.check-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.check-list svg {
+  color: var(--success);
+}
+
+.admin-table-wrap {
+  overflow: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.admin-table th,
+.admin-table td {
+  border-bottom: 1px solid var(--border);
+  padding: 12px;
+  text-align: start;
+  vertical-align: middle;
+}
+
+.admin-table .icon-button + .icon-button {
+  margin-inline-start: 6px;
+}
+
+.admin-table tr.is-editing td {
+  background: var(--primary-soft);
+}
+
+.tab-row button {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  padding: 9px 14px;
+  font-weight: 800;
+}
+
+.tab-row button.is-active {
+  background: var(--primary);
+  color: white;
+}
+
+.submission-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.submission-card {
+  padding: 16px;
+}
+
+.submission-card p {
+  color: var(--text-secondary);
+}
+
+.submission-card span {
+  color: var(--primary-strong);
+  font-weight: 800;
+}
+
+.tools-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 0.5fr);
+  gap: 22px;
+}
+
+.qr-preview {
+  display: grid;
+  min-height: 260px;
+  place-items: center;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-soft);
+}
+
+.qr-preview img {
+  width: min(280px, 100%);
+  border-radius: var(--radius-md);
+  background: white;
+  padding: 12px;
+}
+
+.check-field {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.check-field input {
+  width: auto;
+}
+
+.setup-content pre {
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-soft);
+  padding: 16px;
+  direction: ltr;
+  text-align: left;
+}
+

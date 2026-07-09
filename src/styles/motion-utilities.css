@@ -1,0 +1,73 @@
+.muted,
+.empty-state {
+  color: var(--text-muted);
+}
+
+.spin {
+  animation: spin 0.8s linear infinite;
+}
+
+[data-reveal] {
+  opacity: 0;
+  transform: translateY(26px);
+  transition:
+    opacity 620ms cubic-bezier(0.2, 0.8, 0.2, 1) var(--reveal-delay, 0ms),
+    transform 620ms cubic-bezier(0.2, 0.8, 0.2, 1) var(--reveal-delay, 0ms);
+}
+
+[data-reveal].is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.home-hero [data-reveal],
+.page-hero [data-reveal] {
+  opacity: 1;
+  transform: none;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes floatGlow {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(24px, -18px, 0) scale(1.08);
+  }
+}
+
+@keyframes rotateOrbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes chipFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-13px);
+  }
+}
+
+@keyframes progressPulse {
+  0%,
+  100% {
+    opacity: 0.72;
+    transform: scaleX(0.94);
+    transform-origin: left;
+  }
+  50% {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}
+

@@ -26,16 +26,16 @@ export const navItems = [
 
 export const pageCopy = {
   common: {
-    noOfficialLinks: tx("لا يوجد رابط رسمي معتمد حاليًا.", "No approved official link is available yet."),
-    editable: tx("قابل للإدارة من لوحة التحكم", "Manageable from the admin panel"),
+    noOfficialLinks: tx("الرابط غير متاح حاليًا.", "The link is not available at this time."),
+    editable: tx("يتم تحديثه دوريًا", "Updated regularly"),
     empty: tx("لا يوجد محتوى منشور حاليًا.", "No published content is available yet.")
   },
   hero: {
     eyebrow: tx("بوابة رقمية رسمية", "Official Digital Portal"),
     title: tx("مستشفى الحديثة العام", "Hadetha General Hospital"),
     description: tx(
-      "منصة عربية أولًا، ثنائية اللغة، تجمع الخدمات العامة، مركز المعرفة، النماذج، المبادرات، وتواصل المستفيد في تجربة واضحة قابلة للنشر.",
-      "An Arabic-first bilingual portal for public services, knowledge, forms, initiatives, and beneficiary communication in a deployable experience."
+      "منصة عربية أولًا، ثنائية اللغة، تجمع الخدمات العامة، مركز المعرفة، النماذج، المبادرات، وتواصل المستفيد في تجربة صحية واضحة.",
+      "An Arabic-first bilingual portal for public services, knowledge, forms, initiatives, and beneficiary communication in a clear hospital experience."
     )
   }
 };
@@ -57,8 +57,8 @@ export const journeySteps = [
     icon: "Zap"
   },
   {
-    title: tx("تتابع الإدارة", "Admin follows up"),
-    text: tx("تظهر الطلبات والمحتوى داخل لوحة التحكم مع صلاحيات واضحة.", "Submissions and content appear in the admin console with clear roles."),
+    title: tx("يتابع الفريق المختص", "The right team follows up"),
+    text: tx("تصل الملاحظات والطلبات إلى المسار المناسب للمتابعة حسب نوع الخدمة.", "Feedback and requests move to the right path for follow-up based on service type."),
     icon: "LayoutDashboard"
   }
 ];
@@ -92,8 +92,8 @@ export const quickAccess: PortalItem[] = [
     id: "knowledge-path",
     title: tx("مركز المعرفة", "Knowledge Center"),
     description: tx(
-      "ملفات وسياسات وأدلة وإجراءات قابلة للإدارة من لوحة التحكم.",
-      "Files, policies, guides, and procedures managed from the admin panel."
+      "ملفات وسياسات وأدلة وإجراءات منظمة للرجوع السريع عند الحاجة.",
+      "Files, policies, guides, and procedures organized for quick reference."
     ),
     category: tx("مراجع", "Resources"),
     icon: "Library",
@@ -101,16 +101,16 @@ export const quickAccess: PortalItem[] = [
     audience: "all"
   },
   {
-    id: "admin-path",
-    title: tx("لوحة التحكم", "Admin Console"),
+    id: "quality-path",
+    title: tx("الجودة وسلامة المرضى", "Quality & Patient Safety"),
     description: tx(
-      "إدارة المحتوى والرسائل والصلاحيات عبر تسجيل دخول Supabase.",
-      "Manage content, messages, and roles through Supabase authentication."
+      "مسار للمبادرات والسياسات وروابط التحسين المرتبطة بسلامة المرضى وجودة الخدمة.",
+      "A path for initiatives, policies, and improvement links related to patient safety and service quality."
     ),
-    category: tx("إدارة", "Admin"),
+    category: tx("جودة", "Quality"),
     icon: "ShieldCheck",
-    path: "/admin",
-    audience: "admin"
+    path: "/quality",
+    audience: "all"
   }
 ];
 
@@ -141,8 +141,8 @@ export const services: PortalItem[] = [
     id: "laboratory",
     title: tx("المختبر", "Laboratory"),
     description: tx(
-      "معلومات عامة عن خدمات المختبر والتعليمات التي يمكن اعتمادها ونشرها من الإدارة.",
-      "General laboratory information and publishable instructions managed by admins."
+      "معلومات عامة عن خدمات المختبر والتعليمات المهمة قبل أو بعد إجراء الفحوصات.",
+      "General laboratory information and important instructions before or after tests."
     ),
     category: tx("خدمات تشخيصية", "Diagnostic"),
     icon: "FlaskConical",
@@ -163,8 +163,8 @@ export const services: PortalItem[] = [
     id: "pharmacy",
     title: tx("الصيدلية", "Pharmacy"),
     description: tx(
-      "مساحة لنشر إرشادات الصيدلية المعتمدة وروابط الخدمات الرسمية عند توفرها.",
-      "A place for approved pharmacy instructions and official service links when available."
+      "إرشادات عامة حول خدمات الصيدلية وطريقة الاستفادة من المعلومات الدوائية المتاحة.",
+      "General guidance about pharmacy services and available medication information."
     ),
     category: tx("خدمات مساندة", "Support"),
     icon: "Pill",
@@ -243,8 +243,8 @@ export const departments: PortalItem[] = [
     id: "support",
     title: tx("الخدمات المساندة", "Support Services"),
     description: tx(
-      "تعريف بالخدمات الداعمة للمستفيد والموظف حسب ما تعتمده الإدارة.",
-      "Support service information for beneficiaries and staff as approved."
+      "تعريف بالخدمات الداعمة للمستفيد والموظف ضمن مسارات المستشفى.",
+      "Support service information for beneficiaries and staff within hospital service paths."
     ),
     category: tx("مساند", "Support"),
     icon: "Workflow",
@@ -257,8 +257,8 @@ export const knowledgeItems: PortalItem[] = [
     id: "policies",
     title: tx("السياسات والإجراءات", "Policies & Procedures"),
     description: tx(
-      "مكتبة منظمة للسياسات والإجراءات، مع صلاحيات نشر وتحميل من لوحة التحكم.",
-      "A structured policy and procedure library with admin publishing controls."
+      "مكتبة منظمة للسياسات والإجراءات التي يحتاجها الموظفون والفرق المختصة.",
+      "A structured policy and procedure library for staff and specialized teams."
     ),
     category: tx("سياسات", "Policies"),
     icon: "FileText",
@@ -304,8 +304,8 @@ export const importantLinks: PortalItem[] = [
     id: "sehhaty",
     title: tx("صحتي", "Sehhaty"),
     description: tx(
-      "يضاف الرابط الرسمي من لوحة التحكم بعد اعتماده.",
-      "The official link is added from the admin panel after approval."
+      "رابط للخدمات الوطنية ذات العلاقة عند توفره في قنوات المستشفى الرسمية.",
+      "A link to related national services when available through official hospital channels."
     ),
     category: tx("خدمات وطنية", "National Services"),
     icon: "ExternalLink"
@@ -314,8 +314,8 @@ export const importantLinks: PortalItem[] = [
     id: "seha",
     title: tx("منصة صحة", "Seha Platform"),
     description: tx(
-      "مساحة جاهزة للرابط المعتمد ولا تعرض رابطًا افتراضيًا.",
-      "A prepared slot for the approved link; no default public URL is shown."
+      "مسار مخصص للخدمات الصحية الوطنية ذات العلاقة بالمستفيد.",
+      "A path for national health services relevant to beneficiaries."
     ),
     category: tx("خدمات وطنية", "National Services"),
     icon: "ExternalLink"
@@ -324,8 +324,8 @@ export const importantLinks: PortalItem[] = [
     id: "forms",
     title: tx("النماذج الإدارية", "Administrative Forms"),
     description: tx(
-      "نماذج قابلة للرفع والتصنيف والبحث من لوحة التحكم.",
-      "Forms can be uploaded, categorized, and searched from the admin panel."
+      "نماذج إدارية وخدمية منظمة للبحث والوصول السريع.",
+      "Administrative and service forms organized for quick search and access."
     ),
     category: tx("نماذج", "Forms"),
     icon: "ClipboardList"
@@ -334,8 +334,8 @@ export const importantLinks: PortalItem[] = [
     id: "surveys",
     title: tx("الاستبيانات و QR", "Surveys & QR"),
     description: tx(
-      "روابط الاستبيانات و QR تظهر بعد اعتمادها من الإدارة.",
-      "Survey and QR links appear after admin approval."
+      "روابط الاستبيانات ورموز QR الخاصة بتجربة المستفيد عند توفرها.",
+      "Survey links and QR codes for beneficiary experience when available."
     ),
     category: tx("تجربة المستفيد", "Experience"),
     icon: "QrCode"
@@ -345,14 +345,14 @@ export const importantLinks: PortalItem[] = [
 export const newsItems: PortalItem[] = [
   {
     id: "portal-ready",
-    title: tx("مساحة أخبار قابلة للإدارة", "Manageable News Area"),
+    title: tx("أخبار وإعلانات المستشفى", "Hospital News and Announcements"),
     description: tx(
-      "تظهر الأخبار الرسمية هنا بعد نشرها من لوحة التحكم. هذا المحتوى مبدئي وآمن للمعاينة.",
-      "Official news appears here after publishing from the admin panel. This is safe preview content."
+      "تظهر أخبار المستشفى وإعلاناته في هذا القسم لمتابعة المستجدات الرسمية.",
+      "Hospital news and announcements appear here for official updates."
     ),
     category: tx("إعلان", "Announcement"),
     icon: "Newspaper",
-    badge: tx("قابل للتعديل", "Editable"),
+    badge: tx("إعلان", "Announcement"),
     updatedAt: "2026-07-09"
   }
 ];
@@ -362,8 +362,8 @@ export const initiatives: PortalItem[] = [
     id: "innovation",
     title: tx("إرسال مبادرة", "Submit an Initiative"),
     description: tx(
-      "نموذج لاستقبال المبادرات وتحويلها إلى مراجعة إدارية بدون نشرها للعامة تلقائيًا.",
-      "A form for initiative submissions that go to admin review before publication."
+      "نموذج لاستقبال المبادرات والأفكار التحسينية وتحويلها للمسار المختص.",
+      "A form for initiatives and improvement ideas to reach the right review path."
     ),
     category: tx("ابتكار", "Innovation"),
     icon: "Lightbulb",
@@ -387,8 +387,8 @@ export const employeeLinks: PortalItem[] = [
     id: "internal-systems",
     title: tx("الأنظمة الداخلية", "Internal Systems"),
     description: tx(
-      "روابط داخلية يضيفها المسؤول عند اعتمادها؛ لا توجد روابط وهمية.",
-      "Internal links are added by admins after approval; no fake links are shown."
+      "روابط داخلية للأنظمة والخدمات التي يحتاجها الموظف أثناء العمل.",
+      "Internal links for systems and services staff need during work."
     ),
     category: tx("أنظمة", "Systems"),
     icon: "Network"
@@ -408,8 +408,8 @@ export const employeeLinks: PortalItem[] = [
     id: "employee-forms",
     title: tx("نماذج الموظفين", "Employee Forms"),
     description: tx(
-      "نماذج إدارية قابلة للتحميل بعد رفعها واعتمادها.",
-      "Administrative forms become downloadable after upload and approval."
+      "نماذج الموظفين الإدارية والخدمية في مساحة واحدة.",
+      "Staff administrative and service forms in one place."
     ),
     category: tx("نماذج", "Forms"),
     icon: "FileCheck2",
@@ -422,8 +422,8 @@ export const faqs: PortalItem[] = [
     id: "faq-services",
     title: tx("كيف أجد خدمة معينة؟", "How do I find a specific service?"),
     description: tx(
-      "استخدم صفحة الخدمات أو البحث العام. روابط الحجز الرسمية تضاف فقط بعد اعتمادها.",
-      "Use the services page or global search. Official booking links are added only after approval."
+      "استخدم صفحة الخدمات أو البحث العام للوصول إلى الخدمة أو القسم المطلوب بسرعة.",
+      "Use the services page or global search to reach the needed service or department quickly."
     ),
     category: tx("الخدمات", "Services"),
     icon: "CircleHelp"
@@ -432,20 +432,20 @@ export const faqs: PortalItem[] = [
     id: "faq-contact",
     title: tx("لماذا لا تظهر أرقام التواصل؟", "Why are contact numbers not shown?"),
     description: tx(
-      "لن يتم عرض أي رقم أو بريد حتى يتم إدخاله واعتماده من إعدادات لوحة التحكم.",
-      "No phone or email is shown until it is entered and approved in admin settings."
+      "استخدم نموذج التواصل لإرسال استفسارك أو ملاحظتك إلى المسار المناسب.",
+      "Use the contact form to send your question or feedback to the appropriate path."
     ),
     category: tx("التواصل", "Contact"),
     icon: "CircleHelp"
   },
   {
-    id: "faq-admin",
-    title: tx("كيف يتم إنشاء أول مدير؟", "How is the first admin created?"),
+    id: "faq-feedback",
+    title: tx("كيف أرسل ملاحظة أو اقتراح؟", "How do I send feedback or a suggestion?"),
     description: tx(
-      "يتم إنشاء المستخدم من Supabase Auth ثم تعيين role = super_admin في جدول profiles حسب دليل الإعداد.",
-      "Create the user in Supabase Auth, then set role = super_admin in profiles as documented."
+      "يمكنك استخدام نموذج تجربة المستفيد أو نموذج التواصل، وسيتم توجيه الرسالة حسب نوعها.",
+      "Use the beneficiary-experience or contact form, and the message will be routed according to its type."
     ),
-    category: tx("الإدارة", "Admin"),
+    category: tx("تجربة المستفيد", "Beneficiary Experience"),
     icon: "CircleHelp"
   }
 ];

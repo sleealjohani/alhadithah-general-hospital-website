@@ -12,8 +12,8 @@ export function NewsPage() {
       eyebrow={tx("الأخبار والإعلانات", "News & Announcements")}
       title={tx("المحتوى المنشور رسميًا", "Officially Published Content")}
       description={tx(
-        "مساحة للأخبار والإعلانات بعد اعتمادها ونشرها من لوحة التحكم.",
-        "A space for approved news and announcements published from the admin panel."
+        "مساحة لأخبار المستشفى وإعلاناته ومبادراته الرسمية.",
+        "A space for hospital news, announcements, and official initiatives."
       )}
     />
   );

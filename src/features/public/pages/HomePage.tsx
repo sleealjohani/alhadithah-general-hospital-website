@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { BriefcaseBusiness, HeartPulse, LayoutDashboard, Library, ShieldCheck } from "lucide-react";
+import { BriefcaseBusiness, CalendarCheck, HeartPulse, MessageSquareText, ShieldCheck, Siren } from "lucide-react";
 import { usePortal } from "../../../providers/PortalProvider";
 import { Icon } from "../../../components/ui/Icon";
 import { SectionHeading } from "../../../components/ui/SectionHeading";
@@ -8,7 +8,7 @@ import { ContentGrid } from "../../../components/ui/ContentGrid";
 import { usePublishedItems } from "../../../hooks/usePublishedItems";
 import { useHomepageSectionVisibility } from "../../../hooks/useHomepageSectionVisibility";
 import { useQuickLinks } from "../../../hooks/useQuickLinks";
-import { identity, journeySteps, knowledgeItems, newsItems, pageCopy, services } from "../../../data/content";
+import { journeySteps, knowledgeItems, newsItems, pageCopy, services } from "../../../data/content";
 import { tx } from "../../../utils/i18n";
 
 export function HomePage() {
@@ -32,15 +32,15 @@ export function HomePage() {
             <div className="hero-actions">
               <Link className="btn btn-primary" to="/services">
                 <HeartPulse size={18} />
-                {t(tx("ابدأ من الخدمات", "Start with services"))}
+                {t(tx("الخدمات الصحية", "Health services"))}
               </Link>
-              <Link className="btn btn-secondary" to="/employees">
-                <BriefcaseBusiness size={18} />
-                {t(tx("مسار الموظفين", "Employee path"))}
+              <Link className="btn btn-secondary" to="/contact">
+                <CalendarCheck size={18} />
+                {t(tx("تواصل مع المستشفى", "Contact the hospital"))}
               </Link>
-              <Link className="btn btn-ghost" to="/admin">
-                <LayoutDashboard size={18} />
-                {t(tx("إدارة البوابة", "Manage portal"))}
+              <Link className="btn btn-ghost" to="/experience">
+                <MessageSquareText size={18} />
+                {t(tx("شارك ملاحظتك", "Share feedback"))}
               </Link>
             </div>
           </div>
@@ -84,8 +84,8 @@ export function HomePage() {
             <p>
               {t(
                 tx(
-                  "البوابة مبنية كمنظومة: خدمات عامة، مركز معرفة، نماذج وروابط، مبادرات، تجربة مستفيد، وجودة وسلامة. تظهر للمستخدم كرحلة بسيطة، وتظهر للإدارة كنظام محتوى منظم.",
-                  "The portal is built as a system: public services, knowledge center, forms and links, initiatives, beneficiary experience, and quality and safety. Users see a simple journey; admins see structured content governance."
+                  "تجمع البوابة ما يحتاجه المستفيد والزائر والموظف في تجربة واضحة: الخدمات، الأقسام، الأدلة، الأخبار، النماذج، وملاحظات تجربة المستفيد.",
+                  "The portal brings patients, visitors, and staff into a clear experience: services, departments, guides, news, forms, and beneficiary feedback."
                 )
               )}
             </p>
@@ -101,31 +101,31 @@ export function HomePage() {
       <section className="strategy-board-section">
         <div className="container">
           <SectionHeading
-            eyebrow={tx("في استراتيجيتنا", "In Our Strategy")}
-            title={tx("أربعة مسارات، وخمس قدرات، وست وحدات تشغيل", "Four paths, five capabilities, and six operating modules")}
+            eyebrow={tx("خدمات المستشفى", "Hospital Services")}
+            title={tx("واجهة واحدة للوصول إلى الرعاية والمعلومات", "One interface for care and information")}
             description={tx(
-              "استخدمنا إيقاع الصحة القابضة في عرض الاستراتيجية، لكن المحتوى هنا خاص ببوابة المستشفى وقابل للتعديل.",
-              "We used the Health Holding strategic rhythm, while keeping the content specific to the hospital portal and editable."
+              "تنظم الصفحة المسارات الأكثر طلبًا حتى يصل المستخدم إلى الخدمة المناسبة بسرعة ووضوح.",
+              "The page organizes the most-requested paths so visitors can reach the right service quickly and clearly."
             )}
           />
           <div className="strategy-tiles">
             <article className="strategy-tile tile-sky" data-reveal>
               <Icon name="Target" size={54} />
-              <span>{t(tx("مسارات", "Paths"))}</span>
-              <strong>4</strong>
-              <p>{t(tx("مستفيد، موظف، إدارة، زائر", "Beneficiary, employee, admin, visitor"))}</p>
+              <span>{t(tx("خدمات", "Services"))}</span>
+              <strong>6</strong>
+              <p>{t(tx("طوارئ، عيادات، مختبر، أشعة، صيدلية، تجربة المستفيد", "Emergency, clinics, lab, radiology, pharmacy, beneficiary experience"))}</p>
             </article>
             <article className="strategy-tile tile-navy" data-reveal>
               <Icon name="ShieldCheck" size={54} />
-              <span>{t(tx("قدرات", "Capabilities"))}</span>
-              <strong>5</strong>
-              <p>{t(tx("بحث، لغة، ثيم، صلاحيات، نماذج", "Search, language, theme, roles, forms"))}</p>
+              <span>{t(tx("جودة", "Quality"))}</span>
+              <strong>4</strong>
+              <p>{t(tx("سلامة المرضى، السياسات، المبادرات، التحسين", "Patient safety, policies, initiatives, improvement"))}</p>
             </article>
             <article className="strategy-tile tile-sky wide" data-reveal>
               <Icon name="Workflow" size={54} />
-              <span>{t(tx("وحدات", "Modules"))}</span>
-              <strong>6</strong>
-              <p>{t(tx("الخدمات، المعرفة، الروابط، الأخبار، المبادرات، الرسائل", "Services, knowledge, links, news, initiatives, submissions"))}</p>
+              <span>{t(tx("معلومات", "Information"))}</span>
+              <strong>24</strong>
+              <p>{t(tx("وصول مستمر للأدلة والأخبار والنماذج من أي جهاز", "Continuous access to guides, news, and forms from any device"))}</p>
             </article>
           </div>
         </div>
@@ -139,8 +139,8 @@ export function HomePage() {
             eyebrow={tx("مسارات تفاعلية", "Interactive Paths")}
             title={tx("كل مسار مستقل، وكلها تعمل كنظام واحد", "Each path stands alone, all paths work as one system")}
             description={tx(
-              "مرر أو اختر المسار لتتغير اللوحة. هذا يخلق إحساس موقع حي بدل واجهة مسطحة.",
-              "Hover or choose a path and the panel changes. This creates a living site, not a flat interface."
+              "اختر المسار المناسب لك، وستتغير التفاصيل والروابط مباشرة حسب حاجتك.",
+              "Choose the path that fits your visit, and the details update immediately around your need."
             )}
           />
           <div className="path-lab">
@@ -157,7 +157,7 @@ export function HomePage() {
                 </button>
               ))}
             </div>
-            <article className="path-stage" data-reveal>
+            <article className="path-stage" data-reveal key={activePath.id}>
               <div className="path-stage-icon">
                 <Icon name={activePath.icon} size={48} />
               </div>
@@ -178,10 +178,10 @@ export function HomePage() {
         <div className="container">
           <SectionHeading
             eyebrow={tx("الخدمات الإلكترونية", "Digital Services")}
-            title={tx("مرحلة رقمية عميقة للخدمات والنماذج", "A deep digital stage for services and forms")}
+            title={tx("خدمات صحية مرتبة حسب احتياج الزائر", "Health services organized around visitor needs")}
             description={tx(
-              "بدل قائمة روابط، تظهر الخدمات داخل مساحة داكنة تشبه أقسام الخدمات الإلكترونية في المرجع، مع بطاقات قابلة للإدارة من Supabase.",
-              "Instead of a link list, services sit in a dark digital stage like the reference e-service sections, with Supabase-managed cards."
+              "تعرض البطاقات أهم الخدمات مع وصف مختصر ومسار واضح للانتقال إلى التفاصيل أو النماذج المرتبطة.",
+              "The cards present key services with short descriptions and a clear path to details or related forms."
             )}
             action={<Link className="text-link" to="/services">{t(tx("كل الخدمات", "All services"))}</Link>}
           />
@@ -206,10 +206,10 @@ export function HomePage() {
         <div className="container">
           <SectionHeading
             eyebrow={tx("رحلة المستخدم", "User Journey")}
-            title={tx("حركة الصفحة تخدم الفهم", "Motion that explains the journey")}
+            title={tx("خطوات واضحة للوصول إلى الخدمة", "Clear steps to reach a service")}
             description={tx(
-              "كل خطوة تقود للتي بعدها بدل عرض محتوى متراكم بلا ترتيب.",
-              "Each step leads to the next instead of stacking content without order."
+              "تساعد الحركة الخفيفة والتنظيم المرحلي المستخدم على فهم الطريق من البحث إلى الإجراء.",
+              "Subtle motion and staged structure help visitors move from search to action."
             )}
           />
           <div className="journey-track">
@@ -232,7 +232,7 @@ export function HomePage() {
           <div data-reveal>
             <SectionHeading
               eyebrow={tx("مركز المعرفة", "Knowledge Center")}
-              title={tx("مركز معرفة لا يبدو كمجلد ملفات", "A knowledge center that does not feel like a folder")}
+              title={tx("أدلة وسياسات منظمة للرجوع السريع", "Guides and policies organized for quick reference")}
               description={tx(
                 "تصنيف وبحث وبطاقات واضحة للسياسات والأدلة والتعاميم، مع حماية المحتوى الداخلي.",
                 "Categorized, searchable cards for policies, guides, and circulars with internal-content protection."
@@ -243,10 +243,10 @@ export function HomePage() {
           <div data-reveal>
             <SectionHeading
               eyebrow={tx("الأخبار", "News")}
-              title={tx("أخبار رسمية عند الاعتماد", "Official news when approved")}
+              title={tx("أخبار وإعلانات المستشفى", "Hospital news and announcements")}
               description={tx(
-                "لن تظهر أخبار رسمية إلا بعد نشرها من لوحة التحكم.",
-                "Official news appears only after admin publication."
+                "مساحة مخصصة للأخبار والتنبيهات والمبادرات التي تهم المستفيدين والموظفين.",
+                "A dedicated space for news, notices, and initiatives relevant to visitors and staff."
               )}
             />
             <ContentGrid items={liveNews.slice(0, 2)} />
@@ -262,38 +262,33 @@ function HeroExperiencePanel() {
   const { t } = usePortal();
 
   return (
-    <div className="hero-experience" data-reveal>
-      <div className="hero-screen">
-        <div className="screen-topbar">
-          <span />
-          <span />
-          <span />
-        </div>
-        <div className="screen-content">
-          <div className="screen-logo">
-            <img src={identity.logo} alt={t(identity.cluster)} />
-          </div>
-          <div className="orbit orbit-one" />
-          <div className="orbit orbit-two" />
-          <div className="floating-chip chip-one">
-            <HeartPulse size={17} />
-            {t(tx("خدمات", "Services"))}
-          </div>
-          <div className="floating-chip chip-two">
-            <Library size={17} />
-            {t(tx("معرفة", "Knowledge"))}
-          </div>
-          <div className="floating-chip chip-three">
-            <ShieldCheck size={17} />
-            {t(tx("إدارة آمنة", "Secure admin"))}
-          </div>
-        </div>
+    <div className="hero-experience hero-service-panel" data-reveal>
+      <div className="hero-panel-header">
+        <span className="eyebrow">{t(tx("مسارات الرعاية", "Care pathways"))}</span>
+        <h2>{t(tx("اختر الخدمة المناسبة قبل زيارتك", "Choose the right service before your visit"))}</h2>
       </div>
-      <div className="hero-status-card">
-        <span>{t(tx("جاهزية النشر", "Deployment readiness"))}</span>
-        <strong>{t(tx("Netlify + Supabase", "Netlify + Supabase"))}</strong>
-        <div className="status-progress" aria-hidden="true">
-          <span />
+      <div className="hero-panel-list">
+        <Link to="/services#emergency">
+          <span><Siren size={19} /></span>
+          <strong>{t(tx("الطوارئ", "Emergency"))}</strong>
+          <small>{t(tx("مسار للحالات العاجلة والتعليمات الأساسية", "A path for urgent cases and essential instructions"))}</small>
+        </Link>
+        <Link to="/services#outpatient">
+          <span><CalendarCheck size={19} /></span>
+          <strong>{t(tx("العيادات الخارجية", "Outpatient clinics"))}</strong>
+          <small>{t(tx("تعرف على الخدمات والعيادات المتاحة", "View available services and clinics"))}</small>
+        </Link>
+        <Link to="/quality">
+          <span><ShieldCheck size={19} /></span>
+          <strong>{t(tx("الجودة وسلامة المرضى", "Quality and patient safety"))}</strong>
+          <small>{t(tx("مسارات التحسين والمبادرات والسياسات", "Improvement paths, initiatives, and policies"))}</small>
+        </Link>
+      </div>
+      <div className="hero-panel-footer">
+        <BriefcaseBusiness size={18} />
+        <div>
+          <strong>{t(tx("بوابة الموظفين", "Staff portal"))}</strong>
+          <span>{t(tx("مسار مستقل للنماذج والروابط الداخلية", "A separate path for forms and internal links"))}</span>
         </div>
       </div>
     </div>

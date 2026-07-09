@@ -804,3 +804,396 @@ textarea,
     font-size: 2.15rem;
   }
 }
+
+/* Second-pass public experience refinements. */
+.page-transition {
+  animation: routeEnter 360ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.reference-hero {
+  min-height: min(760px, calc(100vh - 36px));
+  border-bottom: 0;
+  background:
+    linear-gradient(90deg, rgba(7, 19, 47, 0.88) 0%, rgba(7, 19, 47, 0.72) 38%, rgba(7, 19, 47, 0.16) 72%),
+    url("/assets/hospital-hero.png") center / cover no-repeat;
+  color: white;
+  isolation: isolate;
+}
+
+.reference-hero::before {
+  z-index: 1;
+  height: 7px;
+  background: linear-gradient(90deg, var(--brand-line), var(--brand-accent));
+}
+
+.reference-hero::after {
+  display: none;
+}
+
+.reference-hero .home-hero-grid {
+  z-index: 2;
+  min-height: 560px;
+  align-items: center;
+}
+
+.reference-hero .home-hero-copy {
+  max-width: 680px;
+}
+
+.reference-hero .home-hero h1,
+.reference-hero h1,
+.reference-hero .home-hero-copy h1 {
+  color: white;
+  text-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+}
+
+.reference-hero .home-hero-copy p {
+  max-width: 58ch;
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 1.08rem;
+}
+
+.reference-hero .eyebrow {
+  border-color: rgba(255, 255, 255, 0.26);
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+  backdrop-filter: blur(10px);
+}
+
+.reference-hero .btn-secondary {
+  border-color: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--brand-ink);
+}
+
+.reference-hero .btn-ghost {
+  border-color: rgba(255, 255, 255, 0.38);
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+}
+
+.hero-service-panel {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  max-width: 460px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 14px;
+  background: rgba(7, 19, 47, 0.68);
+  color: white;
+  padding: 18px;
+  box-shadow: 0 24px 54px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(18px);
+  animation: panelFloat 7s ease-in-out infinite;
+}
+
+.hero-panel-header {
+  display: grid;
+  gap: 8px;
+}
+
+.hero-panel-header h2 {
+  margin: 0;
+  color: white;
+  font-size: 1.22rem;
+  line-height: 1.35;
+}
+
+.hero-panel-list {
+  display: grid;
+  gap: 8px;
+}
+
+.hero-panel-list a,
+.hero-panel-footer {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 10px;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 11px;
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    transform 180ms ease;
+}
+
+.hero-panel-list a:hover {
+  transform: translateX(-4px);
+  border-color: rgba(53, 169, 224, 0.78);
+  background: rgba(53, 169, 224, 0.16);
+}
+
+[dir="ltr"] .hero-panel-list a:hover {
+  transform: translateX(4px);
+}
+
+.hero-panel-list span,
+.hero-panel-footer > svg {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 9px;
+  background: rgba(185, 217, 15, 0.16);
+  color: var(--brand-accent);
+}
+
+.hero-panel-list strong,
+.hero-panel-footer strong {
+  display: block;
+  color: white;
+  line-height: 1.2;
+}
+
+.hero-panel-list small,
+.hero-panel-footer span {
+  grid-column: 2;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+.hero-panel-footer {
+  border-color: rgba(185, 217, 15, 0.28);
+  background: rgba(185, 217, 15, 0.1);
+}
+
+.quick-ribbon-grid {
+  border-inline-start: 0;
+  transform: translateY(-34px);
+}
+
+.quick-ribbon {
+  overflow: visible;
+  padding-bottom: 20px;
+  background: linear-gradient(180deg, transparent 0 48%, var(--surface) 48% 100%);
+}
+
+.quick-ribbon-card {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.quick-ribbon-card:hover {
+  transform: translateY(-6px);
+  border-color: var(--brand-line);
+  background: white;
+  box-shadow: var(--shadow-lg);
+}
+
+.institution-section,
+.strategy-board-section,
+.interactive-path-section,
+.digital-services-stage,
+.journey-section,
+.section {
+  scroll-margin-top: 98px;
+}
+
+.vision-stack article,
+.strategy-tile,
+.path-menu button,
+.path-stage,
+.digital-service-card,
+.journey-step,
+.info-card,
+.mini-card,
+.rich-panel,
+.portal-form,
+.faq-item {
+  transition:
+    transform 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    background 200ms ease;
+}
+
+.vision-stack article:hover,
+.strategy-tile:hover,
+.journey-step:hover,
+.mini-card:hover,
+.rich-panel:hover,
+.faq-item:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.strategy-tile {
+  position: relative;
+  overflow: hidden;
+}
+
+.strategy-tile::after {
+  content: "";
+  position: absolute;
+  inset: auto 26px 26px auto;
+  width: 76px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--brand-accent);
+  transform: scaleX(0.42);
+  transform-origin: right;
+  transition: transform 200ms ease;
+}
+
+.strategy-tile:hover::after {
+  transform: scaleX(1);
+}
+
+.path-stage {
+  animation: stageSwap 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.path-menu button:hover,
+.path-menu button.is-active {
+  transform: translateX(-6px);
+}
+
+[dir="ltr"] .path-menu button:hover,
+[dir="ltr"] .path-menu button.is-active {
+  transform: translateX(6px);
+}
+
+.digital-service-card {
+  min-height: 250px;
+}
+
+.digital-service-card:hover {
+  transform: translateY(-6px);
+}
+
+.page-hero {
+  background:
+    linear-gradient(90deg, rgba(7, 19, 47, 0.92), rgba(16, 31, 77, 0.84)),
+    var(--brand-panel);
+  color: white;
+}
+
+.page-hero h1,
+.page-hero .section-heading h2 {
+  color: white;
+}
+
+.page-hero p {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.hero-identity-card {
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(53, 169, 224, 0.12)),
+    rgba(255, 255, 255, 0.04);
+}
+
+.site-footer a:hover,
+.primary-nav a:hover,
+.more-menu a:hover {
+  color: var(--brand-line);
+}
+
+.accessibility-panel {
+  inset-inline-start: 14px;
+  inset-inline-end: auto;
+}
+
+@keyframes routeEnter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes stageSwap {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes panelFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+:root[data-motion="reduced"] .page-transition,
+:root[data-motion="reduced"] .hero-service-panel,
+:root[data-motion="reduced"] .path-stage {
+  animation: none !important;
+}
+
+@media (max-width: 1080px) {
+  .reference-hero {
+    min-height: auto;
+    background-position: center right;
+  }
+
+  .reference-hero .home-hero-grid {
+    min-height: auto;
+  }
+
+  .hero-service-panel {
+    max-width: 100%;
+    animation: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .reference-hero {
+    background:
+      linear-gradient(180deg, rgba(7, 19, 47, 0.92), rgba(7, 19, 47, 0.76)),
+      url("/assets/hospital-hero.png") center / cover no-repeat;
+  }
+
+  .quick-ribbon {
+    background: var(--surface);
+    padding: 18px 0 42px;
+  }
+
+  .quick-ribbon-grid {
+    transform: none;
+  }
+
+  .hero-service-panel {
+    padding: 18px;
+  }
+
+  .hero-panel-list a:hover,
+  [dir="ltr"] .hero-panel-list a:hover,
+  .path-menu button:hover,
+  .path-menu button.is-active,
+  [dir="ltr"] .path-menu button:hover,
+  [dir="ltr"] .path-menu button.is-active {
+    transform: none;
+  }
+
+  .accessibility-panel {
+    position: static;
+    width: min(100% - 24px, 420px);
+    margin: 0 auto 14px;
+    justify-content: center;
+  }
+}

@@ -10,8 +10,8 @@ export function AboutPage() {
   usePageMeta(
     tx("عن مستشفى الحديثة العام", "About Hadetha General Hospital"),
     tx(
-      "صفحة تعريفية رسمية قابلة للتحرير من لوحة التحكم، بدون أرقام أو بيانات غير معتمدة.",
-      "An official profile page editable from the admin panel, without unapproved numbers or data."
+      "تعريف رسمي بالمستشفى وقيمه ومسارات خدماته الرقمية.",
+      "An official profile for the hospital, its values, and digital service paths."
     )
   );
   const values: PortalItem[] = [
@@ -44,8 +44,8 @@ export function AboutPage() {
         eyebrow={tx("تعريف مؤسسي", "Institutional Profile")}
         title={tx("عن مستشفى الحديثة العام", "About Hadetha General Hospital")}
         description={tx(
-          "صفحة تعريفية رسمية قابلة للتحرير من لوحة التحكم، بدون أرقام أو بيانات غير معتمدة.",
-          "An official profile page editable from the admin panel, without unapproved numbers or data."
+          "تعريف رسمي بالمستشفى وقيمه ومسارات خدماته الرقمية.",
+          "An official profile for the hospital, its values, and digital service paths."
         )}
       />
       <section className="section">
@@ -54,9 +54,8 @@ export function AboutPage() {
             <span className="eyebrow">{identity.cluster.ar}</span>
             <h2>مستشفى الحديثة العام</h2>
             <p>
-              بوابة المستشفى مصممة لتكون واجهة رقمية رسمية تخدم المستفيد والموظف والإدارة، وتجمع
-              المعلومات والروابط والنماذج ومركز المعرفة في مكان واحد. النصوص التعريفية التفصيلية
-              تبقى قابلة للتحديث من لوحة التحكم حتى تعتمدها الجهة المسؤولة.
+              بوابة المستشفى مصممة لتكون واجهة رقمية رسمية تخدم المستفيد والزائر والموظف، وتجمع
+              المعلومات والروابط والنماذج ومركز المعرفة في مكان واحد ضمن تجربة واضحة وموثوقة.
             </p>
           </article>
           <div className="stacked-cards">

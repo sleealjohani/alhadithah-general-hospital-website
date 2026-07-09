@@ -1,5 +1,5 @@
 import { type FormEvent, useCallback, useEffect, useState } from "react";
-import { Loader2, Save, Trash2 } from "lucide-react";
+import { Loader2, Pencil, Save, Trash2, X } from "lucide-react";
 import { usePortal } from "../../providers/PortalProvider";
 import { SectionHeading } from "../../components/ui/SectionHeading";
 import { supabase } from "../../lib/supabase/client";
@@ -7,21 +7,24 @@ import { contentTables } from "../../data/content";
 import { displayRowValue } from "../../utils/format";
 import { tx } from "../../utils/i18n";
 
+const emptyForm = {
+  title_ar: "",
+  title_en: "",
+  description_ar: "",
+  description_en: "",
+  category_ar: "",
+  category_en: "",
+  icon: "FileText",
+  status: "draft"
+};
+
 export function AdminContentManager() {
   const { t, notify } = usePortal();
   const [table, setTable] = useState(contentTables[0].table);
   const [rows, setRows] = useState<Array<Record<string, unknown>>>([]);
   const [loading, setLoading] = useState(false);
-  const [form, setForm] = useState({
-    title_ar: "",
-    title_en: "",
-    description_ar: "",
-    description_en: "",
-    category_ar: "",
-    category_en: "",
-    icon: "FileText",
-    status: "draft"
-  });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [form, setForm] = useState(emptyForm);
 
   const loadRows = useCallback(async () => {
     if (!supabase) return;
@@ -36,8 +39,29 @@ export function AdminContentManager() {
   }, [notify, table]);
 
   useEffect(() => {
+    setEditingId(null);
+    setForm(emptyForm);
     loadRows();
   }, [loadRows]);
+
+  const edit = (row: Record<string, unknown>) => {
+    setEditingId(String(row.id));
+    setForm({
+      title_ar: displayRowValue(row, ["title_ar"]),
+      title_en: displayRowValue(row, ["title_en"]),
+      description_ar: displayRowValue(row, ["description_ar"]),
+      description_en: displayRowValue(row, ["description_en"]),
+      category_ar: displayRowValue(row, ["category_ar"]),
+      category_en: displayRowValue(row, ["category_en"]),
+      icon: displayRowValue(row, ["icon"], "FileText"),
+      status: displayRowValue(row, ["status"], "draft")
+    });
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setForm(emptyForm);
+  };
 
   const save = async (event: FormEvent) => {
     event.preventDefault();
@@ -45,17 +69,29 @@ export function AdminContentManager() {
       notify(t(tx("Supabase غير متصل.", "Supabase is not connected.")), "error");
       return;
     }
-    const { error } = await supabase.from(table).insert({
-      ...form,
-      sort_order: 100,
-      visibility: "public"
-    });
-    if (error) {
-      notify(error.message, "error");
-      return;
+
+    if (editingId) {
+      const { error } = await supabase.from(table).update(form).eq("id", editingId);
+      if (error) {
+        notify(error.message, "error");
+        return;
+      }
+      notify(t(tx("تم تحديث المحتوى.", "Content updated.")), "success");
+    } else {
+      const { error } = await supabase.from(table).insert({
+        ...form,
+        sort_order: 100,
+        visibility: "public"
+      });
+      if (error) {
+        notify(error.message, "error");
+        return;
+      }
+      notify(t(tx("تم حفظ المحتوى.", "Content saved.")), "success");
     }
-    notify(t(tx("تم حفظ المحتوى.", "Content saved.")), "success");
-    setForm((current) => ({ ...current, title_ar: "", title_en: "", description_ar: "", description_en: "" }));
+
+    setEditingId(null);
+    setForm(emptyForm);
     loadRows();
   };
 
@@ -64,6 +100,7 @@ export function AdminContentManager() {
     const { error } = await supabase.from(table).delete().eq("id", id);
     if (error) notify(error.message, "error");
     else {
+      if (editingId === id) cancelEdit();
       notify(t(tx("تم الحذف.", "Deleted.")), "success");
       loadRows();
     }
@@ -74,8 +111,8 @@ export function AdminContentManager() {
       <SectionHeading
         title={tx("إدارة المحتوى", "Content Management")}
         description={tx(
-          "إضافة محتوى ثنائي اللغة للجداول الأساسية. النشر للعامة يتم عند status = published.",
-          "Add bilingual content to core tables. Public display requires status = published."
+          "إضافة أو تعديل محتوى ثنائي اللغة للجداول الأساسية. النشر للعامة يتم عند status = published.",
+          "Add or edit bilingual content in core tables. Public display requires status = published."
         )}
       />
       <div className="admin-panel">
@@ -129,8 +166,14 @@ export function AdminContentManager() {
           </select>
           <button className="btn btn-primary">
             <Save size={18} />
-            {t(tx("حفظ", "Save"))}
+            {editingId ? t(tx("تحديث", "Update")) : t(tx("حفظ", "Save"))}
           </button>
+          {editingId ? (
+            <button type="button" className="btn btn-secondary" onClick={cancelEdit}>
+              <X size={18} />
+              {t(tx("إلغاء التعديل", "Cancel edit"))}
+            </button>
+          ) : null}
         </form>
       </div>
 
@@ -150,11 +193,14 @@ export function AdminContentManager() {
             </thead>
             <tbody>
               {rows.map((row) => (
-                <tr key={String(row.id)}>
+                <tr key={String(row.id)} className={editingId === row.id ? "is-editing" : ""}>
                   <td>{displayRowValue(row, ["title_ar", "subject", "id"])}</td>
                   <td>{displayRowValue(row, ["status"], "-")}</td>
                   <td>
-                    <button className="icon-button danger" onClick={() => remove(row.id)}>
+                    <button className="icon-button" onClick={() => edit(row)} aria-label={t(tx("تعديل", "Edit"))}>
+                      <Pencil size={17} />
+                    </button>
+                    <button className="icon-button danger" onClick={() => remove(row.id)} aria-label={t(tx("حذف", "Delete"))}>
                       <Trash2 size={17} />
                     </button>
                   </td>

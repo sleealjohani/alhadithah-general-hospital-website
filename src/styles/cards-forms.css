@@ -179,6 +179,15 @@ textarea {
   resize: vertical;
 }
 
+.code-field {
+  grid-column: 1 / -1;
+  min-height: 160px;
+  direction: ltr;
+  text-align: left;
+  font-family: "SF Mono", "Cascadia Code", Consolas, monospace;
+  font-size: 0.86rem;
+}
+
 .portal-form,
 .admin-form {
   display: grid;

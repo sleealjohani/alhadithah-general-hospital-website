@@ -173,6 +173,14 @@
   vertical-align: middle;
 }
 
+.admin-table .icon-button + .icon-button {
+  margin-inline-start: 6px;
+}
+
+.admin-table tr.is-editing td {
+  background: var(--primary-soft);
+}
+
 .tab-row button {
   border: 1px solid var(--border);
   border-radius: 999px;

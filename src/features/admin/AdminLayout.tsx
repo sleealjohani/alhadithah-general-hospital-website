@@ -8,6 +8,10 @@ import { tx } from "../../utils/i18n";
 import { useAuth } from "../auth/AuthContext";
 import { AdminDashboard } from "./AdminDashboard";
 import { AdminContentManager } from "./AdminContentManager";
+import { AdminPages } from "./AdminPages";
+import { AdminNavigation } from "./AdminNavigation";
+import { AdminHomepageSections } from "./AdminHomepageSections";
+import { AdminDoctors } from "./AdminDoctors";
 import { AdminSubmissions } from "./AdminSubmissions";
 import { AdminTools } from "./AdminTools";
 import { AdminSettings } from "./AdminSettings";
@@ -56,6 +60,10 @@ export function AdminLayout() {
         <Routes>
           <Route index element={<AdminDashboard />} />
           <Route path="content" element={<AdminContentManager />} />
+          <Route path="pages" element={<AdminPages />} />
+          <Route path="navigation" element={<AdminNavigation />} />
+          <Route path="homepage" element={<AdminHomepageSections />} />
+          <Route path="doctors" element={<AdminDoctors />} />
           <Route path="submissions" element={<AdminSubmissions />} />
           <Route path="tools" element={<AdminTools />} />
           <Route path="settings" element={<AdminSettings />} />

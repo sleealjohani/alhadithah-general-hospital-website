@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { Link } from "react-router-dom";
 import { BriefcaseBusiness, CalendarCheck, HeartPulse, MessageSquareText, ShieldCheck, Siren } from "lucide-react";
 import { usePortal } from "../../../providers/PortalProvider";
@@ -9,16 +9,19 @@ import { usePublishedItems } from "../../../hooks/usePublishedItems";
 import { useHomepageSectionVisibility } from "../../../hooks/useHomepageSectionVisibility";
 import { useHomepageHero } from "../../../hooks/useHomepageHero";
 import { useQuickLinks } from "../../../hooks/useQuickLinks";
-import { journeySteps, knowledgeItems, newsItems, pageCopy, services } from "../../../data/content";
+import { journeySteps, knowledgeItems, pageCopy, services } from "../../../data/content";
 import { tx } from "../../../utils/i18n";
 
 const HERO_SCRIM =
   "linear-gradient(90deg, rgba(7, 19, 47, 0.88) 0%, rgba(7, 19, 47, 0.72) 38%, rgba(7, 19, 47, 0.16) 72%)";
 
+const XTimeline = lazy(() =>
+  import("../../../components/public/XTimeline").then((m) => ({ default: m.XTimeline }))
+);
+
 export function HomePage() {
   const { t } = usePortal();
   const liveServices = usePublishedItems("services", services);
-  const liveNews = usePublishedItems("news_posts", newsItems);
   const quickAccess = useQuickLinks();
   const [activePathId, setActivePathId] = useState(quickAccess[0]?.id);
   const activePath = quickAccess.find((item) => item.id === activePathId) || quickAccess[0];
@@ -261,7 +264,11 @@ export function HomePage() {
                 "A dedicated space for news, notices, and initiatives relevant to visitors and staff."
               )}
             />
-            <ContentGrid items={liveNews.slice(0, 2)} />
+            <div className="home-news-stack">
+              <Suspense fallback={null}>
+                <XTimeline compact card days={7} />
+              </Suspense>
+            </div>
           </div>
         </div>
       </section>

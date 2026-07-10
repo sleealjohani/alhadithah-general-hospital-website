@@ -13,18 +13,9 @@ export function Header() {
   const scrollDirection = useScrollDirection();
   const condensed = scrollDirection === "down" && !open;
   const headerNav = useNavigationItems("header");
-  /* Show every nav item rather than filtering to a hardcoded path list (which
-     silently dropped Home/Departments whenever the DB nav differed). Always
-     guarantee a Home entry, then split into a primary bar + a "More" menu. */
-  const fullNav = headerNav.some((item) => item.path === "/")
-    ? headerNav
-    : [{ path: "/", label: tx("الرئيسية", "Home") }, ...headerNav];
+  const fullNav = headerNav.some((item) => item.path === "/") ? headerNav : [{ path: "/", label: tx("الرئيسية", "Home") }, ...headerNav];
   const coreNav = fullNav.slice(0, 6);
-  const secondaryNav = [
-    ...fullNav.slice(6),
-    { path: "/initiatives", label: tx("المبادرات", "Initiatives") },
-    { path: "/faq", label: tx("الأسئلة الشائعة", "FAQ") }
-  ];
+  const secondaryNav = fullNav.slice(6);
 
   return (
     <header className={`site-header ${condensed ? "is-condensed" : ""}`}>
@@ -54,7 +45,7 @@ export function Header() {
 
         <nav className={`primary-nav ${open ? "is-open" : ""}`} aria-label="Primary">
           {coreNav.map((item) => (
-            <NavLink key={item.path} to={item.path || "/"} onClick={() => setOpen(false)}>
+            <NavLink key={item.path || item.url || item.label.en} to={item.path || "/"} onClick={() => setOpen(false)}>
               {t(item.label)}
             </NavLink>
           ))}
@@ -62,7 +53,7 @@ export function Header() {
             <summary>{t(tx("المزيد", "More"))}</summary>
             <div>
               {secondaryNav.map((item) => (
-                <NavLink key={item.path} to={item.path || "/"} onClick={() => setOpen(false)}>
+                <NavLink key={item.path || item.url || item.label.en} to={item.path || "/"} onClick={() => setOpen(false)}>
                   {t(item.label)}
                 </NavLink>
               ))}

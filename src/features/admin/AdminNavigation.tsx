@@ -1,9 +1,10 @@
 import { type FormEvent, useCallback, useEffect, useState } from "react";
-import { Pencil, Trash2 } from "lucide-react";
+import { Loader2, ListPlus, Pencil, Trash2 } from "lucide-react";
 import { usePortal } from "../../providers/PortalProvider";
 import { SectionHeading } from "../../components/ui/SectionHeading";
 import { supabase } from "../../lib/supabase/client";
 import { logAdminAction } from "../../lib/audit";
+import { defaultHeaderNavigationItems } from "../../constants/publicNavigation";
 import { displayRowValue } from "../../utils/format";
 import { tx } from "../../utils/i18n";
 import { ActiveBadge, CrudFormActions, Field, TableLoadingRows, useDeleteConfirm } from "./shared";
@@ -27,8 +28,16 @@ export function AdminNavigation() {
   const [rows, setRows] = useState<NavRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [syncingDefaults, setSyncingDefaults] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
+  const existingHeaderPaths = new Set(
+    rows
+      .filter((row) => displayRowValue(row, ["location"], "header") === "header")
+      .map((row) => displayRowValue(row, ["path"]))
+      .filter(Boolean)
+  );
+  const missingDefaultNavItems = defaultHeaderNavigationItems.filter((item) => !existingHeaderPaths.has(item.path));
 
   const loadRows = useCallback(async () => {
     if (!supabase) {
@@ -103,6 +112,34 @@ export function AdminNavigation() {
       notify(t(tx("تم إنشاء عنصر التنقل.", "Navigation item created.")), "success");
     }
     cancelEdit();
+    loadRows();
+  };
+
+  const syncDefaultNavigation = async () => {
+    if (!supabase || syncingDefaults || missingDefaultNavItems.length === 0) return;
+    setSyncingDefaults(true);
+    const { error } = await supabase.from("navigation_items").insert(
+      missingDefaultNavItems.map((item) => ({
+        label_ar: item.label_ar,
+        label_en: item.label_en,
+        path: item.path,
+        url: null,
+        icon: item.icon,
+        location: "header",
+        parent_id: null,
+        sort_order: item.sort_order,
+        is_active: true
+      }))
+    );
+    setSyncingDefaults(false);
+    if (error) {
+      notify(error.message, "error");
+      return;
+    }
+    logAdminAction("navigation.defaults_sync", "navigation_items", null, {
+      count: missingDefaultNavItems.length
+    });
+    notify(t(tx("تمت إضافة الصفحات الافتراضية الناقصة إلى القائمة.", "Missing default pages were added to navigation.")), "success");
     loadRows();
   };
 
@@ -187,6 +224,14 @@ export function AdminNavigation() {
       <div className="admin-panel">
         <div className="admin-toolbar">
           <h2>{t(tx("عناصر القائمة", "Menu items"))}</h2>
+          {missingDefaultNavItems.length > 0 ? (
+            <button className="btn btn-secondary" type="button" onClick={syncDefaultNavigation} disabled={syncingDefaults || loading}>
+              {syncingDefaults ? <Loader2 className="spin" size={17} /> : <ListPlus size={17} />}
+              {t(tx("إضافة الصفحات الافتراضية الناقصة", "Add missing default pages"))} ({missingDefaultNavItems.length})
+            </button>
+          ) : (
+            <span className="badge badge-success">{t(tx("كل الصفحات الافتراضية موجودة", "All default pages are present"))}</span>
+          )}
         </div>
         <div className="admin-table-wrap">
           <table className="admin-table" aria-busy={loading}>

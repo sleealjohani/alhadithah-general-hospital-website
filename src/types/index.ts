@@ -49,6 +49,7 @@ export type NavMenuItem = {
   url?: string;
   label: LocalizedText;
   icon?: string;
+  sortOrder?: number;
 };
 
 export type PublicContentRow = {

@@ -4,11 +4,14 @@ import { Accessibility, Languages, LockKeyhole, Menu, Moon, Search, Sun, X } fro
 import { usePortal } from "../../providers/PortalProvider";
 import { identity } from "../../data/content";
 import { useNavigationItems } from "../../hooks/useNavigationItems";
+import { useScrollDirection } from "../../hooks/useScrollDirection";
 import { tx } from "../../utils/i18n";
 
 export function Header() {
   const { t, locale, setLocale, theme, setTheme, highContrast, setHighContrast } = usePortal();
   const [open, setOpen] = useState(false);
+  const scrollDirection = useScrollDirection();
+  const condensed = scrollDirection === "down" && !open;
   const headerNav = useNavigationItems("header");
   const coreNav = headerNav.filter((item) =>
     ["/", "/about", "/services", "/departments", "/knowledge", "/contact"].includes(item.path || "")
@@ -20,7 +23,7 @@ export function Header() {
   ];
 
   return (
-    <header className="site-header">
+    <header className={`site-header ${condensed ? "is-condensed" : ""}`}>
       <a className="skip-link" href="#main-content">
         {t(tx("تجاوز إلى المحتوى", "Skip to content"))}
       </a>
@@ -33,7 +36,7 @@ export function Header() {
       <div className="container navbar">
         <Link className="brand" to="/" aria-label={t(identity.name)}>
           <span className="brand-logo-wrap">
-            <img src={identity.logo} alt={t(identity.cluster)} />
+            <img src={identity.logo} alt={t(identity.cluster)} width={72} height={42} fetchPriority="high" />
           </span>
           <span>
             <strong>{t(identity.name)}</strong>

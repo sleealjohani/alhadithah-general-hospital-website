@@ -1,0 +1,146 @@
+/* Command palette + shortcuts overlay. */
+
+.palette-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  justify-items: center;
+  align-items: start;
+  padding: min(14vh, 120px) 16px 16px;
+  background: color-mix(in srgb, var(--navy) 45%, transparent);
+  animation: paletteBackdropIn var(--duration-fast) var(--ease-decelerate);
+}
+
+@keyframes paletteBackdropIn {
+  from {
+    opacity: 0;
+  }
+}
+
+.palette-dialog {
+  width: min(560px, 100%);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  animation: paletteDialogIn var(--duration-base) var(--ease-decelerate);
+}
+
+@keyframes paletteDialogIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+.palette-input-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+}
+
+.palette-input-row input {
+  flex: 1;
+  min-height: 48px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.palette-input-row input:focus-visible {
+  outline: none;
+  box-shadow: none;
+  border-color: transparent;
+}
+
+.palette-dialog kbd,
+.shortcuts-dialog kbd {
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-soft);
+  color: var(--text-secondary);
+  padding: 2px 7px;
+  font-family: inherit;
+  font-size: 0.74rem;
+  font-weight: 750;
+}
+
+.palette-list {
+  list-style: none;
+  margin: 0;
+  padding: 8px;
+  max-height: min(46vh, 380px);
+  overflow-y: auto;
+}
+
+.palette-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 12px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  color: var(--text);
+}
+
+.palette-list li small {
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.palette-list li.is-active {
+  background: var(--primary-soft);
+  color: var(--primary-strong);
+}
+
+.palette-list .palette-empty {
+  cursor: default;
+  justify-content: center;
+  color: var(--text-muted);
+}
+
+.shortcuts-dialog {
+  display: grid;
+  gap: 18px;
+  padding: 24px;
+}
+
+.shortcuts-dialog h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.shortcuts-list {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.shortcuts-list > div {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.shortcuts-list dt {
+  display: flex;
+  gap: 4px;
+  min-width: 86px;
+}
+
+.shortcuts-list dd {
+  margin: 0;
+  color: var(--text-secondary);
+}
+
+.shortcuts-dialog .btn {
+  justify-self: end;
+}

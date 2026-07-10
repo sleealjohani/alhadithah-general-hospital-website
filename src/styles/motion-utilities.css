@@ -9,15 +9,50 @@
 
 [data-reveal] {
   opacity: 0;
-  transform: translateY(26px);
+  transform: translateY(var(--distance-md));
   transition:
-    opacity 620ms cubic-bezier(0.2, 0.8, 0.2, 1) var(--reveal-delay, 0ms),
-    transform 620ms cubic-bezier(0.2, 0.8, 0.2, 1) var(--reveal-delay, 0ms);
+    opacity var(--duration-slower) var(--ease-decelerate) var(--reveal-delay, 0ms),
+    transform var(--duration-slower) var(--ease-decelerate) var(--reveal-delay, 0ms);
 }
 
 [data-reveal].is-visible {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* Content already on screen when it mounts skips the entrance entirely. */
+[data-reveal].is-immediate {
+  transition: none;
+}
+
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 60;
+  transform-origin: left;
+  transform: scaleX(0);
+  background: linear-gradient(90deg, var(--brand-line), var(--brand-accent));
+  pointer-events: none;
+}
+
+[dir="rtl"] .scroll-progress {
+  transform-origin: right;
+}
+
+.site-header {
+  transition: transform var(--duration-base) var(--ease-standard);
+}
+
+.site-header.is-condensed {
+  transform: translateY(-100%);
+}
+
+/* Never hide the header from someone tabbing through it. */
+.site-header.is-condensed:focus-within {
+  transform: none;
 }
 
 .home-hero [data-reveal],

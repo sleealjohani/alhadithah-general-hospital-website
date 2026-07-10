@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Loader2 } from "lucide-react";
 import { usePortal } from "../../../providers/PortalProvider";
 import { PageHero } from "../../../components/ui/PageHero";
+import { SkeletonPage } from "../../../components/ui/Skeleton";
+import { ErrorState } from "../../../components/ui/ErrorState";
 import { usePageMeta } from "../../../hooks/usePageMeta";
 import { fetchPageBySlug, type CmsPageRow } from "../../../lib/supabase/pages";
 import { tx } from "../../../utils/i18n";
@@ -11,26 +12,24 @@ import { NotFoundContent } from "./NotFoundPage";
 export function CmsPage() {
   const { slug = "" } = useParams();
   const { t } = usePortal();
-  const [status, setStatus] = useState<"loading" | "found" | "missing">("loading");
+  const [status, setStatus] = useState<"loading" | "found" | "missing" | "error">("loading");
   const [page, setPage] = useState<CmsPageRow | null>(null);
+  const [attempt, setAttempt] = useState(0);
+  const retry = useCallback(() => setAttempt((n) => n + 1), []);
 
   useEffect(() => {
     let active = true;
     setStatus("loading");
     setPage(null);
-    fetchPageBySlug(slug).then((row) => {
+    fetchPageBySlug(slug).then((result) => {
       if (!active) return;
-      if (row) {
-        setPage(row);
-        setStatus("found");
-      } else {
-        setStatus("missing");
-      }
+      if (result.status === "found") setPage(result.page);
+      setStatus(result.status);
     });
     return () => {
       active = false;
     };
-  }, [slug]);
+  }, [slug, attempt]);
 
   usePageMeta(
     page ? tx(page.seo_title_ar || page.title_ar, page.seo_title_en || page.title_en) : tx("", ""),
@@ -38,10 +37,23 @@ export function CmsPage() {
   );
 
   if (status === "loading") {
+    return <SkeletonPage />;
+  }
+
+  if (status === "error") {
     return (
-      <main className="loading-page">
-        <Loader2 className="spin" />
-      </main>
+      <section className="section">
+        <div className="container">
+          <ErrorState
+            title={t(tx("تعذر تحميل الصفحة", "The page couldn't be loaded"))}
+            description={t(
+              tx("تحقق من اتصالك بالإنترنت ثم أعد المحاولة.", "Check your connection and try again.")
+            )}
+            retryLabel={t(tx("إعادة المحاولة", "Try again"))}
+            onRetry={retry}
+          />
+        </div>
+      </section>
     );
   }
 

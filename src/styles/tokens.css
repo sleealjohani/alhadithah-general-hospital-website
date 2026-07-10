@@ -31,6 +31,11 @@
   --brand-line: #35a9e0;
   --brand-accent: #b9d90f;
   --brand-panel: #101f4d;
+  /* Solid action surfaces carry white text in BOTH themes, so they get their
+     own tokens instead of reusing --brand-ink (which flips light in dark
+     mode and turned primary buttons white-on-white). */
+  --action-solid: #07132f;
+  --action-solid-hover: #253783;
 
   /* Elevation */
   --shadow-sm: 0 1px 2px rgba(7, 19, 47, 0.06);
@@ -42,6 +47,23 @@
   --radius-md: 6px;
   --radius-lg: 8px;
   --radius-xl: 8px;
+
+  /* Motion — CSS mirror of src/lib/motion.ts; change them together */
+  --duration-instant: 100ms;
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 400ms;
+  --duration-slower: 600ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-decelerate: cubic-bezier(0, 0, 0, 1);
+  --ease-accelerate: cubic-bezier(0.3, 0, 1, 1);
+  --distance-subtle: 4px;
+  --distance-sm: 8px;
+  --distance-md: 16px;
+  --distance-lg: 32px;
+
+  /* Focus ring — brand-derived so it adapts per theme automatically */
+  --focus-ring-color: color-mix(in srgb, var(--primary) 55%, transparent);
 
   font-family: "IBM Plex Sans Arabic", Tahoma, "Segoe UI", Arial, sans-serif;
   color: var(--text);
@@ -67,6 +89,8 @@
   --brand-line: #61c6e9;
   --brand-accent: #d4ea42;
   --brand-panel: #07132f;
+  --action-solid: #007fa5;
+  --action-solid-hover: #00688a;
   --shadow-sm: 0 0 0 1px rgba(97, 198, 233, 0.12);
   --shadow-md: 0 0 0 1px rgba(97, 198, 233, 0.18);
   --shadow-lg: 0 0 0 1px rgba(97, 198, 233, 0.24);

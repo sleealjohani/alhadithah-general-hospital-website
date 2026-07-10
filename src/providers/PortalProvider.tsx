@@ -5,6 +5,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState
 } from "react";
 import { Icon } from "../components/ui/Icon";
@@ -42,12 +43,17 @@ export function PortalProvider({ children }: { children: ReactNode }) {
     localValue<boolean>("hadetha_high_contrast", false)
   );
   const [reduceMotion, setReduceMotionState] = useState<boolean>(() =>
-    localValue<boolean>("hadetha_reduce_motion", false)
+    localValue<boolean>(
+      "hadetha_reduce_motion",
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    )
   );
   const [fontScale, setFontScaleState] = useState<number>(() =>
     localValue<number>("hadetha_font_scale", 1)
   );
-  const [toasts, setToasts] = useState<Toast[]>([]);
+  const [toasts, setToasts] = useState<(Toast & { leaving?: boolean })[]>([]);
+  /* Per-toast dismissal timers so hovering pauses the countdown. */
+  const toastTimers = useRef(new Map<string, { timeout: number; startedAt: number; remaining: number }>());
 
   const isRtl = locale === "ar";
 
@@ -60,13 +66,45 @@ export function PortalProvider({ children }: { children: ReactNode }) {
     document.documentElement.style.setProperty("--font-scale", String(fontScale));
   }, [fontScale, highContrast, isRtl, locale, reduceMotion, theme]);
 
-  const notify = useCallback((message: string, tone: Toast["tone"] = "info") => {
-    const id = crypto.randomUUID();
-    setToasts((current) => [...current, { id, message, tone }]);
+  const dismissToast = useCallback((id: string) => {
+    const timer = toastTimers.current.get(id);
+    if (timer) window.clearTimeout(timer.timeout);
+    toastTimers.current.delete(id);
+    /* Mark leaving so the exit transition plays, then drop from state. */
+    setToasts((current) => current.map((toast) => (toast.id === id ? { ...toast, leaving: true } : toast)));
     window.setTimeout(() => {
       setToasts((current) => current.filter((toast) => toast.id !== id));
-    }, 4200);
+    }, 180);
   }, []);
+
+  const TOAST_DURATION = 4200;
+
+  const notify = useCallback(
+    (message: string, tone: Toast["tone"] = "info") => {
+      const id = crypto.randomUUID();
+      setToasts((current) => [...current, { id, message, tone }]);
+      const timeout = window.setTimeout(() => dismissToast(id), TOAST_DURATION);
+      toastTimers.current.set(id, { timeout, startedAt: Date.now(), remaining: TOAST_DURATION });
+    },
+    [dismissToast]
+  );
+
+  const pauseToast = useCallback((id: string) => {
+    const timer = toastTimers.current.get(id);
+    if (!timer) return;
+    window.clearTimeout(timer.timeout);
+    timer.remaining -= Date.now() - timer.startedAt;
+  }, []);
+
+  const resumeToast = useCallback(
+    (id: string) => {
+      const timer = toastTimers.current.get(id);
+      if (!timer) return;
+      timer.startedAt = Date.now();
+      timer.timeout = window.setTimeout(() => dismissToast(id), Math.max(timer.remaining, 400));
+    },
+    [dismissToast]
+  );
 
   const value = useMemo<PortalContextValue>(
     () => ({
@@ -108,9 +146,24 @@ export function PortalProvider({ children }: { children: ReactNode }) {
       {children}
       <div className="toast-stack" aria-live="polite">
         {toasts.map((toast) => (
-          <div className={`toast toast-${toast.tone}`} key={toast.id}>
+          <div
+            className={`toast toast-${toast.tone} ${toast.leaving ? "is-leaving" : ""}`}
+            key={toast.id}
+            role="status"
+            onMouseEnter={() => pauseToast(toast.id)}
+            onMouseLeave={() => resumeToast(toast.id)}
+          >
             <Icon name={toast.tone === "success" ? "CheckCircle2" : "MessageSquareText"} />
             <span>{toast.message}</span>
+            <button
+              type="button"
+              className="toast-dismiss"
+              onClick={() => dismissToast(toast.id)}
+              aria-label={locale === "ar" ? "إغلاق التنبيه" : "Dismiss notification"}
+            >
+              <Icon name="X" size={15} />
+            </button>
+            {!toast.leaving && <span className="toast-progress" aria-hidden="true" />}
           </div>
         ))}
       </div>

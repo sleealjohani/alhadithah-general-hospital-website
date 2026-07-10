@@ -1,12 +1,22 @@
+import type { ReactNode } from "react";
 import { usePortal } from "../../providers/PortalProvider";
 import { pageCopy } from "../../data/content";
 import type { PortalItem } from "../../types";
 import { ItemCard } from "./ItemCard";
+import { EmptyState } from "./EmptyState";
 
-export function ContentGrid({ items, elevated = false }: { items: PortalItem[]; elevated?: boolean }) {
+export function ContentGrid({
+  items,
+  elevated = false,
+  emptyAction
+}: {
+  items: PortalItem[];
+  elevated?: boolean;
+  emptyAction?: ReactNode;
+}) {
   const { t } = usePortal();
   if (items.length === 0) {
-    return <p className="empty-state">{t(pageCopy.common.empty)}</p>;
+    return <EmptyState title={t(pageCopy.common.empty)} action={emptyAction} />;
   }
   return (
     <div className="content-grid">

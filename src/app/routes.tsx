@@ -1,8 +1,8 @@
 import { lazy, Suspense } from "react";
 import { Route, Routes } from "react-router-dom";
-import { Loader2 } from "lucide-react";
 import { PublicLayout } from "../components/layout/PublicLayout";
 import { ProtectedRoute } from "../features/auth/ProtectedRoute";
+import { SkeletonPage } from "../components/ui/Skeleton";
 
 const HomePage = lazy(() => import("../features/public/pages/HomePage").then((m) => ({ default: m.HomePage })));
 const AboutPage = lazy(() => import("../features/public/pages/AboutPage").then((m) => ({ default: m.AboutPage })));
@@ -26,17 +26,9 @@ const NotFoundPage = lazy(() => import("../features/public/pages/NotFoundPage").
 const AdminLoginPage = lazy(() => import("../features/auth/AdminLoginPage").then((m) => ({ default: m.AdminLoginPage })));
 const AdminLayout = lazy(() => import("../features/admin/AdminLayout").then((m) => ({ default: m.AdminLayout })));
 
-function RouteFallback() {
-  return (
-    <main className="loading-page">
-      <Loader2 className="spin" />
-    </main>
-  );
-}
-
 export function AppRoutes() {
   return (
-    <Suspense fallback={<RouteFallback />}>
+    <Suspense fallback={<SkeletonPage />}>
       <Routes>
         <Route element={<PublicLayout />}>
           <Route path="/" element={<HomePage />} />

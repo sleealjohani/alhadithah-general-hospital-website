@@ -226,11 +226,31 @@
 }
 
 .x-timeline-embed {
+  position: relative;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
   min-height: 200px;
   background: var(--surface);
+}
+
+.x-timeline-anchor {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.x-timeline-loading {
+  display: grid;
+  min-height: 190px;
+  place-items: center;
+  color: var(--text-muted);
+  font-weight: 800;
+  text-align: center;
+  padding: 24px;
 }
 
 .home-news-stack {
@@ -248,4 +268,13 @@
 
 .x-timeline-compact .x-timeline-embed {
   min-height: 360px;
+}
+
+.x-news-card {
+  min-height: 0;
+  padding: 18px;
+}
+
+.x-news-card::after {
+  display: none;
 }

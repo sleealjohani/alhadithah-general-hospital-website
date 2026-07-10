@@ -9,7 +9,7 @@ import { usePublishedItems } from "../../../hooks/usePublishedItems";
 import { useHomepageSectionVisibility } from "../../../hooks/useHomepageSectionVisibility";
 import { useHomepageHero } from "../../../hooks/useHomepageHero";
 import { useQuickLinks } from "../../../hooks/useQuickLinks";
-import { journeySteps, knowledgeItems, newsItems, pageCopy, services } from "../../../data/content";
+import { journeySteps, knowledgeItems, pageCopy, services } from "../../../data/content";
 import { tx } from "../../../utils/i18n";
 
 const HERO_SCRIM =
@@ -22,7 +22,6 @@ const XTimeline = lazy(() =>
 export function HomePage() {
   const { t } = usePortal();
   const liveServices = usePublishedItems("services", services);
-  const liveNews = usePublishedItems("news_posts", newsItems);
   const quickAccess = useQuickLinks();
   const [activePathId, setActivePathId] = useState(quickAccess[0]?.id);
   const activePath = quickAccess.find((item) => item.id === activePathId) || quickAccess[0];
@@ -266,9 +265,8 @@ export function HomePage() {
               )}
             />
             <div className="home-news-stack">
-              <ContentGrid items={liveNews.slice(0, 1)} />
               <Suspense fallback={null}>
-                <XTimeline compact />
+                <XTimeline compact card />
               </Suspense>
             </div>
           </div>

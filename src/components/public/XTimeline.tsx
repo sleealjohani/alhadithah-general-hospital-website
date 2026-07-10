@@ -18,14 +18,24 @@ declare global {
  * automatically — no API key needed. If the widget script is blocked (strict
  * network/CSP, offline), it degrades to a plain link to the profile.
  */
-export function XTimeline({ compact = false }: { compact?: boolean }) {
+export function XTimeline({ compact = false, card = false }: { compact?: boolean; card?: boolean }) {
   const { t, theme } = usePortal();
   const containerRef = useRef<HTMLDivElement>(null);
   const [failed, setFailed] = useState(false);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    const render = () => window.twttr?.widgets?.load?.(containerRef.current ?? undefined);
+    const markLoaded = () => {
+      if (!cancelled && containerRef.current?.querySelector("iframe")) setLoaded(true);
+    };
+    const render = () => {
+      window.twttr?.widgets?.load?.(containerRef.current ?? undefined);
+      window.setTimeout(markLoaded, 500);
+    };
+
+    const observer = new MutationObserver(markLoaded);
+    if (containerRef.current) observer.observe(containerRef.current, { childList: true, subtree: true });
 
     const existing = document.querySelector<HTMLScriptElement>(`script[src="${WIDGET_SRC}"]`);
     if (existing) {
@@ -50,12 +60,21 @@ export function XTimeline({ compact = false }: { compact?: boolean }) {
 
     return () => {
       cancelled = true;
+      observer.disconnect();
       window.clearTimeout(timer);
     };
   }, []);
 
+  const className = [
+    "x-timeline",
+    compact ? "x-timeline-compact" : "",
+    card ? "info-card x-news-card" : ""
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <section className={compact ? "x-timeline x-timeline-compact" : "x-timeline"} aria-label={t(tx("آخر التحديثات على منصة إكس", "Latest updates on X"))}>
+    <section className={className} aria-label={t(tx("آخر التحديثات على منصة إكس", "Latest updates on X"))}>
       <div className="x-timeline-head">
         <h2>{t(tx("آخر التحديثات المباشرة", "Live updates"))}</h2>
         <a className="text-link" href={`https://x.com/${HANDLE}`} target="_blank" rel="noreferrer">
@@ -70,8 +89,9 @@ export function XTimeline({ compact = false }: { compact?: boolean }) {
         </a>
       ) : (
         <div className="x-timeline-embed" ref={containerRef}>
+          {!loaded ? <div className="x-timeline-loading">{t(tx("تحميل تحديثات الجوف الصحية المباشرة...", "Loading live Al-Jouf Health updates..."))}</div> : null}
           <a
-            className="twitter-timeline"
+            className="twitter-timeline x-timeline-anchor"
             data-height={compact ? "420" : "620"}
             data-theme={theme === "dark" ? "dark" : "light"}
             data-chrome="noheader nofooter transparent"

@@ -26,11 +26,32 @@ Publish directory: dist
 ```text
 VITE_SUPABASE_URL
 VITE_SUPABASE_PUBLISHABLE_KEY
+SUPABASE_URL
+SUPABASE_SERVICE_ROLE_KEY
+X_BEARER_TOKEN
 ```
+
+`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `X_BEARER_TOKEN` are server-side only and are used by the Netlify Function behind `/api/x-feed`. Never prefix them with `VITE_`.
 
 5. Deploy.
 
 `netlify.toml` already includes SPA redirects so deep links such as `/admin` and `/services` work.
+
+## X Feed
+
+The homepage news card calls `/api/x-feed`, which runs as a Netlify Function. The function uses X Recent Search with this query:
+
+```text
+from:AljoufCluster -is:retweet
+```
+
+Apply `supabase/migrations/20260710180000_external_feed_cache.sql` before production deployment so the function can cache the latest response in Supabase. If `X_BEARER_TOKEN` is missing or X is temporarily unavailable, the site shows cached posts when available and otherwise falls back to a button that opens the last seven days on X.
+
+Required X access:
+
+```text
+X_BEARER_TOKEN=<X API app bearer token>
+```
 
 ## Local Preview
 

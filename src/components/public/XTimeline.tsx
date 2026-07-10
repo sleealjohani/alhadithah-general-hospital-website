@@ -26,8 +26,11 @@ type XFeedItem = {
 };
 
 type XFeedResponse = {
+  error?: string;
   isRecentWindow?: boolean;
+  isStale?: boolean;
   items?: XFeedItem[];
+  source?: string;
   windowDays?: number;
 };
 
@@ -77,6 +80,7 @@ export function XTimeline({ compact = false, card = false, days }: XTimelineProp
   const [loaded, setLoaded] = useState(false);
   const [feedItems, setFeedItems] = useState<XFeedItem[]>([]);
   const [feedIsRecent, setFeedIsRecent] = useState(true);
+  const [feedIsStale, setFeedIsStale] = useState(false);
   const [feedStatus, setFeedStatus] = useState<"idle" | "loading" | "ready" | "empty" | "error">("idle");
   const hasRecentFeed = typeof days === "number" && Number.isFinite(days);
   const recentSearch = hasRecentFeed ? getRecentSearch(days) : null;
@@ -151,11 +155,13 @@ export function XTimeline({ compact = false, card = false, days }: XTimelineProp
         const items = payload.items || [];
         setFeedItems(items);
         setFeedIsRecent(payload.isRecentWindow !== false);
+        setFeedIsStale(payload.isStale === true);
         setFeedStatus(items.length > 0 ? "ready" : "empty");
       })
       .catch((error) => {
         if (error instanceof DOMException && error.name === "AbortError") return;
         setFeedItems([]);
+        setFeedIsStale(false);
         setFeedStatus("error");
       });
 
@@ -190,6 +196,11 @@ export function XTimeline({ compact = false, card = false, days }: XTimelineProp
               {!feedIsRecent ? (
                 <p className="x-feed-note">
                   {t(tx("لا توجد تحديثات خلال آخر 7 أيام، لذلك نعرض آخر تحديثات متاحة.", "No updates were found in the last 7 days, so the latest available updates are shown."))}
+                </p>
+              ) : null}
+              {feedIsStale ? (
+                <p className="x-feed-note">
+                  {t(tx("نعرض آخر نسخة محفوظة حتى تعود تحديثات إكس.", "Showing the latest cached copy until X updates are available again."))}
                 </p>
               ) : null}
               <div className="x-feed-list">

@@ -1,7 +1,9 @@
-/* global exports, fetch */
+/* global exports, fetch, process, URLSearchParams */
 
 const HANDLE = "AljoufCluster";
 const DAY_MS = 24 * 60 * 60 * 1000;
+const CACHE_MINUTES = 10;
+const X_RECENT_SEARCH_URL = "https://api.x.com/2/tweets/search/recent";
 
 function clampNumber(value, min, max, fallback) {
   const parsed = Number(value);
@@ -9,119 +11,207 @@ function clampNumber(value, min, max, fallback) {
   return Math.min(max, Math.max(min, Math.floor(parsed)));
 }
 
-function json(statusCode, body) {
+function json(statusCode, body, cacheSeconds = 120) {
   return {
     statusCode,
     headers: {
       "access-control-allow-origin": "*",
-      "cache-control": "public, max-age=300, s-maxage=600, stale-while-revalidate=1800",
+      "cache-control": `public, max-age=${cacheSeconds}, s-maxage=${cacheSeconds}, stale-while-revalidate=600`,
       "content-type": "application/json; charset=utf-8"
     },
     body: JSON.stringify(body)
   };
 }
 
-function extractNextData(html) {
-  const match = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]+?)<\/script>/);
-  if (!match) return null;
-  return JSON.parse(match[1]);
+function getEnv(name) {
+  return process.env[name]?.trim() || "";
 }
 
-function visibleTweetText(tweet) {
-  const text = tweet.full_text || tweet.text || "";
-  const range = tweet.display_text_range;
-  if (!Array.isArray(range) || range.length < 2) return text.trim();
-  return text.slice(range[0], range[1]).trim();
+function getCacheKey(days, limit) {
+  return `x-feed:${HANDLE.toLowerCase()}:days-${days}:limit-${limit}`;
 }
 
-function mediaFromTweet(tweet) {
-  const media = tweet.extended_entities?.media || tweet.entities?.media || [];
-  const seen = new Set();
+function getSupabaseConfig() {
+  const url = getEnv("SUPABASE_URL") || getEnv("VITE_SUPABASE_URL");
+  const serviceRoleKey = getEnv("SUPABASE_SERVICE_ROLE_KEY");
+  if (!url || !serviceRoleKey) return null;
+  return {
+    headers: {
+      apikey: serviceRoleKey,
+      authorization: `Bearer ${serviceRoleKey}`,
+      "content-type": "application/json"
+    },
+    url: url.replace(/\/$/, "")
+  };
+}
 
-  return media
+async function readCache(cacheKey) {
+  const config = getSupabaseConfig();
+  if (!config) return null;
+
+  const url = `${config.url}/rest/v1/external_feed_cache?cache_key=eq.${encodeURIComponent(cacheKey)}&select=payload,fetched_at,expires_at&limit=1`;
+  const response = await fetch(url, { headers: config.headers });
+  if (!response.ok) return null;
+
+  const rows = await response.json();
+  return rows[0] || null;
+}
+
+async function writeCache(cacheKey, payload) {
+  const config = getSupabaseConfig();
+  if (!config) return;
+
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + CACHE_MINUTES * 60 * 1000);
+  const response = await fetch(`${config.url}/rest/v1/external_feed_cache?on_conflict=cache_key`, {
+    method: "POST",
+    headers: {
+      ...config.headers,
+      prefer: "resolution=merge-duplicates"
+    },
+    body: JSON.stringify({
+      cache_key: cacheKey,
+      expires_at: expiresAt.toISOString(),
+      fetched_at: now.toISOString(),
+      payload,
+      source: "x-api"
+    })
+  });
+
+  if (!response.ok) {
+    throw new Error(`Supabase cache write failed: ${response.status}`);
+  }
+}
+
+function buildRecentSearchUrl(days, limit) {
+  const params = new URLSearchParams({
+    "expansions": "attachments.media_keys,author_id",
+    "max_results": String(Math.max(10, Math.min(100, limit * 2))),
+    "media.fields": "alt_text,preview_image_url,type,url",
+    "query": `from:${HANDLE} -is:retweet`,
+    "sort_order": "recency",
+    "start_time": new Date(Date.now() - days * DAY_MS).toISOString(),
+    "tweet.fields": "attachments,created_at,entities",
+    "user.fields": "name,profile_image_url,username"
+  });
+
+  return `${X_RECENT_SEARCH_URL}?${params.toString()}`;
+}
+
+function getMediaMap(includes) {
+  const mediaItems = includes?.media || [];
+  return new Map(mediaItems.map((item) => [item.media_key, item]));
+}
+
+function normalizeMedia(tweet, mediaMap) {
+  return (tweet.attachments?.media_keys || [])
+    .map((key) => mediaMap.get(key))
+    .filter(Boolean)
     .map((item) => {
-      const imageUrl = item.media_url_https || item.media_url;
-      if (!imageUrl || seen.has(imageUrl)) return null;
-      seen.add(imageUrl);
+      const url = item.url || item.preview_image_url;
+      if (!url) return null;
 
       return {
-        expandedUrl: item.expanded_url || `https://x.com/${HANDLE}/status/${tweet.id_str}`,
-        type: item.type || (item.video_info ? "video" : "photo"),
-        url: imageUrl
+        altText: item.alt_text || "",
+        expandedUrl: `https://x.com/${HANDLE}/status/${tweet.id}`,
+        type: item.type || "photo",
+        url
       };
     })
     .filter(Boolean)
     .slice(0, 4);
 }
 
-function normalizeTweet(tweet) {
-  if (!tweet?.id_str || !tweet.created_at) return null;
-  const createdAt = new Date(tweet.created_at);
-  if (Number.isNaN(createdAt.getTime())) return null;
+function normalizeXResponse(payload, limit) {
+  const mediaMap = getMediaMap(payload.includes);
+
+  return (payload.data || [])
+    .map((tweet) => ({
+      createdAt: tweet.created_at,
+      id: tweet.id,
+      media: normalizeMedia(tweet, mediaMap),
+      text: tweet.text || "",
+      url: `https://x.com/${HANDLE}/status/${tweet.id}`
+    }))
+    .filter((item) => item.id && item.createdAt && item.text)
+    .slice(0, limit);
+}
+
+async function fetchFromX(days, limit) {
+  const bearerToken = getEnv("X_BEARER_TOKEN");
+  if (!bearerToken) {
+    throw new Error("missing_x_bearer_token");
+  }
+
+  const response = await fetch(buildRecentSearchUrl(days, limit), {
+    headers: {
+      authorization: `Bearer ${bearerToken}`
+    }
+  });
+
+  if (!response.ok) {
+    throw new Error(`x_api_${response.status}`);
+  }
+
+  const payload = await response.json();
+  const items = normalizeXResponse(payload, limit);
 
   return {
-    createdAt: createdAt.toISOString(),
-    id: tweet.id_str,
-    media: mediaFromTweet(tweet),
-    text: visibleTweetText(tweet),
-    url: tweet.permalink ? `https://x.com${tweet.permalink}` : `https://x.com/${HANDLE}/status/${tweet.id_str}`
+    generatedAt: new Date().toISOString(),
+    handle: HANDLE,
+    isRecentWindow: true,
+    isStale: false,
+    items,
+    profileUrl: `https://x.com/${HANDLE}`,
+    source: "x-api",
+    windowDays: days
   };
 }
 
-function uniqueTweets(items) {
-  const seen = new Set();
-  return items.filter((item) => {
-    if (seen.has(item.id)) return false;
-    seen.add(item.id);
-    return true;
-  });
-}
-
 exports.handler = async (event) => {
-  const days = clampNumber(event.queryStringParameters?.days, 1, 30, 7);
+  if (event.httpMethod === "OPTIONS") {
+    return json(204, {}, 300);
+  }
+
+  const days = clampNumber(event.queryStringParameters?.days, 1, 7, 7);
   const limit = clampNumber(event.queryStringParameters?.limit, 1, 8, 5);
-  const sourceUrl = `https://syndication.twitter.com/srv/timeline-profile/screen-name/${HANDLE}?lang=ar&limit=20&maxHeight=900px&theme=light`;
+  const cacheKey = getCacheKey(days, limit);
+  const cached = await readCache(cacheKey).catch(() => null);
+  const cachedPayload = cached?.payload || null;
+  const isCacheFresh = cached?.expires_at ? new Date(cached.expires_at).getTime() > Date.now() : false;
+
+  if (cachedPayload && isCacheFresh) {
+    return json(200, {
+      ...cachedPayload,
+      isStale: false,
+      source: "supabase-cache"
+    });
+  }
 
   try {
-    const response = await fetch(sourceUrl, {
-      headers: {
-        "accept": "text/html,application/xhtml+xml",
-        "user-agent": "Mozilla/5.0 (compatible; AlHadithahHospitalPortal/1.0)"
-      }
-    });
-
-    if (!response.ok) {
-      return json(response.status, {
-        error: "x_feed_unavailable",
-        items: []
-      });
+    const livePayload = await fetchFromX(days, limit);
+    await writeCache(cacheKey, livePayload).catch(() => undefined);
+    return json(200, livePayload);
+  } catch (error) {
+    if (cachedPayload) {
+      return json(200, {
+        ...cachedPayload,
+        error: error instanceof Error ? error.message : "x_feed_unavailable",
+        isStale: true,
+        source: "supabase-cache"
+      }, 60);
     }
 
-    const data = extractNextData(await response.text());
-    const entries = data?.props?.pageProps?.timeline?.entries || [];
-    const items = uniqueTweets(
-      entries
-        .map((entry) => normalizeTweet(entry?.content?.tweet))
-        .filter(Boolean)
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    );
-
-    const cutoff = Date.now() - days * DAY_MS;
-    const recentItems = items.filter((item) => new Date(item.createdAt).getTime() >= cutoff);
-    const selectedItems = (recentItems.length > 0 ? recentItems : items).slice(0, limit);
-
     return json(200, {
+      error: error instanceof Error ? error.message : "x_feed_unavailable",
       generatedAt: new Date().toISOString(),
       handle: HANDLE,
-      isRecentWindow: recentItems.length > 0,
-      items: selectedItems,
+      isRecentWindow: true,
+      isStale: false,
+      items: [],
       profileUrl: `https://x.com/${HANDLE}`,
+      source: "unavailable",
       windowDays: days
-    });
-  } catch {
-    return json(502, {
-      error: "x_feed_fetch_failed",
-      items: []
-    });
+    }, 60);
   }
 };

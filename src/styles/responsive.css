@@ -1,35 +1,70 @@
 @media (max-width: 1080px) {
-  .navbar {
-    grid-template-columns: auto auto 1fr;
-  }
-
   .nav-toggle {
     display: inline-flex;
   }
 
-  .primary-nav {
+  /* Mega-nav collapses into the hamburger panel */
+  .mega-nav {
     position: absolute;
-    inset: 100% 16px auto 16px;
+    inset: 100% 12px auto 12px;
     display: none;
     flex-direction: column;
     align-items: stretch;
+    gap: 2px;
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     background: var(--surface);
     box-shadow: var(--shadow-lg);
-    padding: 12px;
+    padding: 10px;
+    max-height: 70vh;
+    overflow-y: auto;
+    z-index: 45;
   }
 
-  .primary-nav.is-open {
+  .mega-nav.is-open {
     display: flex;
   }
 
-  .more-menu > div {
+  .mega-item {
     position: static;
+  }
+
+  .mega-trigger {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  /* Panels become inline accordions, expanded by tap (is-open) only. The
+     display:none default overrides the desktop hover/focus rules, so tapping
+     the trigger is what opens them on touch. */
+  .mega-panel {
+    position: static;
+    display: none;
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    min-width: 0;
     border: 0;
     box-shadow: none;
-    padding: 6px 0 0;
+    padding: 2px 0 6px 14px;
     background: transparent;
+  }
+
+  .mega-item.is-open .mega-panel {
+    display: grid;
+  }
+
+  .utility-icon,
+  .utility-login {
+    /* keep icons + login on small screens */
+  }
+
+  .utility-btn > span {
+    display: none;
+  }
+
+  .utility-login > span {
+    display: inline;
   }
 
   .nav-actions {

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { Link } from "react-router-dom";
 import { BriefcaseBusiness, CalendarCheck, HeartPulse, MessageSquareText, ShieldCheck, Siren } from "lucide-react";
 import { usePortal } from "../../../providers/PortalProvider";
@@ -14,6 +14,10 @@ import { tx } from "../../../utils/i18n";
 
 const HERO_SCRIM =
   "linear-gradient(90deg, rgba(7, 19, 47, 0.88) 0%, rgba(7, 19, 47, 0.72) 38%, rgba(7, 19, 47, 0.16) 72%)";
+
+const XTimeline = lazy(() =>
+  import("../../../components/public/XTimeline").then((m) => ({ default: m.XTimeline }))
+);
 
 export function HomePage() {
   const { t } = usePortal();
@@ -261,7 +265,12 @@ export function HomePage() {
                 "A dedicated space for news, notices, and initiatives relevant to visitors and staff."
               )}
             />
-            <ContentGrid items={liveNews.slice(0, 2)} />
+            <div className="home-news-stack">
+              <ContentGrid items={liveNews.slice(0, 1)} />
+              <Suspense fallback={null}>
+                <XTimeline compact />
+              </Suspense>
+            </div>
           </div>
         </div>
       </section>

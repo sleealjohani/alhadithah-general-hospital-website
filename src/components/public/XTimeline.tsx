@@ -18,7 +18,7 @@ declare global {
  * automatically — no API key needed. If the widget script is blocked (strict
  * network/CSP, offline), it degrades to a plain link to the profile.
  */
-export function XTimeline() {
+export function XTimeline({ compact = false }: { compact?: boolean }) {
   const { t, theme } = usePortal();
   const containerRef = useRef<HTMLDivElement>(null);
   const [failed, setFailed] = useState(false);
@@ -55,7 +55,7 @@ export function XTimeline() {
   }, []);
 
   return (
-    <section className="x-timeline" aria-label={t(tx("آخر التحديثات على منصة إكس", "Latest updates on X"))}>
+    <section className={compact ? "x-timeline x-timeline-compact" : "x-timeline"} aria-label={t(tx("آخر التحديثات على منصة إكس", "Latest updates on X"))}>
       <div className="x-timeline-head">
         <h2>{t(tx("آخر التحديثات المباشرة", "Live updates"))}</h2>
         <a className="text-link" href={`https://x.com/${HANDLE}`} target="_blank" rel="noreferrer">
@@ -72,7 +72,7 @@ export function XTimeline() {
         <div className="x-timeline-embed" ref={containerRef}>
           <a
             className="twitter-timeline"
-            data-height="620"
+            data-height={compact ? "420" : "620"}
             data-theme={theme === "dark" ? "dark" : "light"}
             data-chrome="noheader nofooter transparent"
             href={`https://twitter.com/${HANDLE}?ref_src=twsrc%5Etfw`}

@@ -8,6 +8,7 @@ type NavigationRow = {
   path: string | null;
   url: string | null;
   icon: string | null;
+  sort_order: number | null;
 };
 
 export async function fetchNavigationItems(location: "header" | "footer" | "quick"): Promise<NavMenuItem[]> {
@@ -15,7 +16,7 @@ export async function fetchNavigationItems(location: "header" | "footer" | "quic
 
   const { data, error } = await supabase
     .from("navigation_items")
-    .select("label_ar,label_en,path,url,icon")
+    .select("label_ar,label_en,path,url,icon,sort_order")
     .eq("location", location)
     .eq("is_active", true)
     .is("parent_id", null)
@@ -27,6 +28,7 @@ export async function fetchNavigationItems(location: "header" | "footer" | "quic
     path: row.path || undefined,
     url: row.url || undefined,
     label: tx(row.label_ar, row.label_en),
-    icon: row.icon || undefined
+    icon: row.icon || undefined,
+    sortOrder: row.sort_order ?? undefined
   }));
 }

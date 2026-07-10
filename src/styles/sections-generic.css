@@ -232,3 +232,20 @@
   min-height: 200px;
   background: var(--surface);
 }
+
+.home-news-stack {
+  display: grid;
+  gap: 18px;
+}
+
+.home-news-stack .content-grid {
+  grid-template-columns: 1fr;
+}
+
+.x-timeline-compact .x-timeline-head h2 {
+  font-size: 1.15rem;
+}
+
+.x-timeline-compact .x-timeline-embed {
+  min-height: 360px;
+}

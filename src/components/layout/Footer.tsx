@@ -26,20 +26,20 @@ export function Footer() {
           </ul>
         </div>
         <div>
-          <h3>{t(tx("ملاحظة بيانات التواصل", "Contact Data Notice"))}</h3>
+          <h3>{t(tx("قنوات الخدمة", "Service Channels"))}</h3>
           <p>
             {t(
               tx(
-                "لن تظهر أرقام أو بريد إلكتروني في الموقع العام حتى يتم إدخالها واعتمادها من إعدادات لوحة التحكم.",
-                "Phone numbers and email addresses remain hidden until entered and approved in admin settings."
+                "تجمع البوابة الخدمات الصحية، الأدلة، الأخبار، النماذج، وقنوات تجربة المستفيد في واجهة رسمية واحدة.",
+                "The portal brings health services, guides, news, forms, and beneficiary-experience channels into one official interface."
               )
             )}
           </p>
         </div>
       </div>
       <div className="container footer-bottom">
-        <span>{t(tx("جاهز للنشر عبر Netlify مع Supabase.", "Ready for Netlify deployment with Supabase."))}</span>
-        <Link to="/admin/setup">{t(tx("إعداد المدير الأول", "First admin setup"))}</Link>
+        <span>{t(tx("© مستشفى الحديثة العام. جميع الحقوق محفوظة.", "© Hadetha General Hospital. All rights reserved."))}</span>
+        <Link to="/admin">{t(tx("دخول الموظفين", "Staff access"))}</Link>
       </div>
     </footer>
   );

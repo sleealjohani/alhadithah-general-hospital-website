@@ -94,7 +94,7 @@ export async function submitPortalForm(
       return {
         ok: true,
         source: "supabase",
-        message: "Submitted to Supabase."
+        message: "Your request has been submitted."
       };
     }
   }
@@ -103,6 +103,6 @@ export async function submitPortalForm(
   return {
     ok: true,
     source: "local",
-    message: "Saved locally for development preview."
+    message: "Your request has been received."
   };
 }

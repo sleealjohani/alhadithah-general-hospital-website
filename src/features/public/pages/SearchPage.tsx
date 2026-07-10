@@ -12,8 +12,8 @@ export function SearchPage() {
   usePageMeta(
     tx("بحث موحد داخل البوابة", "Unified Portal Search"),
     tx(
-      "بحث سريع في المحتوى المبدئي، ويمكن ربطه ببيانات Supabase المنشورة.",
-      "Fast search across starter content, ready to connect to published Supabase records."
+      "ابحث في الخدمات والأقسام والأدلة والأخبار من مكان واحد.",
+      "Search services, departments, guides, and news from one place."
     )
   );
   const [query, setQuery] = useState("");
@@ -28,8 +28,8 @@ export function SearchPage() {
         eyebrow={tx("البحث", "Search")}
         title={tx("بحث موحد داخل البوابة", "Unified Portal Search")}
         description={tx(
-          "بحث سريع في المحتوى المبدئي، ويمكن ربطه ببيانات Supabase المنشورة.",
-          "Fast search across starter content, ready to connect to published Supabase records."
+          "ابحث في الخدمات والأقسام والأدلة والأخبار من مكان واحد.",
+          "Search services, departments, guides, and news from one place."
         )}
         compact
       />

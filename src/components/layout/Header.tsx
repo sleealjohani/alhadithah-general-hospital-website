@@ -27,7 +27,7 @@ export function Header() {
       <div className="top-strip">
         <div className="container top-strip-inner">
           <span>{t(identity.cluster)}</span>
-          <span>{t(tx("لا تُعرض بيانات تواصل إلا بعد اعتمادها رسميًا.", "Contact details are hidden until officially approved."))}</span>
+          <span>{t(tx("بوابة رسمية للخدمات والمعلومات الصحية", "Official portal for health services and information"))}</span>
         </div>
       </div>
       <div className="container navbar">
@@ -90,7 +90,7 @@ export function Header() {
           </button>
           <Link className="admin-entry" to="/admin">
             <LockKeyhole size={17} />
-            <span>{t(tx("الإدارة", "Admin"))}</span>
+            <span>{t(tx("دخول الموظفين", "Staff access"))}</span>
           </Link>
         </div>
       </div>

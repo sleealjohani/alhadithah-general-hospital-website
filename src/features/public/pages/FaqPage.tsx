@@ -10,8 +10,8 @@ export function FaqPage() {
   usePageMeta(
     tx("إجابات مختصرة وواضحة", "Short, Clear Answers"),
     tx(
-      "أسئلة قابلة للإدارة من لوحة التحكم وتدعم البحث والتصنيف.",
-      "Questions are manageable from the admin panel and support search and categorization."
+      "إجابات مختصرة تساعدك على الوصول للخدمة أو المعلومة المناسبة.",
+      "Short answers that help you reach the right service or information."
     )
   );
   const items = usePublishedItems("faqs", faqs);
@@ -21,8 +21,8 @@ export function FaqPage() {
         eyebrow={tx("الأسئلة الشائعة", "FAQ")}
         title={tx("إجابات مختصرة وواضحة", "Short, Clear Answers")}
         description={tx(
-          "أسئلة قابلة للإدارة من لوحة التحكم وتدعم البحث والتصنيف.",
-          "Questions are manageable from the admin panel and support search and categorization."
+          "إجابات مختصرة تساعدك على الوصول للخدمة أو المعلومة المناسبة.",
+          "Short answers that help you reach the right service or information."
         )}
       />
       <section className="section">

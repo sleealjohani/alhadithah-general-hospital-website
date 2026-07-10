@@ -8,8 +8,8 @@ export function EmployeesPage() {
   usePageMeta(
     tx("روابط ونماذج داخلية", "Internal Links and Forms"),
     tx(
-      "لا تظهر الملفات الداخلية الحساسة للعامة. يمكن تفعيل الصلاحيات عبر Supabase RLS.",
-      "Sensitive internal files are not exposed publicly. Access controls can be enforced with Supabase RLS."
+      "مسار مخصص للموظفين للوصول إلى النماذج والروابط والأدلة الداخلية.",
+      "A staff path for internal forms, links, and guides."
     )
   );
   return (
@@ -18,8 +18,8 @@ export function EmployeesPage() {
         eyebrow={tx("بوابة الموظفين", "Employee Portal")}
         title={tx("روابط ونماذج داخلية", "Internal Links and Forms")}
         description={tx(
-          "لا تظهر الملفات الداخلية الحساسة للعامة. يمكن تفعيل الصلاحيات عبر Supabase RLS.",
-          "Sensitive internal files are not exposed publicly. Access controls can be enforced with Supabase RLS."
+          "مسار مخصص للموظفين للوصول إلى النماذج والروابط والأدلة الداخلية.",
+          "A staff path for internal forms, links, and guides."
         )}
       />
       <section className="section">

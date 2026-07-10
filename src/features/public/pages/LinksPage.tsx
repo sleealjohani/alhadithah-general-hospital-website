@@ -10,10 +10,10 @@ export function LinksPage() {
       table="important_links"
       fallback={items}
       eyebrow={tx("النماذج والروابط", "Forms & Links")}
-      title={tx("روابط مهمة بدون افتراضات", "Important Links Without Assumptions")}
+      title={tx("النماذج والروابط المهمة", "Important Forms and Links")}
       description={tx(
-        "لا تُعرض روابط رسمية افتراضية. يضيف المسؤول الروابط المعتمدة من لوحة التحكم.",
-        "No default official URLs are shown. Admins add approved links from the console."
+        "مساحة منظمة للوصول إلى النماذج والروابط التي يحتاجها المستفيد أو الموظف.",
+        "An organized space for forms and links needed by beneficiaries or staff."
       )}
     />
   );

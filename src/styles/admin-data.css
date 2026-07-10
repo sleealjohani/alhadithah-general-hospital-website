@@ -1,5 +1,82 @@
 /* Admin data-table affordances: bulk bar, selection, details, pagination. */
 
+/* --- Status badges --- */
+.badge {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 3px 11px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.badge-success {
+  background: color-mix(in srgb, var(--success) 14%, var(--surface));
+  color: var(--success);
+}
+
+.badge-info {
+  background: var(--primary-soft);
+  color: var(--primary-strong);
+}
+
+.badge-muted {
+  background: var(--surface-soft);
+  color: var(--text-muted);
+}
+
+.badge-danger {
+  background: color-mix(in srgb, var(--danger) 12%, var(--surface));
+  color: var(--danger);
+}
+
+/* --- Topbar user chip --- */
+.admin-user {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.admin-user-meta {
+  display: grid;
+  justify-items: end;
+  gap: 3px;
+  font-size: 0.86rem;
+}
+
+[dir="ltr"] .admin-user-meta {
+  justify-items: start;
+}
+
+/* --- Login password field with visibility toggle --- */
+.password-field {
+  position: relative;
+  display: block;
+}
+
+.password-field input {
+  width: 100%;
+  padding-inline-end: 46px;
+}
+
+.password-field .icon-button {
+  position: absolute;
+  inset-inline-end: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+}
+
+.password-field .icon-button:active {
+  transform: translateY(-50%) scale(0.96);
+}
+
+/* Wide fields span the 2-column admin form grid. */
+.admin-form .field-wide {
+  grid-column: 1 / -1;
+}
+
 .bulk-bar {
   display: flex;
   flex-wrap: wrap;

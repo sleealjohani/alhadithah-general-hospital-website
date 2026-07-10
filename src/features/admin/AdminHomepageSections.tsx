@@ -1,10 +1,12 @@
 import { type FormEvent, useCallback, useEffect, useState } from "react";
-import { Loader2, Pencil, Save, Trash2, X } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { usePortal } from "../../providers/PortalProvider";
 import { SectionHeading } from "../../components/ui/SectionHeading";
 import { supabase } from "../../lib/supabase/client";
+import { logAdminAction } from "../../lib/audit";
 import { displayRowValue } from "../../utils/format";
 import { tx } from "../../utils/i18n";
+import { ActiveBadge, CrudFormActions, Field, TableLoadingRows, useDeleteConfirm } from "./shared";
 
 type SectionRow = Record<string, unknown>;
 
@@ -22,12 +24,17 @@ const emptyForm = {
 export function AdminHomepageSections() {
   const { t, notify } = usePortal();
   const [rows, setRows] = useState<SectionRow[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
+  const [jsonError, setJsonError] = useState(false);
 
   const loadRows = useCallback(async () => {
-    if (!supabase) return;
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const { data, error } = await supabase
       .from("homepage_sections")
@@ -47,6 +54,7 @@ export function AdminHomepageSections() {
 
   const edit = (row: SectionRow) => {
     setEditingId(String(row.id));
+    setJsonError(false);
     setForm({
       section_key: displayRowValue(row, ["section_key"]),
       title_ar: displayRowValue(row, ["title_ar"]),
@@ -57,15 +65,32 @@ export function AdminHomepageSections() {
       is_active: row.is_active !== false,
       sort_order: Number(displayRowValue(row, ["sort_order"], "100"))
     });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const cancelEdit = () => {
     setEditingId(null);
     setForm(emptyForm);
+    setJsonError(false);
+  };
+
+  const updateContentText = (value: string) => {
+    setForm({ ...form, contentText: value });
+    if (!value.trim()) {
+      setJsonError(false);
+      return;
+    }
+    try {
+      JSON.parse(value);
+      setJsonError(false);
+    } catch {
+      setJsonError(true);
+    }
   };
 
   const save = async (event: FormEvent) => {
     event.preventDefault();
+    if (saving) return;
     if (!supabase) {
       notify(t(tx("Supabase غير متصل.", "Supabase is not connected.")), "error");
       return;
@@ -75,6 +100,7 @@ export function AdminHomepageSections() {
     try {
       content = JSON.parse(form.contentText || "{}");
     } catch {
+      setJsonError(true);
       notify(t(tx("محتوى JSON غير صالح.", "Invalid JSON content.")), "error");
       return;
     }
@@ -90,36 +116,42 @@ export function AdminHomepageSections() {
       sort_order: form.sort_order
     };
 
+    setSaving(true);
     if (editingId) {
       const { error } = await supabase.from("homepage_sections").update(payload).eq("id", editingId);
+      setSaving(false);
       if (error) {
         notify(error.message, "error");
         return;
       }
+      logAdminAction("homepage_section.update", "homepage_sections", editingId, { section_key: form.section_key });
       notify(t(tx("تم تحديث القسم.", "Section updated.")), "success");
     } else {
       const { error } = await supabase.from("homepage_sections").insert(payload);
+      setSaving(false);
       if (error) {
         notify(error.message, "error");
         return;
       }
+      logAdminAction("homepage_section.create", "homepage_sections", null, { section_key: form.section_key });
       notify(t(tx("تم إنشاء القسم.", "Section created.")), "success");
     }
-
     cancelEdit();
     loadRows();
   };
 
-  const remove = async (id: unknown) => {
-    if (!supabase || typeof id !== "string") return;
+  const { dialog: deleteDialog, requestDelete } = useDeleteConfirm(async (id) => {
+    if (!supabase) return;
     const { error } = await supabase.from("homepage_sections").delete().eq("id", id);
-    if (error) notify(error.message, "error");
-    else {
-      if (editingId === id) cancelEdit();
-      notify(t(tx("تم الحذف.", "Deleted.")), "success");
-      loadRows();
+    if (error) {
+      notify(error.message, "error");
+      return;
     }
-  };
+    if (editingId === id) cancelEdit();
+    logAdminAction("homepage_section.delete", "homepage_sections", id);
+    notify(t(tx("تم الحذف.", "Deleted.")), "success");
+    loadRows();
+  });
 
   return (
     <div className="admin-page">
@@ -132,98 +164,101 @@ export function AdminHomepageSections() {
       />
       <div className="admin-panel">
         <form className="admin-form" onSubmit={save}>
-          <input
-            required
-            disabled={Boolean(editingId)}
-            placeholder={t(tx("مفتاح القسم (مثال: hero)", "Section key (e.g. hero)"))}
-            value={form.section_key}
-            onChange={(event) => setForm({ ...form, section_key: event.target.value })}
-          />
-          <input
-            type="number"
-            placeholder={t(tx("ترتيب العرض", "Sort order"))}
-            value={form.sort_order}
-            onChange={(event) => setForm({ ...form, sort_order: Number(event.target.value) || 0 })}
-          />
-          <input
-            placeholder={t(tx("العنوان بالعربية", "Arabic title"))}
-            value={form.title_ar}
-            onChange={(event) => setForm({ ...form, title_ar: event.target.value })}
-          />
-          <input
-            placeholder={t(tx("العنوان بالإنجليزية", "English title"))}
-            value={form.title_en}
-            onChange={(event) => setForm({ ...form, title_en: event.target.value })}
-          />
-          <input
-            placeholder={t(tx("العنوان الفرعي بالعربية", "Arabic subtitle"))}
-            value={form.subtitle_ar}
-            onChange={(event) => setForm({ ...form, subtitle_ar: event.target.value })}
-          />
-          <input
-            placeholder={t(tx("العنوان الفرعي بالإنجليزية", "English subtitle"))}
-            value={form.subtitle_en}
-            onChange={(event) => setForm({ ...form, subtitle_en: event.target.value })}
-          />
-          <textarea
-            className="code-field"
-            placeholder='{"key": "value"}'
-            value={form.contentText}
-            onChange={(event) => setForm({ ...form, contentText: event.target.value })}
-          />
+          <Field label={tx("مفتاح القسم", "Section key")}>
+            <input
+              required
+              dir="ltr"
+              disabled={Boolean(editingId)}
+              placeholder="hero"
+              value={form.section_key}
+              onChange={(e) => setForm({ ...form, section_key: e.target.value })}
+            />
+          </Field>
+          <Field label={tx("ترتيب العرض", "Sort order")}>
+            <input
+              type="number"
+              inputMode="numeric"
+              value={form.sort_order}
+              onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) || 0 })}
+            />
+          </Field>
+          <Field label={tx("العنوان بالعربية", "Arabic title")}>
+            <input value={form.title_ar} onChange={(e) => setForm({ ...form, title_ar: e.target.value })} />
+          </Field>
+          <Field label={tx("العنوان بالإنجليزية", "English title")}>
+            <input dir="ltr" value={form.title_en} onChange={(e) => setForm({ ...form, title_en: e.target.value })} />
+          </Field>
+          <Field label={tx("العنوان الفرعي بالعربية", "Arabic subtitle")}>
+            <input value={form.subtitle_ar} onChange={(e) => setForm({ ...form, subtitle_ar: e.target.value })} />
+          </Field>
+          <Field label={tx("العنوان الفرعي بالإنجليزية", "English subtitle")}>
+            <input dir="ltr" value={form.subtitle_en} onChange={(e) => setForm({ ...form, subtitle_en: e.target.value })} />
+          </Field>
+          <Field label={tx("بيانات إضافية (JSON)", "Extra data (JSON)")} wide>
+            <textarea
+              className="code-field"
+              placeholder='{"key": "value"}'
+              aria-invalid={jsonError ? true : undefined}
+              value={form.contentText}
+              onChange={(e) => updateContentText(e.target.value)}
+            />
+            {jsonError ? (
+              <span className="field-error">{t(tx("صيغة JSON غير صالحة.", "Invalid JSON syntax."))}</span>
+            ) : null}
+          </Field>
           <label className="check-field">
             <input
               type="checkbox"
               checked={form.is_active}
-              onChange={(event) => setForm({ ...form, is_active: event.target.checked })}
+              onChange={(e) => setForm({ ...form, is_active: e.target.checked })}
             />
             {t(tx("قسم مفعّل", "Active"))}
           </label>
-          <button className="btn btn-primary">
-            <Save size={18} />
-            {editingId ? t(tx("تحديث", "Update")) : t(tx("إنشاء", "Create"))}
-          </button>
-          {editingId ? (
-            <button type="button" className="btn btn-secondary" onClick={cancelEdit}>
-              <X size={18} />
-              {t(tx("إلغاء التعديل", "Cancel edit"))}
-            </button>
-          ) : null}
+          <CrudFormActions busy={saving} editing={Boolean(editingId)} onCancel={cancelEdit} />
         </form>
       </div>
 
       <div className="admin-panel">
         <div className="admin-toolbar">
           <h2>{t(tx("الأقسام", "Sections"))}</h2>
-          {loading ? <Loader2 className="spin" /> : null}
         </div>
         <div className="admin-table-wrap">
-          <table className="admin-table">
+          <table className="admin-table" aria-busy={loading}>
             <thead>
               <tr>
                 <th>{t(tx("المفتاح", "Key"))}</th>
                 <th>{t(tx("العنوان", "Title"))}</th>
-                <th>{t(tx("مفعّل", "Active"))}</th>
+                <th>{t(tx("الحالة", "State"))}</th>
                 <th>{t(tx("إجراء", "Action"))}</th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((row) => (
-                <tr key={String(row.id)} className={editingId === row.id ? "is-editing" : ""}>
-                  <td>{displayRowValue(row, ["section_key"])}</td>
-                  <td>{displayRowValue(row, ["title_ar"], "-")}</td>
-                  <td>{row.is_active === false ? t(tx("لا", "No")) : t(tx("نعم", "Yes"))}</td>
-                  <td>
-                    <button className="icon-button" onClick={() => edit(row)} aria-label={t(tx("تعديل", "Edit"))}>
-                      <Pencil size={17} />
-                    </button>
-                    <button className="icon-button danger" onClick={() => remove(row.id)} aria-label={t(tx("حذف", "Delete"))}>
-                      <Trash2 size={17} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {rows.length === 0 ? (
+              {loading ? (
+                <TableLoadingRows cols={4} />
+              ) : (
+                rows.map((row) => (
+                  <tr key={String(row.id)} className={editingId === row.id ? "is-editing" : ""}>
+                    <td dir="ltr">{displayRowValue(row, ["section_key"])}</td>
+                    <td>{displayRowValue(row, ["title_ar"], "-")}</td>
+                    <td>
+                      <ActiveBadge active={row.is_active !== false} />
+                    </td>
+                    <td>
+                      <button className="icon-button" onClick={() => edit(row)} aria-label={t(tx("تعديل", "Edit"))}>
+                        <Pencil size={17} />
+                      </button>
+                      <button
+                        className="icon-button danger"
+                        onClick={() => requestDelete(String(row.id), displayRowValue(row, ["section_key", "id"]))}
+                        aria-label={t(tx("حذف", "Delete"))}
+                      >
+                        <Trash2 size={17} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+              {!loading && rows.length === 0 ? (
                 <tr>
                   <td colSpan={4}>{t(tx("لا توجد أقسام بعد.", "No sections yet."))}</td>
                 </tr>
@@ -232,6 +267,7 @@ export function AdminHomepageSections() {
           </table>
         </div>
       </div>
+      {deleteDialog}
     </div>
   );
 }

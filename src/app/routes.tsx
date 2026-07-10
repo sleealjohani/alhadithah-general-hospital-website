@@ -25,6 +25,11 @@ const NotFoundPage = lazy(() => import("../features/public/pages/NotFoundPage").
 
 const AdminLoginPage = lazy(() => import("../features/auth/AdminLoginPage").then((m) => ({ default: m.AdminLoginPage })));
 const AdminLayout = lazy(() => import("../features/admin/AdminLayout").then((m) => ({ default: m.AdminLayout })));
+/* The first-admin setup guide must be reachable BEFORE anyone can sign in,
+   so it lives outside the /admin/* protected subtree. */
+const AdminSetupNotice = lazy(() =>
+  import("../features/admin/AdminSetupContent").then((m) => ({ default: m.AdminSetupNotice }))
+);
 
 export function AppRoutes() {
   return (
@@ -50,6 +55,7 @@ export function AppRoutes() {
           <Route path="/pages/:slug" element={<CmsPage />} />
         </Route>
         <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route path="/admin-setup" element={<AdminSetupNotice />} />
         <Route
           path="/admin/*"
           element={

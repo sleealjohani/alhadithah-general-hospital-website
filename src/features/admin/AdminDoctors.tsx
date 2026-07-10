@@ -1,10 +1,12 @@
 import { type FormEvent, useCallback, useEffect, useState } from "react";
-import { Loader2, Pencil, Save, Trash2, X } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { usePortal } from "../../providers/PortalProvider";
 import { SectionHeading } from "../../components/ui/SectionHeading";
 import { supabase } from "../../lib/supabase/client";
+import { logAdminAction } from "../../lib/audit";
 import { displayRowValue } from "../../utils/format";
 import { tx } from "../../utils/i18n";
+import { CrudFormActions, Field, StatusBadge, TableLoadingRows, useDeleteConfirm } from "./shared";
 
 type DoctorRow = Record<string, unknown>;
 type DepartmentOption = { id: string; title_ar: string };
@@ -29,12 +31,16 @@ export function AdminDoctors() {
   const { t, notify } = usePortal();
   const [rows, setRows] = useState<DoctorRow[]>([]);
   const [departments, setDepartments] = useState<DepartmentOption[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
 
   const loadRows = useCallback(async () => {
-    if (!supabase) return;
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const [{ data, error }, { data: deptData }] = await Promise.all([
       supabase.from("doctors").select("*").order("sort_order", { ascending: true }),
@@ -70,6 +76,7 @@ export function AdminDoctors() {
       status: displayRowValue(row, ["status"], "draft"),
       sort_order: Number(displayRowValue(row, ["sort_order"], "100"))
     });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const cancelEdit = () => {
@@ -79,43 +86,48 @@ export function AdminDoctors() {
 
   const save = async (event: FormEvent) => {
     event.preventDefault();
+    if (saving) return;
     if (!supabase) {
       notify(t(tx("Supabase غير متصل.", "Supabase is not connected.")), "error");
       return;
     }
-
     const payload = { ...form, department_id: form.department_id || null };
-
+    setSaving(true);
     if (editingId) {
       const { error } = await supabase.from("doctors").update(payload).eq("id", editingId);
+      setSaving(false);
       if (error) {
         notify(error.message, "error");
         return;
       }
+      logAdminAction("doctor.update", "doctors", editingId, { full_name_ar: form.full_name_ar });
       notify(t(tx("تم تحديث بيانات الطبيب.", "Doctor updated.")), "success");
     } else {
       const { error } = await supabase.from("doctors").insert(payload);
+      setSaving(false);
       if (error) {
         notify(error.message, "error");
         return;
       }
+      logAdminAction("doctor.create", "doctors", null, { full_name_ar: form.full_name_ar });
       notify(t(tx("تم إضافة الطبيب.", "Doctor added.")), "success");
     }
-
     cancelEdit();
     loadRows();
   };
 
-  const remove = async (id: unknown) => {
-    if (!supabase || typeof id !== "string") return;
+  const { dialog: deleteDialog, requestDelete } = useDeleteConfirm(async (id) => {
+    if (!supabase) return;
     const { error } = await supabase.from("doctors").delete().eq("id", id);
-    if (error) notify(error.message, "error");
-    else {
-      if (editingId === id) cancelEdit();
-      notify(t(tx("تم الحذف.", "Deleted.")), "success");
-      loadRows();
+    if (error) {
+      notify(error.message, "error");
+      return;
     }
-  };
+    if (editingId === id) cancelEdit();
+    logAdminAction("doctor.delete", "doctors", id);
+    notify(t(tx("تم الحذف.", "Deleted.")), "success");
+    loadRows();
+  });
 
   return (
     <div className="admin-page">
@@ -128,101 +140,76 @@ export function AdminDoctors() {
       />
       <div className="admin-panel">
         <form className="admin-form" onSubmit={save}>
-          <input
-            required
-            placeholder={t(tx("المعرف (slug)", "Slug"))}
-            value={form.slug}
-            onChange={(event) => setForm({ ...form, slug: event.target.value })}
+          <Field label={tx("المعرف في الرابط (slug)", "Slug")}>
+            <input required dir="ltr" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} />
+          </Field>
+          <Field label={tx("الحالة", "Status")}>
+            <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
+              <option value="draft">{t(tx("مسودة", "Draft"))}</option>
+              <option value="published">{t(tx("منشور", "Published"))}</option>
+              <option value="archived">{t(tx("مؤرشف", "Archived"))}</option>
+            </select>
+          </Field>
+          <Field label={tx("الاسم بالعربية", "Arabic full name")}>
+            <input required value={form.full_name_ar} onChange={(e) => setForm({ ...form, full_name_ar: e.target.value })} />
+          </Field>
+          <Field label={tx("الاسم بالإنجليزية", "English full name")}>
+            <input required dir="ltr" value={form.full_name_en} onChange={(e) => setForm({ ...form, full_name_en: e.target.value })} />
+          </Field>
+          <Field label={tx("المسمى الوظيفي بالعربية", "Arabic job title")}>
+            <input value={form.title_ar} onChange={(e) => setForm({ ...form, title_ar: e.target.value })} />
+          </Field>
+          <Field label={tx("المسمى الوظيفي بالإنجليزية", "English job title")}>
+            <input dir="ltr" value={form.title_en} onChange={(e) => setForm({ ...form, title_en: e.target.value })} />
+          </Field>
+          <Field label={tx("التخصص بالعربية", "Arabic specialty")}>
+            <input value={form.specialty_ar} onChange={(e) => setForm({ ...form, specialty_ar: e.target.value })} />
+          </Field>
+          <Field label={tx("التخصص بالإنجليزية", "English specialty")}>
+            <input dir="ltr" value={form.specialty_en} onChange={(e) => setForm({ ...form, specialty_en: e.target.value })} />
+          </Field>
+          <Field label={tx("القسم", "Department")}>
+            <select value={form.department_id} onChange={(e) => setForm({ ...form, department_id: e.target.value })}>
+              <option value="">{t(tx("بدون قسم", "No department"))}</option>
+              {departments.map((dept) => (
+                <option key={dept.id} value={dept.id}>
+                  {dept.title_ar}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label={tx("رابط الصورة", "Photo URL")}>
+            <input dir="ltr" value={form.photo_url} onChange={(e) => setForm({ ...form, photo_url: e.target.value })} />
+          </Field>
+          <Field label={tx("نبذة بالعربية", "Arabic bio")} wide>
+            <textarea value={form.bio_ar} onChange={(e) => setForm({ ...form, bio_ar: e.target.value })} />
+          </Field>
+          <Field label={tx("نبذة بالإنجليزية", "English bio")} wide>
+            <textarea dir="ltr" value={form.bio_en} onChange={(e) => setForm({ ...form, bio_en: e.target.value })} />
+          </Field>
+          <Field label={tx("ترتيب العرض", "Sort order")}>
+            <input
+              type="number"
+              inputMode="numeric"
+              value={form.sort_order}
+              onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) || 0 })}
+            />
+          </Field>
+          <CrudFormActions
+            busy={saving}
+            editing={Boolean(editingId)}
+            onCancel={cancelEdit}
+            createLabel={tx("إضافة", "Add")}
           />
-          <select value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value })}>
-            <option value="draft">{t(tx("مسودة", "Draft"))}</option>
-            <option value="published">{t(tx("منشور", "Published"))}</option>
-            <option value="archived">{t(tx("مؤرشف", "Archived"))}</option>
-          </select>
-          <input
-            required
-            placeholder={t(tx("الاسم بالعربية", "Arabic full name"))}
-            value={form.full_name_ar}
-            onChange={(event) => setForm({ ...form, full_name_ar: event.target.value })}
-          />
-          <input
-            required
-            placeholder={t(tx("الاسم بالإنجليزية", "English full name"))}
-            value={form.full_name_en}
-            onChange={(event) => setForm({ ...form, full_name_en: event.target.value })}
-          />
-          <input
-            placeholder={t(tx("المسمى الوظيفي بالعربية", "Arabic job title"))}
-            value={form.title_ar}
-            onChange={(event) => setForm({ ...form, title_ar: event.target.value })}
-          />
-          <input
-            placeholder={t(tx("المسمى الوظيفي بالإنجليزية", "English job title"))}
-            value={form.title_en}
-            onChange={(event) => setForm({ ...form, title_en: event.target.value })}
-          />
-          <input
-            placeholder={t(tx("التخصص بالعربية", "Arabic specialty"))}
-            value={form.specialty_ar}
-            onChange={(event) => setForm({ ...form, specialty_ar: event.target.value })}
-          />
-          <input
-            placeholder={t(tx("التخصص بالإنجليزية", "English specialty"))}
-            value={form.specialty_en}
-            onChange={(event) => setForm({ ...form, specialty_en: event.target.value })}
-          />
-          <select
-            value={form.department_id}
-            onChange={(event) => setForm({ ...form, department_id: event.target.value })}
-          >
-            <option value="">{t(tx("بدون قسم", "No department"))}</option>
-            {departments.map((dept) => (
-              <option key={dept.id} value={dept.id}>
-                {dept.title_ar}
-              </option>
-            ))}
-          </select>
-          <input
-            placeholder={t(tx("رابط الصورة", "Photo URL"))}
-            value={form.photo_url}
-            onChange={(event) => setForm({ ...form, photo_url: event.target.value })}
-          />
-          <textarea
-            placeholder={t(tx("نبذة بالعربية", "Arabic bio"))}
-            value={form.bio_ar}
-            onChange={(event) => setForm({ ...form, bio_ar: event.target.value })}
-          />
-          <textarea
-            placeholder={t(tx("نبذة بالإنجليزية", "English bio"))}
-            value={form.bio_en}
-            onChange={(event) => setForm({ ...form, bio_en: event.target.value })}
-          />
-          <input
-            type="number"
-            placeholder={t(tx("ترتيب العرض", "Sort order"))}
-            value={form.sort_order}
-            onChange={(event) => setForm({ ...form, sort_order: Number(event.target.value) || 0 })}
-          />
-          <button className="btn btn-primary">
-            <Save size={18} />
-            {editingId ? t(tx("تحديث", "Update")) : t(tx("إضافة", "Add"))}
-          </button>
-          {editingId ? (
-            <button type="button" className="btn btn-secondary" onClick={cancelEdit}>
-              <X size={18} />
-              {t(tx("إلغاء التعديل", "Cancel edit"))}
-            </button>
-          ) : null}
         </form>
       </div>
 
       <div className="admin-panel">
         <div className="admin-toolbar">
           <h2>{t(tx("الأطباء", "Doctors"))}</h2>
-          {loading ? <Loader2 className="spin" /> : null}
         </div>
         <div className="admin-table-wrap">
-          <table className="admin-table">
+          <table className="admin-table" aria-busy={loading}>
             <thead>
               <tr>
                 <th>{t(tx("الاسم", "Name"))}</th>
@@ -232,22 +219,32 @@ export function AdminDoctors() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((row) => (
-                <tr key={String(row.id)} className={editingId === row.id ? "is-editing" : ""}>
-                  <td>{displayRowValue(row, ["full_name_ar"])}</td>
-                  <td>{displayRowValue(row, ["specialty_ar"], "-")}</td>
-                  <td>{displayRowValue(row, ["status"], "-")}</td>
-                  <td>
-                    <button className="icon-button" onClick={() => edit(row)} aria-label={t(tx("تعديل", "Edit"))}>
-                      <Pencil size={17} />
-                    </button>
-                    <button className="icon-button danger" onClick={() => remove(row.id)} aria-label={t(tx("حذف", "Delete"))}>
-                      <Trash2 size={17} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {rows.length === 0 ? (
+              {loading ? (
+                <TableLoadingRows cols={4} />
+              ) : (
+                rows.map((row) => (
+                  <tr key={String(row.id)} className={editingId === row.id ? "is-editing" : ""}>
+                    <td>{displayRowValue(row, ["full_name_ar"])}</td>
+                    <td>{displayRowValue(row, ["specialty_ar"], "-")}</td>
+                    <td>
+                      <StatusBadge value={displayRowValue(row, ["status"], "-")} />
+                    </td>
+                    <td>
+                      <button className="icon-button" onClick={() => edit(row)} aria-label={t(tx("تعديل", "Edit"))}>
+                        <Pencil size={17} />
+                      </button>
+                      <button
+                        className="icon-button danger"
+                        onClick={() => requestDelete(String(row.id), displayRowValue(row, ["full_name_ar", "id"]))}
+                        aria-label={t(tx("حذف", "Delete"))}
+                      >
+                        <Trash2 size={17} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+              {!loading && rows.length === 0 ? (
                 <tr>
                   <td colSpan={4}>{t(tx("لا يوجد أطباء بعد.", "No doctors yet."))}</td>
                 </tr>
@@ -256,6 +253,7 @@ export function AdminDoctors() {
           </table>
         </div>
       </div>
+      {deleteDialog}
     </div>
   );
 }

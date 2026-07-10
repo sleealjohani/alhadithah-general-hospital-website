@@ -57,7 +57,10 @@
 
 .content-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* Responsive: fills the available width and never strands a lone card at a
+     third of its column. Works the same in the homepage's half-width columns
+     and on full-width directory pages. */
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
   gap: 18px;
 }
 

@@ -1,6 +1,6 @@
 import { type FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Loader2, LogIn } from "lucide-react";
+import { Eye, EyeOff, Loader2, LogIn } from "lucide-react";
 import { usePortal } from "../../providers/PortalProvider";
 import { identity } from "../../data/content";
 import { tx } from "../../utils/i18n";
@@ -12,18 +12,20 @@ export function AdminLoginPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
+    if (busy) return;
     setBusy(true);
-    const { error } = await signIn(email, password);
+    const { error } = await signIn(email.trim(), password);
     setBusy(false);
     if (error) {
       notify(t(tx("تعذر تسجيل الدخول. تحقق من البيانات.", "Unable to sign in. Check the credentials.")), "error");
       return;
     }
-    navigate("/admin");
+    navigate("/admin", { replace: true });
   };
 
   return (
@@ -49,21 +51,33 @@ export function AdminLoginPage() {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               autoComplete="email"
+              disabled={busy}
             />
           </label>
           <label>
             {t(tx("كلمة المرور", "Password"))}
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              autoComplete="current-password"
-            />
+            <span className="password-field">
+              <input
+                type={showPassword ? "text" : "password"}
+                required
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                autoComplete="current-password"
+                disabled={busy}
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword((value) => !value)}
+                aria-label={showPassword ? t(tx("إخفاء كلمة المرور", "Hide password")) : t(tx("إظهار كلمة المرور", "Show password"))}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </span>
           </label>
           <button className="btn btn-primary" disabled={busy}>
             {busy ? <Loader2 className="spin" size={18} /> : <LogIn size={18} />}
-            {t(tx("دخول", "Sign in"))}
+            {busy ? t(tx("جاري الدخول", "Signing in")) : t(tx("دخول", "Sign in"))}
           </button>
         </form>
         <Link className="text-link" to="/admin/setup">

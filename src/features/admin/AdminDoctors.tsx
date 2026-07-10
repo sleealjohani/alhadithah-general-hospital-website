@@ -5,6 +5,7 @@ import { SectionHeading } from "../../components/ui/SectionHeading";
 import { supabase } from "../../lib/supabase/client";
 import { displayRowValue } from "../../utils/format";
 import { tx } from "../../utils/i18n";
+import { AdminEditorPanel, AdminField, AdminFormActions, AdminHelpPanel } from "./AdminUX";
 
 type DoctorRow = Record<string, unknown>;
 type DepartmentOption = { id: string; title_ar: string };
@@ -99,7 +100,7 @@ export function AdminDoctors() {
         notify(error.message, "error");
         return;
       }
-      notify(t(tx("تم إضافة الطبيب.", "Doctor added.")), "success");
+      notify(t(tx("تمت إضافة الطبيب.", "Doctor added.")), "success");
     }
 
     cancelEdit();
@@ -122,99 +123,95 @@ export function AdminDoctors() {
       <SectionHeading
         title={tx("إدارة الأطباء", "Doctors")}
         description={tx(
-          "ملفات الأطباء والاستشاريين، مرتبطة بالأقسام، وتظهر للعامة عند النشر فقط.",
-          "Doctor and consultant profiles, linked to departments, shown publicly only when published."
+          "ملفات الأطباء والاستشاريين المرتبطة بالأقسام. لا تظهر للعامة إلا عند النشر.",
+          "Doctor and consultant profiles linked to departments. They appear publicly only when published."
         )}
       />
-      <div className="admin-panel">
+
+      <AdminHelpPanel
+        title={tx("كيف يظهر الطبيب في الموقع؟", "How doctors appear")}
+        description={tx(
+          "عند نشر الطبيب وربطه بقسم، يمكن استخدام بياناته في دليل الأطباء والصفحات العامة المرتبطة بالأقسام.",
+          "When published and linked to a department, the doctor can appear in doctor directories and related public department views."
+        )}
+        items={[
+          tx("استخدم المسودة إلى أن تكتمل بيانات الطبيب.", "Use Draft until the profile is complete."),
+          tx("رابط الصورة اختياري، ويمكن لاحقًا استخدام مكتبة الوسائط لنسخ رابط صورة معتمد.", "Photo URL is optional; the media library can later provide approved image URLs."),
+          tx("التخصص والمسمى يساعدان الزائر على البحث والفرز.", "Specialty and title help visitors scan and filter.")
+        ]}
+      />
+
+      <AdminEditorPanel
+        title={tx("إضافة طبيب", "Add doctor")}
+        description={tx("أدخل البيانات الأساسية أولًا، ثم أضف النبذة والصورة إذا كانت معتمدة.", "Enter core details first, then add bio and photo when approved.")}
+        impact={tx("لن يظهر الطبيب في الموقع العام إلا عند اختيار منشور.", "The doctor will not appear publicly unless status is Published.")}
+        editing={Boolean(editingId)}
+      >
         <form className="admin-form" onSubmit={save}>
-          <input
-            required
-            placeholder={t(tx("المعرف (slug)", "Slug"))}
-            value={form.slug}
-            onChange={(event) => setForm({ ...form, slug: event.target.value })}
-          />
-          <select value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value })}>
-            <option value="draft">{t(tx("مسودة", "Draft"))}</option>
-            <option value="published">{t(tx("منشور", "Published"))}</option>
-            <option value="archived">{t(tx("مؤرشف", "Archived"))}</option>
-          </select>
-          <input
-            required
-            placeholder={t(tx("الاسم بالعربية", "Arabic full name"))}
-            value={form.full_name_ar}
-            onChange={(event) => setForm({ ...form, full_name_ar: event.target.value })}
-          />
-          <input
-            required
-            placeholder={t(tx("الاسم بالإنجليزية", "English full name"))}
-            value={form.full_name_en}
-            onChange={(event) => setForm({ ...form, full_name_en: event.target.value })}
-          />
-          <input
-            placeholder={t(tx("المسمى الوظيفي بالعربية", "Arabic job title"))}
-            value={form.title_ar}
-            onChange={(event) => setForm({ ...form, title_ar: event.target.value })}
-          />
-          <input
-            placeholder={t(tx("المسمى الوظيفي بالإنجليزية", "English job title"))}
-            value={form.title_en}
-            onChange={(event) => setForm({ ...form, title_en: event.target.value })}
-          />
-          <input
-            placeholder={t(tx("التخصص بالعربية", "Arabic specialty"))}
-            value={form.specialty_ar}
-            onChange={(event) => setForm({ ...form, specialty_ar: event.target.value })}
-          />
-          <input
-            placeholder={t(tx("التخصص بالإنجليزية", "English specialty"))}
-            value={form.specialty_en}
-            onChange={(event) => setForm({ ...form, specialty_en: event.target.value })}
-          />
-          <select
-            value={form.department_id}
-            onChange={(event) => setForm({ ...form, department_id: event.target.value })}
-          >
-            <option value="">{t(tx("بدون قسم", "No department"))}</option>
-            {departments.map((dept) => (
-              <option key={dept.id} value={dept.id}>
-                {dept.title_ar}
-              </option>
-            ))}
-          </select>
-          <input
-            placeholder={t(tx("رابط الصورة", "Photo URL"))}
-            value={form.photo_url}
-            onChange={(event) => setForm({ ...form, photo_url: event.target.value })}
-          />
-          <textarea
-            placeholder={t(tx("نبذة بالعربية", "Arabic bio"))}
-            value={form.bio_ar}
-            onChange={(event) => setForm({ ...form, bio_ar: event.target.value })}
-          />
-          <textarea
-            placeholder={t(tx("نبذة بالإنجليزية", "English bio"))}
-            value={form.bio_en}
-            onChange={(event) => setForm({ ...form, bio_en: event.target.value })}
-          />
-          <input
-            type="number"
-            placeholder={t(tx("ترتيب العرض", "Sort order"))}
-            value={form.sort_order}
-            onChange={(event) => setForm({ ...form, sort_order: Number(event.target.value) || 0 })}
-          />
-          <button className="btn btn-primary">
-            <Save size={18} />
-            {editingId ? t(tx("تحديث", "Update")) : t(tx("إضافة", "Add"))}
-          </button>
-          {editingId ? (
-            <button type="button" className="btn btn-secondary" onClick={cancelEdit}>
-              <X size={18} />
-              {t(tx("إلغاء التعديل", "Cancel edit"))}
+          <AdminField label={tx("المعرف slug", "Slug")} help={tx("مثال: ahmed-alharbi. يستخدم للروابط والبحث.", "Example: ahmed-alharbi. Used for links and search.")}>
+            <input required value={form.slug} onChange={(event) => setForm({ ...form, slug: event.target.value })} />
+          </AdminField>
+          <AdminField label={tx("حالة النشر", "Publishing status")}>
+            <select value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value })}>
+              <option value="draft">{t(tx("مسودة", "Draft"))}</option>
+              <option value="published">{t(tx("منشور", "Published"))}</option>
+              <option value="archived">{t(tx("مؤرشف", "Archived"))}</option>
+            </select>
+          </AdminField>
+          <AdminField label={tx("الاسم بالعربية", "Arabic full name")}>
+            <input required value={form.full_name_ar} onChange={(event) => setForm({ ...form, full_name_ar: event.target.value })} />
+          </AdminField>
+          <AdminField label={tx("الاسم بالإنجليزية", "English full name")}>
+            <input required value={form.full_name_en} onChange={(event) => setForm({ ...form, full_name_en: event.target.value })} />
+          </AdminField>
+          <AdminField label={tx("المسمى الوظيفي بالعربية", "Arabic job title")}>
+            <input value={form.title_ar} onChange={(event) => setForm({ ...form, title_ar: event.target.value })} />
+          </AdminField>
+          <AdminField label={tx("المسمى الوظيفي بالإنجليزية", "English job title")}>
+            <input value={form.title_en} onChange={(event) => setForm({ ...form, title_en: event.target.value })} />
+          </AdminField>
+          <AdminField label={tx("التخصص بالعربية", "Arabic specialty")}>
+            <input value={form.specialty_ar} onChange={(event) => setForm({ ...form, specialty_ar: event.target.value })} />
+          </AdminField>
+          <AdminField label={tx("التخصص بالإنجليزية", "English specialty")}>
+            <input value={form.specialty_en} onChange={(event) => setForm({ ...form, specialty_en: event.target.value })} />
+          </AdminField>
+          <AdminField label={tx("القسم", "Department")} help={tx("اربط الطبيب بقسم منشور إن وجد.", "Link the doctor to a published department when available.")}>
+            <select value={form.department_id} onChange={(event) => setForm({ ...form, department_id: event.target.value })}>
+              <option value="">{t(tx("بدون قسم", "No department"))}</option>
+              {departments.map((dept) => (
+                <option key={dept.id} value={dept.id}>
+                  {dept.title_ar}
+                </option>
+              ))}
+            </select>
+          </AdminField>
+          <AdminField label={tx("رابط الصورة", "Photo URL")} help={tx("استخدم صورة رسمية معتمدة فقط.", "Use only an approved official image.")}>
+            <input value={form.photo_url} onChange={(event) => setForm({ ...form, photo_url: event.target.value })} />
+          </AdminField>
+          <AdminField wide label={tx("نبذة بالعربية", "Arabic bio")}>
+            <textarea value={form.bio_ar} onChange={(event) => setForm({ ...form, bio_ar: event.target.value })} />
+          </AdminField>
+          <AdminField wide label={tx("نبذة بالإنجليزية", "English bio")}>
+            <textarea value={form.bio_en} onChange={(event) => setForm({ ...form, bio_en: event.target.value })} />
+          </AdminField>
+          <AdminField label={tx("ترتيب العرض", "Sort order")}>
+            <input type="number" value={form.sort_order} onChange={(event) => setForm({ ...form, sort_order: Number(event.target.value) || 0 })} />
+          </AdminField>
+          <AdminFormActions>
+            <button className="btn btn-primary">
+              <Save size={18} />
+              {editingId ? t(tx("تحديث", "Update")) : t(tx("إضافة", "Add"))}
             </button>
-          ) : null}
+            {editingId ? (
+              <button type="button" className="btn btn-secondary" onClick={cancelEdit}>
+                <X size={18} />
+                {t(tx("إلغاء التعديل", "Cancel edit"))}
+              </button>
+            ) : null}
+          </AdminFormActions>
         </form>
-      </div>
+      </AdminEditorPanel>
 
       <div className="admin-panel">
         <div className="admin-toolbar">

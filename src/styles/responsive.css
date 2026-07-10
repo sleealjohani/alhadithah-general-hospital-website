@@ -99,10 +99,18 @@
   .admin-sidebar {
     position: static;
     height: auto;
+    padding: 16px;
   }
 
   .admin-sidebar nav {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    display: flex;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+  }
+
+  .admin-sidebar nav a {
+    flex: 0 0 auto;
   }
 }
 
@@ -217,6 +225,52 @@
 
   .admin-main {
     padding: 16px;
+  }
+
+  .admin-sidebar {
+    position: sticky;
+    z-index: 20;
+    top: 0;
+    max-height: 42vh;
+  }
+
+  .admin-brand {
+    margin-bottom: 12px;
+  }
+
+  .admin-brand img {
+    width: 54px;
+  }
+
+  .admin-sidebar nav {
+    display: flex;
+    grid-template-columns: none;
+    gap: 8px;
+    overflow-x: auto;
+  }
+
+  .admin-sidebar a {
+    min-height: 42px;
+    white-space: nowrap;
+  }
+
+  .admin-panel,
+  .admin-editor-panel > summary,
+  .admin-editor-panel .admin-form {
+    padding: 16px;
+  }
+
+  .admin-impact-note {
+    margin: 14px 16px 0;
+  }
+
+  .admin-form-actions .btn {
+    width: 100%;
+  }
+
+  .admin-table th,
+  .admin-table td {
+    min-width: 126px;
   }
 
   .pro-hero {

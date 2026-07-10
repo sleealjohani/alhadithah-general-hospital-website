@@ -167,6 +167,8 @@
 select,
 input,
 textarea {
+  width: 100%;
+  min-width: 0;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--surface);
@@ -192,6 +194,7 @@ textarea {
 .admin-form {
   display: grid;
   gap: 16px;
+  min-width: 0;
 }
 
 .portal-form {
@@ -227,6 +230,11 @@ label {
 .admin-form .btn,
 .admin-form label:has(textarea) {
   grid-column: 1 / -1;
+}
+
+.admin-form .check-field input,
+.admin-form input[type="checkbox"] {
+  width: auto;
 }
 
 .faq-list {

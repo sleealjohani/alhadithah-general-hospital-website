@@ -1,4 +1,4 @@
-import { Link, NavLink, Route, Routes, useNavigate } from "react-router-dom";
+import { Link, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
 import { usePortal } from "../../providers/PortalProvider";
 import { Icon } from "../../components/ui/Icon";
@@ -23,8 +23,14 @@ export function AdminLayout() {
   const { t, notify } = usePortal();
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   if (!profile) return null;
+
+  const currentPage =
+    [...adminNav].reverse().find((item) =>
+      item.path === "/admin" ? location.pathname === "/admin" : location.pathname.startsWith(item.path)
+    ) ?? adminNav[0];
 
   const logout = async () => {
     await signOut();
@@ -51,8 +57,12 @@ export function AdminLayout() {
       <section className="admin-main">
         <header className="admin-topbar">
           <div>
-            <span className="eyebrow">{t(roleLabels[profile.role] || roleLabels.viewer)}</span>
-            <h1>{profile.full_name || profile.email || t(tx("مستخدم إداري", "Admin user"))}</h1>
+            <span className="eyebrow">{t(tx("لوحة الإدارة", "Admin console"))}</span>
+            <h1>{t(currentPage.label)}</h1>
+            <div className="admin-user-chip">
+              <strong>{t(roleLabels[profile.role] || roleLabels.viewer)}</strong>
+              <span>{profile.full_name || profile.email || t(tx("مستخدم إداري", "Admin user"))}</span>
+            </div>
           </div>
           <button className="btn btn-secondary" onClick={logout}>
             <LogOut size={18} />

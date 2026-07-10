@@ -5,6 +5,7 @@ import { SectionHeading } from "../../components/ui/SectionHeading";
 import { supabase } from "../../lib/supabase/client";
 import { displayRowValue } from "../../utils/format";
 import { tx } from "../../utils/i18n";
+import { AdminEditorPanel, AdminField, AdminFormActions, AdminHelpPanel } from "./AdminUX";
 
 type PageRow = Record<string, unknown>;
 
@@ -116,101 +117,108 @@ export function AdminPages() {
       <SectionHeading
         title={tx("إدارة الصفحات", "Pages")}
         description={tx(
-          "صفحات عامة قابلة للإنشاء والتعديل، مع عناوين وميتاداتا SEO ثنائية اللغة.",
-          "General-purpose pages with bilingual content and SEO metadata."
+          "أنشئ صفحات عامة إضافية مثل صفحة قسم أو خدمة خاصة. الصفحة المنشورة تظهر على رابط /page-slug.",
+          "Create extra public pages such as a department or special service page. Published pages appear at /page-slug."
         )}
       />
-      <div className="admin-panel">
+
+      <AdminHelpPanel
+        title={tx("متى أستخدم الصفحات؟", "When to use pages")}
+        description={tx(
+          "استخدم هذه الشاشة للصفحات العامة الطويلة التي تحتاج محتوى مستقل وبيانات SEO، وليس للبطاقات السريعة مثل الأخبار والخدمات.",
+          "Use this screen for standalone public pages with longer content and SEO metadata, not for quick cards like news or services."
+        )}
+        items={[
+          tx("المعرف slug يصبح جزءًا من الرابط، مثل rehab لصفحة /rehab.", "The slug becomes part of the URL, such as rehab for /rehab."),
+          tx("الحالة منشور تعني أن الصفحة يمكن أن تظهر للزوار مباشرة.", "Published means the page can appear to visitors immediately."),
+          tx("حقول SEO تساعد مشاركة الصفحة في محركات البحث والروابط.", "SEO fields help search and link previews.")
+        ]}
+      />
+
+      <AdminEditorPanel
+        title={tx("إضافة صفحة", "Add page")}
+        description={tx("قسّمنا الحقول حسب الاستخدام حتى لا تضيع بين المحتوى وحقول SEO.", "Fields are grouped by purpose so content and SEO do not get mixed.")}
+        impact={tx(
+          "الصفحة لا تظهر للعامة إلا إذا كانت حالتها منشور. استخدم المسودة أثناء التجهيز.",
+          "The page stays hidden unless status is Published. Use Draft while preparing."
+        )}
+        editing={Boolean(editingId)}
+      >
         <form className="admin-form" onSubmit={save}>
-          <input
-            required
-            placeholder={t(tx("المعرف (slug)", "Slug"))}
-            value={form.slug}
-            onChange={(event) => setForm({ ...form, slug: event.target.value })}
-          />
-          <select
-            value={form.status}
-            onChange={(event) => setForm({ ...form, status: event.target.value })}
-          >
-            <option value="draft">{t(tx("مسودة", "Draft"))}</option>
-            <option value="published">{t(tx("منشور", "Published"))}</option>
-            <option value="archived">{t(tx("مؤرشف", "Archived"))}</option>
-          </select>
-          <input
-            required
-            placeholder={t(tx("العنوان بالعربية", "Arabic title"))}
-            value={form.title_ar}
-            onChange={(event) => setForm({ ...form, title_ar: event.target.value })}
-          />
-          <input
-            required
-            placeholder={t(tx("العنوان بالإنجليزية", "English title"))}
-            value={form.title_en}
-            onChange={(event) => setForm({ ...form, title_en: event.target.value })}
-          />
-          <input
-            placeholder={t(tx("مقتطف بالعربية", "Arabic excerpt"))}
-            value={form.excerpt_ar}
-            onChange={(event) => setForm({ ...form, excerpt_ar: event.target.value })}
-          />
-          <input
-            placeholder={t(tx("مقتطف بالإنجليزية", "English excerpt"))}
-            value={form.excerpt_en}
-            onChange={(event) => setForm({ ...form, excerpt_en: event.target.value })}
-          />
-          <textarea
-            placeholder={t(tx("المحتوى بالعربية", "Arabic content"))}
-            value={form.content_ar}
-            onChange={(event) => setForm({ ...form, content_ar: event.target.value })}
-          />
-          <textarea
-            placeholder={t(tx("المحتوى بالإنجليزية", "English content"))}
-            value={form.content_en}
-            onChange={(event) => setForm({ ...form, content_en: event.target.value })}
-          />
-          <input
-            placeholder={t(tx("عنوان SEO بالعربية", "SEO title (Arabic)"))}
-            value={form.seo_title_ar}
-            onChange={(event) => setForm({ ...form, seo_title_ar: event.target.value })}
-          />
-          <input
-            placeholder={t(tx("عنوان SEO بالإنجليزية", "SEO title (English)"))}
-            value={form.seo_title_en}
-            onChange={(event) => setForm({ ...form, seo_title_en: event.target.value })}
-          />
-          <textarea
-            placeholder={t(tx("وصف SEO بالعربية", "SEO description (Arabic)"))}
-            value={form.seo_description_ar}
-            onChange={(event) => setForm({ ...form, seo_description_ar: event.target.value })}
-          />
-          <textarea
-            placeholder={t(tx("وصف SEO بالإنجليزية", "SEO description (English)"))}
-            value={form.seo_description_en}
-            onChange={(event) => setForm({ ...form, seo_description_en: event.target.value })}
-          />
-          <input
-            placeholder={t(tx("رابط صورة المشاركة (OG Image)", "OG image URL"))}
-            value={form.og_image_url}
-            onChange={(event) => setForm({ ...form, og_image_url: event.target.value })}
-          />
-          <input
-            type="number"
-            placeholder={t(tx("ترتيب العرض", "Sort order"))}
-            value={form.sort_order}
-            onChange={(event) => setForm({ ...form, sort_order: Number(event.target.value) || 0 })}
-          />
-          <button className="btn btn-primary">
-            <Save size={18} />
-            {editingId ? t(tx("تحديث", "Update")) : t(tx("إنشاء", "Create"))}
-          </button>
-          {editingId ? (
-            <button type="button" className="btn btn-secondary" onClick={cancelEdit}>
-              <X size={18} />
-              {t(tx("إلغاء التعديل", "Cancel edit"))}
+          <div className="admin-form-section">
+            <h3>{t(tx("أساسيات الصفحة", "Page basics"))}</h3>
+            <p>{t(tx("هذه الحقول تحدد الرابط والعنوان والحالة.", "These fields define URL, title, and status."))}</p>
+          </div>
+          <AdminField label={tx("المعرف slug", "Slug")} help={tx("استخدم أحرف إنجليزية وشرطات فقط. مثال: rehab-center.", "Use English letters and hyphens only. Example: rehab-center.")}>
+            <input required value={form.slug} onChange={(event) => setForm({ ...form, slug: event.target.value })} />
+          </AdminField>
+          <AdminField label={tx("حالة النشر", "Publishing status")}>
+            <select value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value })}>
+              <option value="draft">{t(tx("مسودة", "Draft"))}</option>
+              <option value="published">{t(tx("منشور", "Published"))}</option>
+              <option value="archived">{t(tx("مؤرشف", "Archived"))}</option>
+            </select>
+          </AdminField>
+          <AdminField label={tx("العنوان بالعربية", "Arabic title")}>
+            <input required value={form.title_ar} onChange={(event) => setForm({ ...form, title_ar: event.target.value })} />
+          </AdminField>
+          <AdminField label={tx("العنوان بالإنجليزية", "English title")}>
+            <input required value={form.title_en} onChange={(event) => setForm({ ...form, title_en: event.target.value })} />
+          </AdminField>
+          <AdminField label={tx("مقتطف بالعربية", "Arabic excerpt")} help={tx("ملخص قصير يظهر في رأس الصفحة أو نتائج البحث.", "Short summary shown in the page hero or search results.")}>
+            <input value={form.excerpt_ar} onChange={(event) => setForm({ ...form, excerpt_ar: event.target.value })} />
+          </AdminField>
+          <AdminField label={tx("مقتطف بالإنجليزية", "English excerpt")}>
+            <input value={form.excerpt_en} onChange={(event) => setForm({ ...form, excerpt_en: event.target.value })} />
+          </AdminField>
+
+          <div className="admin-form-section">
+            <h3>{t(tx("محتوى الصفحة", "Page content"))}</h3>
+            <p>{t(tx("اكتب النص الرئيسي للصفحة. يمكن استخدام فقرات قصيرة مفصولة بأسطر.", "Write the main page copy. Short paragraphs separated by lines work best."))}</p>
+          </div>
+          <AdminField wide label={tx("المحتوى بالعربية", "Arabic content")}>
+            <textarea value={form.content_ar} onChange={(event) => setForm({ ...form, content_ar: event.target.value })} />
+          </AdminField>
+          <AdminField wide label={tx("المحتوى بالإنجليزية", "English content")}>
+            <textarea value={form.content_en} onChange={(event) => setForm({ ...form, content_en: event.target.value })} />
+          </AdminField>
+
+          <div className="admin-form-section">
+            <h3>{t(tx("محركات البحث والمشاركة", "SEO and sharing"))}</h3>
+            <p>{t(tx("هذه الحقول اختيارية لكنها تحسن ظهور الصفحة عند المشاركة.", "These fields are optional but improve link previews and search appearance."))}</p>
+          </div>
+          <AdminField label={tx("عنوان SEO بالعربية", "SEO title Arabic")}>
+            <input value={form.seo_title_ar} onChange={(event) => setForm({ ...form, seo_title_ar: event.target.value })} />
+          </AdminField>
+          <AdminField label={tx("عنوان SEO بالإنجليزية", "SEO title English")}>
+            <input value={form.seo_title_en} onChange={(event) => setForm({ ...form, seo_title_en: event.target.value })} />
+          </AdminField>
+          <AdminField wide label={tx("وصف SEO بالعربية", "SEO description Arabic")}>
+            <textarea value={form.seo_description_ar} onChange={(event) => setForm({ ...form, seo_description_ar: event.target.value })} />
+          </AdminField>
+          <AdminField wide label={tx("وصف SEO بالإنجليزية", "SEO description English")}>
+            <textarea value={form.seo_description_en} onChange={(event) => setForm({ ...form, seo_description_en: event.target.value })} />
+          </AdminField>
+          <AdminField label={tx("رابط صورة المشاركة", "OG image URL")}>
+            <input value={form.og_image_url} onChange={(event) => setForm({ ...form, og_image_url: event.target.value })} />
+          </AdminField>
+          <AdminField label={tx("ترتيب العرض", "Sort order")} help={tx("الأرقام الأقل تظهر أولًا في القوائم.", "Lower numbers appear first in lists.")}>
+            <input type="number" value={form.sort_order} onChange={(event) => setForm({ ...form, sort_order: Number(event.target.value) || 0 })} />
+          </AdminField>
+          <AdminFormActions>
+            <button className="btn btn-primary">
+              <Save size={18} />
+              {editingId ? t(tx("تحديث", "Update")) : t(tx("إنشاء", "Create"))}
             </button>
-          ) : null}
+            {editingId ? (
+              <button type="button" className="btn btn-secondary" onClick={cancelEdit}>
+                <X size={18} />
+                {t(tx("إلغاء التعديل", "Cancel edit"))}
+              </button>
+            ) : null}
+          </AdminFormActions>
         </form>
-      </div>
+      </AdminEditorPanel>
 
       <div className="admin-panel">
         <div className="admin-toolbar">

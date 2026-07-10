@@ -35,12 +35,45 @@
   margin: 22px 0;
 }
 
+.password-field {
+  position: relative;
+  display: block;
+}
+
+.password-field input {
+  padding-inline-end: 48px;
+}
+
+.password-toggle {
+  position: absolute;
+  inset-block: 6px;
+  inset-inline-end: 6px;
+  display: inline-grid;
+  width: 36px;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.password-toggle:hover {
+  background: var(--surface-soft);
+  color: var(--text);
+}
+
 .admin-shell {
   display: grid;
-  grid-template-columns: 290px minmax(0, 1fr);
+  grid-template-columns: 270px minmax(0, 1fr);
   min-height: 100vh;
   background: #f4f8f7;
   color: #102a27;
+}
+
+.admin-shell,
+.admin-shell * {
+  box-sizing: border-box;
 }
 
 :root[data-theme="dark"] .admin-shell {
@@ -89,6 +122,8 @@
 
 .admin-main {
   min-width: 0;
+  max-width: 100%;
+  overflow-x: hidden;
   padding: 26px;
 }
 
@@ -102,6 +137,21 @@
 
 .admin-topbar h1 {
   margin: 8px 0 0;
+}
+
+.admin-user-chip {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: var(--text-secondary);
+  font-size: 0.86rem;
+  font-weight: 750;
+}
+
+.admin-user-chip span {
+  overflow-wrap: anywhere;
 }
 
 .admin-page {
@@ -136,6 +186,158 @@
 
 .admin-panel {
   padding: 22px;
+}
+
+.admin-help-panel {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 14px;
+  border: 1px solid color-mix(in srgb, var(--primary) 24%, var(--border));
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--primary-soft) 62%, white);
+  padding: 18px;
+}
+
+.admin-help-icon {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--primary-strong);
+}
+
+.admin-help-panel h3,
+.admin-help-panel p {
+  margin: 0;
+}
+
+.admin-help-panel h3 {
+  font-size: 1rem;
+}
+
+.admin-help-panel p,
+.admin-help-panel li {
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+
+.admin-help-panel ul {
+  display: grid;
+  gap: 4px;
+  margin: 10px 0 0;
+  padding-inline-start: 20px;
+}
+
+.admin-editor-panel {
+  padding: 0;
+  overflow: hidden;
+}
+
+.admin-editor-panel > summary {
+  display: flex;
+  cursor: pointer;
+  list-style: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 18px 22px;
+}
+
+.admin-editor-panel > summary::-webkit-details-marker {
+  display: none;
+}
+
+.admin-editor-panel > summary strong {
+  display: block;
+  color: var(--text);
+  font-size: 1.02rem;
+}
+
+.admin-editor-panel > summary small {
+  display: block;
+  margin-top: 4px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.admin-editor-panel[open] > summary {
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-editor-panel[open] > summary svg {
+  transform: rotate(180deg);
+}
+
+.admin-editor-panel .admin-form {
+  padding: 22px;
+}
+
+.admin-impact-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 18px 22px 0;
+  border: 1px dashed color-mix(in srgb, var(--primary) 42%, var(--border));
+  border-radius: var(--radius-md);
+  background: var(--surface-soft);
+  padding: 12px 14px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+.admin-impact-note svg {
+  flex: 0 0 auto;
+  color: var(--primary);
+  margin-top: 3px;
+}
+
+.admin-field {
+  min-width: 0;
+}
+
+.admin-field > span {
+  color: var(--text);
+}
+
+.admin-field > small {
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  font-weight: 650;
+  line-height: 1.6;
+}
+
+.admin-field-wide,
+.admin-form-actions,
+.admin-form-section {
+  grid-column: 1 / -1;
+}
+
+.admin-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.admin-form-section {
+  display: grid;
+  gap: 8px;
+  border-top: 1px dashed var(--border);
+  padding-top: 16px;
+}
+
+.admin-form-section h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.admin-form-section p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.84rem;
 }
 
 .check-list {

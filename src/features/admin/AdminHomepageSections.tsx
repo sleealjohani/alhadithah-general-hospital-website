@@ -5,6 +5,7 @@ import { SectionHeading } from "../../components/ui/SectionHeading";
 import { supabase } from "../../lib/supabase/client";
 import { displayRowValue } from "../../utils/format";
 import { tx } from "../../utils/i18n";
+import { AdminEditorPanel, AdminField, AdminFormActions, AdminHelpPanel } from "./AdminUX";
 
 type SectionRow = Record<string, unknown>;
 
@@ -29,10 +30,7 @@ export function AdminHomepageSections() {
   const loadRows = useCallback(async () => {
     if (!supabase) return;
     setLoading(true);
-    const { data, error } = await supabase
-      .from("homepage_sections")
-      .select("*")
-      .order("sort_order", { ascending: true });
+    const { data, error } = await supabase.from("homepage_sections").select("*").order("sort_order", { ascending: true });
     setLoading(false);
     if (error) {
       notify(error.message, "error");
@@ -126,71 +124,74 @@ export function AdminHomepageSections() {
       <SectionHeading
         title={tx("أقسام الصفحة الرئيسية", "Homepage Sections")}
         description={tx(
-          "تفعيل/تعطيل وترتيب أقسام الرئيسية، مع بيانات إضافية بصيغة JSON لكل قسم.",
-          "Toggle, order, and configure homepage sections, with a JSON field for extra per-section data."
+          "تحكم في ظهور وترتيب أقسام الصفحة الرئيسية. الإيقاف يخفي القسم، والترتيب يحدد مكانه.",
+          "Control homepage section visibility and order. Disabling hides the section; sort order controls its position."
         )}
       />
-      <div className="admin-panel">
+
+      <AdminHelpPanel
+        title={tx("مفاتيح الأقسام", "Section keys")}
+        description={tx(
+          "مفتاح القسم يربط بيانات قاعدة البيانات بمكان محدد في الصفحة الرئيسية. لا تغير المفتاح لسجل موجود إلا إذا كنت تعرف أثره.",
+          "The section key connects database content to a specific homepage area. Do not change an existing key unless you know the impact."
+        )}
+        items={[
+          tx("hero: منطقة البداية الرئيسية.", "hero: main hero area."),
+          tx("quick_access: بطاقات الوصول السريع.", "quick_access: quick access cards."),
+          tx("إذا كان القسم غير مدعوم في الواجهة، لن يظهر حتى لو كان مفعّلًا.", "If a key is not supported by the frontend, it will not render even if active.")
+        ]}
+      />
+
+      <AdminEditorPanel
+        title={tx("إضافة أو تعديل قسم", "Add or edit section")}
+        description={tx("استخدمه لتغيير عناوين الأقسام أو ترتيبها بدون تعديل الكود.", "Use this to change section titles or order without code changes.")}
+        impact={tx("التغيير ينعكس على الصفحة الرئيسية بعد الحفظ إذا كان القسم مفعّلًا.", "Changes appear on the homepage after saving when the section is active.")}
+        editing={Boolean(editingId)}
+      >
         <form className="admin-form" onSubmit={save}>
-          <input
-            required
-            disabled={Boolean(editingId)}
-            placeholder={t(tx("مفتاح القسم (مثال: hero)", "Section key (e.g. hero)"))}
-            value={form.section_key}
-            onChange={(event) => setForm({ ...form, section_key: event.target.value })}
-          />
-          <input
-            type="number"
-            placeholder={t(tx("ترتيب العرض", "Sort order"))}
-            value={form.sort_order}
-            onChange={(event) => setForm({ ...form, sort_order: Number(event.target.value) || 0 })}
-          />
-          <input
-            placeholder={t(tx("العنوان بالعربية", "Arabic title"))}
-            value={form.title_ar}
-            onChange={(event) => setForm({ ...form, title_ar: event.target.value })}
-          />
-          <input
-            placeholder={t(tx("العنوان بالإنجليزية", "English title"))}
-            value={form.title_en}
-            onChange={(event) => setForm({ ...form, title_en: event.target.value })}
-          />
-          <input
-            placeholder={t(tx("العنوان الفرعي بالعربية", "Arabic subtitle"))}
-            value={form.subtitle_ar}
-            onChange={(event) => setForm({ ...form, subtitle_ar: event.target.value })}
-          />
-          <input
-            placeholder={t(tx("العنوان الفرعي بالإنجليزية", "English subtitle"))}
-            value={form.subtitle_en}
-            onChange={(event) => setForm({ ...form, subtitle_en: event.target.value })}
-          />
-          <textarea
-            className="code-field"
-            placeholder='{"key": "value"}'
-            value={form.contentText}
-            onChange={(event) => setForm({ ...form, contentText: event.target.value })}
-          />
-          <label className="check-field">
-            <input
-              type="checkbox"
-              checked={form.is_active}
-              onChange={(event) => setForm({ ...form, is_active: event.target.checked })}
-            />
-            {t(tx("قسم مفعّل", "Active"))}
+          <AdminField label={tx("مفتاح القسم", "Section key")} help={tx("مثال: hero أو quick_access. المفتاح لا يتغير أثناء التعديل.", "Example: hero or quick_access. The key is locked while editing.")}>
+            <input required disabled={Boolean(editingId)} value={form.section_key} onChange={(event) => setForm({ ...form, section_key: event.target.value })} />
+          </AdminField>
+          <AdminField label={tx("ترتيب العرض", "Sort order")} help={tx("الأرقام الأقل تظهر أعلى الصفحة.", "Lower numbers appear earlier on the page.")}>
+            <input type="number" value={form.sort_order} onChange={(event) => setForm({ ...form, sort_order: Number(event.target.value) || 0 })} />
+          </AdminField>
+          <AdminField label={tx("العنوان بالعربية", "Arabic title")}>
+            <input value={form.title_ar} onChange={(event) => setForm({ ...form, title_ar: event.target.value })} />
+          </AdminField>
+          <AdminField label={tx("العنوان بالإنجليزية", "English title")}>
+            <input value={form.title_en} onChange={(event) => setForm({ ...form, title_en: event.target.value })} />
+          </AdminField>
+          <AdminField label={tx("العنوان الفرعي بالعربية", "Arabic subtitle")}>
+            <input value={form.subtitle_ar} onChange={(event) => setForm({ ...form, subtitle_ar: event.target.value })} />
+          </AdminField>
+          <AdminField label={tx("العنوان الفرعي بالإنجليزية", "English subtitle")}>
+            <input value={form.subtitle_en} onChange={(event) => setForm({ ...form, subtitle_en: event.target.value })} />
+          </AdminField>
+          <AdminField
+            wide
+            label={tx("بيانات إضافية JSON", "Extra JSON data")}
+            help={tx("اتركها {} إذا لم تعرف المطلوب. يجب أن تكون JSON صحيحة.", "Leave as {} if unsure. Must be valid JSON.")}
+          >
+            <textarea className="code-field" value={form.contentText} onChange={(event) => setForm({ ...form, contentText: event.target.value })} />
+          </AdminField>
+          <label className="check-field admin-field">
+            <input type="checkbox" checked={form.is_active} onChange={(event) => setForm({ ...form, is_active: event.target.checked })} />
+            {t(tx("قسم مفعّل", "Active section"))}
           </label>
-          <button className="btn btn-primary">
-            <Save size={18} />
-            {editingId ? t(tx("تحديث", "Update")) : t(tx("إنشاء", "Create"))}
-          </button>
-          {editingId ? (
-            <button type="button" className="btn btn-secondary" onClick={cancelEdit}>
-              <X size={18} />
-              {t(tx("إلغاء التعديل", "Cancel edit"))}
+          <AdminFormActions>
+            <button className="btn btn-primary">
+              <Save size={18} />
+              {editingId ? t(tx("تحديث", "Update")) : t(tx("إنشاء", "Create"))}
             </button>
-          ) : null}
+            {editingId ? (
+              <button type="button" className="btn btn-secondary" onClick={cancelEdit}>
+                <X size={18} />
+                {t(tx("إلغاء التعديل", "Cancel edit"))}
+              </button>
+            ) : null}
+          </AdminFormActions>
         </form>
-      </div>
+      </AdminEditorPanel>
 
       <div className="admin-panel">
         <div className="admin-toolbar">

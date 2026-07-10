@@ -7,21 +7,26 @@
     display: inline-flex;
   }
 
-  .primary-nav {
+  .primary-nav-wrap {
     position: absolute;
-    inset: 100% 16px auto 16px;
+    inset: 100% 12px auto 12px;
     display: none;
-    flex-direction: column;
-    align-items: stretch;
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     background: var(--surface);
     box-shadow: var(--shadow-lg);
-    padding: 12px;
+    padding: 10px;
+    z-index: 45;
   }
 
-  .primary-nav.is-open {
-    display: flex;
+  .primary-nav-wrap.is-open {
+    display: block;
+  }
+
+  .primary-nav {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 0;
   }
 
   .more-menu > div {

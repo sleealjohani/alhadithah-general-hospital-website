@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { Accessibility, Languages, LockKeyhole, Menu, Moon, Search, Sun, X } from "lucide-react";
+import { Accessibility, Languages, LockKeyhole, Menu, Search, Sun, Moon, X } from "lucide-react";
 import { usePortal } from "../../providers/PortalProvider";
 import { identity, navItems } from "../../data/content";
 import { useNavigationItems } from "../../hooks/useNavigationItems";
@@ -11,15 +11,12 @@ export function Header() {
   const { t, locale, setLocale, theme, setTheme, highContrast, setHighContrast } = usePortal();
   const [open, setOpen] = useState(false);
   const headerNav = useNavigationItems("header");
-  /* Merge the standard pages with any admin-defined nav so core pages
-     (Departments, Services, ...) always appear even when the DB navigation
-     is partial; custom items and order still take effect. */
+  /* Merge the standard pages with any admin-defined nav so every page always
+     appears even when the DB navigation is partial; custom items and order
+     still take effect. All items live on a dedicated full-width row below the
+     brand, so nothing is hidden behind a "More" menu. */
   const seen = new Set(headerNav.map((item) => item.path).filter(Boolean));
-  const merged: NavMenuItem[] = [...headerNav, ...navItems.filter((item) => !seen.has(item.path))];
-  /* A clean primary bar plus a "More" menu for the overflow, so every page
-     stays reachable without crowding the header. */
-  const coreNav = merged.slice(0, 7);
-  const secondaryNav = merged.slice(7);
+  const nav: NavMenuItem[] = [...headerNav, ...navItems.filter((item) => !seen.has(item.path))];
 
   return (
     <header className="site-header">
@@ -32,6 +29,7 @@ export function Header() {
           <span>{t(tx("بوابة رسمية للخدمات والمعلومات الصحية", "Official portal for health services and information"))}</span>
         </div>
       </div>
+
       <div className="container navbar">
         <Link className="brand" to="/" aria-label={t(identity.name)}>
           <span className="brand-logo-wrap">
@@ -42,30 +40,6 @@ export function Header() {
             <small>{t(identity.portal)}</small>
           </span>
         </Link>
-
-        <button className="nav-toggle" onClick={() => setOpen((value) => !value)} aria-label="Toggle menu">
-          {open ? <X size={22} /> : <Menu size={22} />}
-        </button>
-
-        <nav className={`primary-nav ${open ? "is-open" : ""}`} aria-label="Primary">
-          {coreNav.map((item) => (
-            <NavLink key={item.path || item.url || item.label.en} to={item.path || "/"} onClick={() => setOpen(false)}>
-              {t(item.label)}
-            </NavLink>
-          ))}
-          {secondaryNav.length > 0 && (
-          <details className="more-menu">
-            <summary>{t(tx("المزيد", "More"))}</summary>
-            <div>
-              {secondaryNav.map((item) => (
-                <NavLink key={item.path || item.url || item.label.en} to={item.path || "/"} onClick={() => setOpen(false)}>
-                  {t(item.label)}
-                </NavLink>
-              ))}
-            </div>
-          </details>
-          )}
-        </nav>
 
         <div className="nav-actions">
           <Link className="icon-button" to="/search" aria-label={t(tx("بحث", "Search"))}>
@@ -96,7 +70,25 @@ export function Header() {
             <LockKeyhole size={17} />
             <span>{t(tx("دخول الموظفين", "Staff access"))}</span>
           </Link>
+          <button
+            className="nav-toggle"
+            onClick={() => setOpen((value) => !value)}
+            aria-label={t(tx("القائمة", "Menu"))}
+            aria-expanded={open}
+          >
+            {open ? <X size={22} /> : <Menu size={22} />}
+          </button>
         </div>
+      </div>
+
+      <div className={`primary-nav-wrap ${open ? "is-open" : ""}`}>
+        <nav className="container primary-nav" aria-label="Primary">
+          {nav.map((item) => (
+            <NavLink key={item.path || item.url || item.label.en} to={item.path || "/"} onClick={() => setOpen(false)}>
+              {t(item.label)}
+            </NavLink>
+          ))}
+        </nav>
       </div>
     </header>
   );

@@ -21,11 +21,18 @@
 }
 
 .navbar {
-  display: grid;
-  grid-template-columns: minmax(260px, auto) minmax(0, 1fr) auto;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 16px;
-  min-height: 82px;
+  min-height: 72px;
+}
+
+/* Full-width nav row below the brand — fits every page and wraps instead of
+   hiding items in a dropdown. */
+.primary-nav-wrap {
+  border-top: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 96%, transparent);
 }
 
 .brand,
@@ -67,10 +74,10 @@
 
 .primary-nav {
   display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   justify-content: center;
-  gap: 4px;
-  min-width: 0;
+  gap: 2px 4px;
+  padding: 7px 0;
 }
 
 .primary-nav a,

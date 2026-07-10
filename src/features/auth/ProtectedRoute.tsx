@@ -1,8 +1,8 @@
-import { Loader2 } from "lucide-react";
 import { Navigate } from "react-router-dom";
 import type { AdminRole } from "../../types";
 import { useAuth } from "./AuthContext";
 import { AdminSetupNotice } from "../admin/AdminSetupContent";
+import { SkeletonPage } from "../../components/ui/Skeleton";
 
 export function ProtectedRoute({
   children,
@@ -14,11 +14,7 @@ export function ProtectedRoute({
   const { status, profile } = useAuth();
 
   if (status === "loading") {
-    return (
-      <main className="loading-page">
-        <Loader2 className="spin" />
-      </main>
-    );
+    return <SkeletonPage />;
   }
 
   if (status === "no-profile") {

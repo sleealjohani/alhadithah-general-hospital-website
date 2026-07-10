@@ -57,7 +57,23 @@ export function DirectoryPage({
               ))}
             </select>
           </div>
-          <ContentGrid items={filtered} />
+          <ContentGrid
+            items={filtered}
+            emptyAction={
+              query || category !== "all" ? (
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => {
+                    setQuery("");
+                    setCategory("all");
+                  }}
+                >
+                  {t(tx("مسح عوامل التصفية", "Clear filters"))}
+                </button>
+              ) : undefined
+            }
+          />
         </div>
       </section>
     </>

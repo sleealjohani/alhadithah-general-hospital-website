@@ -11,7 +11,7 @@ export function Footer() {
     <footer className="site-footer">
       <div className="container footer-grid">
         <div>
-          <img className="footer-logo" src={identity.logo} alt={t(identity.cluster)} />
+          <img className="footer-logo" src={identity.logo} alt={t(identity.cluster)} width={160} height={94} loading="lazy" decoding="async" />
           <h2>{t(identity.name)}</h2>
           <p>{t(identity.tagline)}</p>
         </div>

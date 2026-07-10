@@ -16,8 +16,16 @@ export type CmsPageRow = {
   og_image_url: string | null;
 };
 
-export async function fetchPageBySlug(slug: string): Promise<CmsPageRow | null> {
-  if (!supabase) return null;
+export type FetchPageResult =
+  | { status: "found"; page: CmsPageRow }
+  | { status: "missing" }
+  | { status: "error" };
+
+/* "missing" and "error" must stay distinct: missing renders a 404, while a
+   network/database failure renders a retry state instead of lying that the
+   page doesn't exist. */
+export async function fetchPageBySlug(slug: string): Promise<FetchPageResult> {
+  if (!supabase) return { status: "missing" };
 
   const { data, error } = await supabase
     .from("pages")
@@ -28,6 +36,7 @@ export async function fetchPageBySlug(slug: string): Promise<CmsPageRow | null> 
     .eq("status", "published")
     .maybeSingle();
 
-  if (error || !data) return null;
-  return data as CmsPageRow;
+  if (error) return { status: "error" };
+  if (!data) return { status: "missing" };
+  return { status: "found", page: data as CmsPageRow };
 }

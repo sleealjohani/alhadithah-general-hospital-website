@@ -36,7 +36,7 @@ export function Header() {
       <div className="container navbar">
         <Link className="brand" to="/" aria-label={t(identity.name)}>
           <span className="brand-logo-wrap">
-            <img src={identity.logo} alt={t(identity.cluster)} />
+            <img src={identity.logo} alt={t(identity.cluster)} width={72} height={42} fetchPriority="high" />
           </span>
           <span>
             <strong>{t(identity.name)}</strong>

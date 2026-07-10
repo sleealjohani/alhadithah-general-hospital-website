@@ -12,22 +12,39 @@ export function usePageMeta(title: LocalizedText, description?: LocalizedText) {
   const siteName = t(identity.name);
 
   useEffect(() => {
-    document.title = resolvedTitle ? `${resolvedTitle} | ${siteName}` : DEFAULT_TITLE;
+    const fullTitle = resolvedTitle ? `${resolvedTitle} | ${siteName}` : DEFAULT_TITLE;
+    document.title = fullTitle;
 
-    let meta = document.querySelector('meta[name="description"]');
-    const previousDescription = meta?.getAttribute("content") ?? null;
-    if (resolvedDescription) {
+    const setMeta = (selector: string, attr: "name" | "property", key: string, content: string) => {
+      let meta = document.querySelector(selector);
       if (!meta) {
         meta = document.createElement("meta");
-        meta.setAttribute("name", "description");
+        meta.setAttribute(attr, key);
         document.head.appendChild(meta);
       }
-      meta.setAttribute("content", resolvedDescription);
+      const previous = meta.getAttribute("content");
+      meta.setAttribute("content", content);
+      return () => {
+        if (previous !== null) meta.setAttribute("content", previous);
+      };
+    };
+
+    const restores = [
+      setMeta('meta[property="og:title"]', "property", "og:title", fullTitle),
+      setMeta('meta[name="twitter:title"]', "name", "twitter:title", fullTitle),
+      setMeta('meta[property="og:url"]', "property", "og:url", window.location.href)
+    ];
+    if (resolvedDescription) {
+      restores.push(
+        setMeta('meta[name="description"]', "name", "description", resolvedDescription),
+        setMeta('meta[property="og:description"]', "property", "og:description", resolvedDescription),
+        setMeta('meta[name="twitter:description"]', "name", "twitter:description", resolvedDescription)
+      );
     }
 
     return () => {
       document.title = DEFAULT_TITLE;
-      if (meta && previousDescription !== null) meta.setAttribute("content", previousDescription);
+      restores.forEach((restore) => restore());
     };
   }, [resolvedTitle, resolvedDescription, siteName]);
 }

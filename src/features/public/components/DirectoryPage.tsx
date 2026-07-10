@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Search } from "lucide-react";
 import { usePortal } from "../../../providers/PortalProvider";
 import { PageHero } from "../../../components/ui/PageHero";
@@ -24,8 +24,22 @@ export function DirectoryPage({
   const { t } = usePortal();
   usePageMeta(title, description);
   const items = usePublishedItems(table, fallback);
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("all");
+  /* Filters live in the query string so filtered views are shareable and
+     survive back/forward navigation. */
+  const [searchParams, setSearchParams] = useSearchParams();
+  const query = searchParams.get("q") ?? "";
+  const category = searchParams.get("category") ?? "all";
+  const updateParams = (next: { q?: string; category?: string }) => {
+    const params: Record<string, string> = {};
+    const q = next.q ?? query;
+    const cat = next.category ?? category;
+    if (q) params.q = q;
+    if (cat !== "all") params.category = cat;
+    setSearchParams(params, { replace: true });
+  };
+  const setQuery = (value: string) => updateParams({ q: value });
+  const setCategory = (value: string) => updateParams({ category: value });
+  const clearFilters = () => setSearchParams({}, { replace: true });
   const categories = Array.from(new Set(items.map((item) => t(item.category))));
   const filtered = items.filter((item) => {
     const haystack = `${t(item.title)} ${t(item.description)} ${t(item.category)}`.toLowerCase();
@@ -61,14 +75,7 @@ export function DirectoryPage({
             items={filtered}
             emptyAction={
               query || category !== "all" ? (
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => {
-                    setQuery("");
-                    setCategory("all");
-                  }}
-                >
+                <button type="button" className="btn btn-secondary" onClick={clearFilters}>
                   {t(tx("مسح عوامل التصفية", "Clear filters"))}
                 </button>
               ) : undefined

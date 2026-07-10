@@ -4,6 +4,7 @@ import { AuthProvider } from "../features/auth/AuthContext";
 import { ErrorBoundary } from "../components/ui/ErrorBoundary";
 import { useScrollReveal } from "../hooks/useScrollReveal";
 import { ScrollToTop } from "../components/layout/ScrollToTop";
+import { PaletteHost } from "../features/palette/PaletteHost";
 import { AppRoutes } from "./routes";
 
 export function App() {
@@ -14,6 +15,7 @@ export function App() {
         <AuthProvider>
           <BrowserRouter>
             <ScrollToTop />
+            <PaletteHost />
             <AppRoutes />
           </BrowserRouter>
         </AuthProvider>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Search } from "lucide-react";
 import { usePortal } from "../../../providers/PortalProvider";
 import { PageHero } from "../../../components/ui/PageHero";
@@ -16,7 +16,13 @@ export function SearchPage() {
       "Search services, departments, guides, and news from one place."
     )
   );
-  const [query, setQuery] = useState("");
+  /* The query lives in the URL so searches are shareable and back/forward
+     restore them. replace:true keeps typing from flooding history. */
+  const [searchParams, setSearchParams] = useSearchParams();
+  const query = searchParams.get("q") ?? "";
+  const setQuery = (value: string) => {
+    setSearchParams(value ? { q: value } : {}, { replace: true });
+  };
   const results = allPublicContent.filter((item) => {
     const text = `${t(item.title)} ${t(item.description)} ${t(item.category)}`.toLowerCase();
     return query.trim() && text.includes(query.toLowerCase());

@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
 import { Loader2, Send, Lightbulb, Target } from "lucide-react";
 import { usePortal } from "../../../providers/PortalProvider";
 import { Icon } from "../../../components/ui/Icon";
@@ -12,9 +12,30 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function PublicForm({ kind, title }: { kind: FormKind; title: LocalizedText }) {
   const { t, notify } = usePortal();
-  const [payload, setPayload] = useState<PortalFormPayload>({});
+  const draftKey = `hadetha_draft_${kind}`;
+  const [payload, setPayload] = useState<PortalFormPayload>(() => {
+    /* Restore an unsent draft so an accidental navigation loses nothing. */
+    try {
+      return JSON.parse(localStorage.getItem(draftKey) || "{}") as PortalFormPayload;
+    } catch {
+      return {};
+    }
+  });
   const [busy, setBusy] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<FieldName, string>>>({});
+  const saveTimer = useRef(0);
+
+  useEffect(() => {
+    window.clearTimeout(saveTimer.current);
+    saveTimer.current = window.setTimeout(() => {
+      if (Object.values(payload).some((value) => value)) {
+        localStorage.setItem(draftKey, JSON.stringify(payload));
+      } else {
+        localStorage.removeItem(draftKey);
+      }
+    }, 600);
+    return () => window.clearTimeout(saveTimer.current);
+  }, [payload, draftKey]);
 
   const update = (key: keyof PortalFormPayload, value: string) => {
     setPayload((current) => ({ ...current, [key]: value }));
@@ -64,6 +85,8 @@ export function PublicForm({ kind, title }: { kind: FormKind; title: LocalizedTe
     setBusy(false);
     if (result.ok) {
       setPayload({});
+      window.clearTimeout(saveTimer.current);
+      localStorage.removeItem(draftKey);
       notify(
         result.source === "supabase"
           ? t(tx("تم إرسال النموذج بنجاح.", "Form submitted successfully."))

@@ -16,7 +16,7 @@ body {
 
 .top-strip {
   border-bottom: 4px solid var(--brand-line);
-  background: var(--brand-ink);
+  background: var(--brand-panel);
   color: white;
 }
 
@@ -41,7 +41,7 @@ body {
 .login-card img {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-md);
-  background: var(--brand-ink);
+  background: var(--brand-panel);
 }
 
 .brand img {
@@ -121,15 +121,15 @@ body {
 
 .admin-entry,
 .btn-primary {
-  border-color: var(--brand-ink);
-  background: var(--brand-ink);
+  border-color: var(--action-solid);
+  background: var(--action-solid);
   color: white;
 }
 
 .btn-primary:hover,
 .admin-entry:hover {
-  border-color: var(--primary-strong);
-  background: var(--primary-strong);
+  border-color: var(--action-solid-hover);
+  background: var(--action-solid-hover);
 }
 
 .btn-sky {
@@ -653,7 +653,7 @@ textarea,
 
 .site-footer {
   border-top: 6px solid var(--brand-line);
-  background: var(--brand-ink);
+  background: var(--brand-panel);
 }
 
 .footer-grid {

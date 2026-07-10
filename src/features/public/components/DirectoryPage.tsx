@@ -62,7 +62,11 @@ export function DirectoryPage({
                 placeholder={t(tx("ابحث في المحتوى", "Search content"))}
               />
             </label>
-            <select value={category} onChange={(event) => setCategory(event.target.value)}>
+            <select
+              value={category}
+              aria-label={t(tx("تصفية حسب التصنيف", "Filter by category"))}
+              onChange={(event) => setCategory(event.target.value)}
+            >
               <option value="all">{t(tx("كل التصنيفات", "All categories"))}</option>
               {categories.map((item) => (
                 <option key={item} value={item}>
@@ -71,6 +75,7 @@ export function DirectoryPage({
               ))}
             </select>
           </div>
+          <h2 className="visually-hidden">{t(tx("النتائج", "Results"))}</h2>
           <ContentGrid
             items={filtered}
             emptyAction={

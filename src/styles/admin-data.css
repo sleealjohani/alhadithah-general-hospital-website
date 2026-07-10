@@ -250,3 +250,79 @@
   justify-content: flex-end;
   gap: 10px;
 }
+
+/* --- Image field (upload or paste URL) --- */
+.image-field {
+  display: grid;
+  gap: 8px;
+}
+
+.image-field-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-secondary);
+  font-weight: 750;
+}
+
+.image-field-body {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+
+.image-field-preview {
+  width: 120px;
+  height: 84px;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--surface-soft);
+  display: grid;
+  place-items: center;
+}
+
+.image-field-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.image-field-placeholder {
+  color: var(--text-muted);
+}
+
+.image-field-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: min(100%, 260px);
+}
+
+.image-field-url {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 180px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 0 10px;
+  color: var(--text-muted);
+}
+
+.image-field-url input {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  padding: 9px 0;
+}
+
+.image-field-url input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}

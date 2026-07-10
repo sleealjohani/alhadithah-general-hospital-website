@@ -13,6 +13,7 @@ export type PortalItem = {
   icon: string;
   path?: string;
   url?: string;
+  image?: string;
   badge?: LocalizedText;
   audience?: "public" | "employee" | "admin" | "all";
   status?: "published" | "draft";
@@ -63,6 +64,7 @@ export type PublicContentRow = {
   path: string | null;
   status: string | null;
   sort_order: number | null;
+  metadata: { image_url?: string } | null;
   created_at: string | null;
   updated_at: string | null;
 };

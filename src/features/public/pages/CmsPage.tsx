@@ -71,6 +71,9 @@ export function CmsPage() {
       />
       <section className="section">
         <div className="container">
+          {page.og_image_url ? (
+            <img className="cms-hero-image" src={page.og_image_url} alt="" loading="lazy" />
+          ) : null}
           <article className="rich-panel" style={{ whiteSpace: "pre-wrap" }}>
             {t(tx(page.content_ar || "", page.content_en || ""))}
           </article>

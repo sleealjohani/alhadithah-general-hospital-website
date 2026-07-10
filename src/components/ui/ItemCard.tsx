@@ -9,6 +9,11 @@ export function ItemCard({ item, elevated = false }: { item: PortalItem; elevate
   const { t } = usePortal();
   const content = (
     <>
+      {item.image ? (
+        <div className="card-media">
+          <img src={item.image} alt="" loading="lazy" />
+        </div>
+      ) : null}
       <div className="card-icon">
         <Icon name={item.icon} />
       </div>

@@ -7,9 +7,13 @@ import { SectionHeading } from "../../../components/ui/SectionHeading";
 import { ContentGrid } from "../../../components/ui/ContentGrid";
 import { usePublishedItems } from "../../../hooks/usePublishedItems";
 import { useHomepageSectionVisibility } from "../../../hooks/useHomepageSectionVisibility";
+import { useHomepageHero } from "../../../hooks/useHomepageHero";
 import { useQuickLinks } from "../../../hooks/useQuickLinks";
 import { journeySteps, knowledgeItems, newsItems, pageCopy, services } from "../../../data/content";
 import { tx } from "../../../utils/i18n";
+
+const HERO_SCRIM =
+  "linear-gradient(90deg, rgba(7, 19, 47, 0.88) 0%, rgba(7, 19, 47, 0.72) 38%, rgba(7, 19, 47, 0.16) 72%)";
 
 export function HomePage() {
   const { t } = usePortal();
@@ -19,11 +23,19 @@ export function HomePage() {
   const [activePathId, setActivePathId] = useState(quickAccess[0]?.id);
   const activePath = quickAccess.find((item) => item.id === activePathId) || quickAccess[0];
   const isActive = useHomepageSectionVisibility();
+  const heroImage = useHomepageHero();
 
   return (
     <>
       {isActive("hero") && (
-      <section className="home-hero reference-hero">
+      <section
+        className="home-hero reference-hero"
+        style={
+          heroImage
+            ? { backgroundImage: `${HERO_SCRIM}, url("${heroImage}")`, backgroundSize: "cover", backgroundPosition: "center" }
+            : undefined
+        }
+      >
         <div className="container home-hero-grid">
           <div className="home-hero-copy" data-reveal>
             <span className="eyebrow">{t(pageCopy.hero.eyebrow)}</span>

@@ -6,8 +6,10 @@ import { SectionHeading } from "../../components/ui/SectionHeading";
 import { supabase } from "../../lib/supabase/client";
 import { logAdminAction } from "../../lib/audit";
 import { displayRowValue } from "../../utils/format";
+import { ensureSlug } from "../../utils/slug";
 import { tx } from "../../utils/i18n";
 import { CrudFormActions, Field, StatusBadge, TableLoadingRows, useDeleteConfirm } from "./shared";
+import { ImageField } from "./ImageField";
 
 type PageRow = Record<string, unknown>;
 
@@ -34,6 +36,7 @@ export function AdminPages() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [slugTouched, setSlugTouched] = useState(false);
   const [form, setForm] = useState(emptyForm);
 
   const loadRows = useCallback(async () => {
@@ -55,8 +58,19 @@ export function AdminPages() {
     loadRows();
   }, [loadRows]);
 
+  /* New pages get a slug for free from the English title; editors can still
+     override it, and it's locked while editing an existing page. */
+  const onTitleEn = (value: string) => {
+    setForm((current) => ({
+      ...current,
+      title_en: value,
+      slug: slugTouched || editingId ? current.slug : ensureSlug(value, current.title_ar)
+    }));
+  };
+
   const edit = (row: PageRow) => {
     setEditingId(String(row.id));
+    setSlugTouched(true);
     setForm({
       slug: displayRowValue(row, ["slug"]),
       title_ar: displayRowValue(row, ["title_ar"]),
@@ -78,6 +92,7 @@ export function AdminPages() {
 
   const cancelEdit = () => {
     setEditingId(null);
+    setSlugTouched(false);
     setForm(emptyForm);
   };
 
@@ -88,24 +103,25 @@ export function AdminPages() {
       notify(t(tx("Supabase غير متصل.", "Supabase is not connected.")), "error");
       return;
     }
+    const payload = { ...form, slug: form.slug.trim() || ensureSlug(form.title_en, form.title_ar) };
     setSaving(true);
     if (editingId) {
-      const { error } = await supabase.from("pages").update(form).eq("id", editingId);
+      const { error } = await supabase.from("pages").update(payload).eq("id", editingId);
       setSaving(false);
       if (error) {
         notify(error.message, "error");
         return;
       }
-      logAdminAction("page.update", "pages", editingId, { slug: form.slug });
+      logAdminAction("page.update", "pages", editingId, { slug: payload.slug });
       notify(t(tx("تم تحديث الصفحة.", "Page updated.")), "success");
     } else {
-      const { error } = await supabase.from("pages").insert(form);
+      const { error } = await supabase.from("pages").insert(payload);
       setSaving(false);
       if (error) {
         notify(error.message, "error");
         return;
       }
-      logAdminAction("page.create", "pages", null, { slug: form.slug });
+      logAdminAction("page.create", "pages", null, { slug: payload.slug });
       notify(t(tx("تم إنشاء الصفحة.", "Page created.")), "success");
     }
     cancelEdit();
@@ -128,20 +144,29 @@ export function AdminPages() {
   return (
     <div className="admin-page">
       <SectionHeading
-        title={tx("إدارة الصفحات", "Pages")}
+        title={tx("إنشاء وتعديل الصفحات", "Build & Edit Pages")}
         description={tx(
-          "صفحات عامة قابلة للإنشاء والتعديل، مع عناوين وميتاداتا SEO ثنائية اللغة.",
-          "General-purpose pages with bilingual content and SEO metadata."
+          "أنشئ صفحة جديدة بعنوان ووصف وصورة ومحتوى — يتولّد رابطها تلقائيًا وتظهر على /pages/الرابط عند النشر.",
+          "Create a new page with a title, description, image, and content — its link is generated automatically and it appears at /pages/slug once published."
         )}
       />
       <div className="admin-panel">
         <form className="admin-form" onSubmit={save}>
-          <Field label={tx("المعرف في الرابط (slug)", "Slug")}>
+          <Field label={tx("العنوان بالعربية", "Arabic title")}>
+            <input required value={form.title_ar} onChange={(e) => setForm({ ...form, title_ar: e.target.value })} />
+          </Field>
+          <Field label={tx("العنوان بالإنجليزية", "English title")}>
+            <input required dir="ltr" value={form.title_en} onChange={(e) => onTitleEn(e.target.value)} />
+          </Field>
+          <Field label={tx("المعرف في الرابط (يُنشأ تلقائيًا)", "Slug (auto-generated)")}>
             <input
               required
               dir="ltr"
               value={form.slug}
-              onChange={(e) => setForm({ ...form, slug: e.target.value })}
+              onChange={(e) => {
+                setSlugTouched(true);
+                setForm({ ...form, slug: e.target.value });
+              }}
               placeholder="patient-guide"
             />
           </Field>
@@ -152,12 +177,11 @@ export function AdminPages() {
               <option value="archived">{t(tx("مؤرشف", "Archived"))}</option>
             </select>
           </Field>
-          <Field label={tx("العنوان بالعربية", "Arabic title")}>
-            <input required value={form.title_ar} onChange={(e) => setForm({ ...form, title_ar: e.target.value })} />
-          </Field>
-          <Field label={tx("العنوان بالإنجليزية", "English title")}>
-            <input required dir="ltr" value={form.title_en} onChange={(e) => setForm({ ...form, title_en: e.target.value })} />
-          </Field>
+          <ImageField
+            label={tx("صورة الصفحة", "Page image")}
+            value={form.og_image_url}
+            onChange={(url) => setForm((current) => ({ ...current, og_image_url: url }))}
+          />
           <Field label={tx("مقتطف بالعربية", "Arabic excerpt")}>
             <input value={form.excerpt_ar} onChange={(e) => setForm({ ...form, excerpt_ar: e.target.value })} />
           </Field>
@@ -181,9 +205,6 @@ export function AdminPages() {
           </Field>
           <Field label={tx("وصف SEO بالإنجليزية", "SEO description (English)")} wide>
             <textarea dir="ltr" value={form.seo_description_en} onChange={(e) => setForm({ ...form, seo_description_en: e.target.value })} />
-          </Field>
-          <Field label={tx("رابط صورة المشاركة (OG Image)", "OG image URL")}>
-            <input dir="ltr" value={form.og_image_url} onChange={(e) => setForm({ ...form, og_image_url: e.target.value })} />
           </Field>
           <Field label={tx("ترتيب العرض", "Sort order")}>
             <input

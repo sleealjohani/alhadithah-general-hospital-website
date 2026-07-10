@@ -13,6 +13,24 @@ type XTimelineProps = {
   days?: number;
 };
 
+type XFeedItem = {
+  createdAt: string;
+  id: string;
+  media: Array<{
+    expandedUrl: string;
+    type: string;
+    url: string;
+  }>;
+  text: string;
+  url: string;
+};
+
+type XFeedResponse = {
+  isRecentWindow?: boolean;
+  items?: XFeedItem[];
+  windowDays?: number;
+};
+
 declare global {
   interface Window {
     twttr?: { widgets?: { load?: (el?: HTMLElement) => void } };
@@ -35,6 +53,17 @@ function getRecentSearch(days: number) {
   };
 }
 
+function formatDisplayDate(value: string, locale: string) {
+  try {
+    return new Intl.DateTimeFormat(locale, {
+      day: "numeric",
+      month: "short"
+    }).format(new Date(value));
+  } catch {
+    return "";
+  }
+}
+
 /**
  * Live updates pulled straight from @AljoufCluster on X. Uses X's official
  * embed widget, so posts (with their images and video) appear and refresh
@@ -42,11 +71,15 @@ function getRecentSearch(days: number) {
  * network/CSP, offline), it degrades to a plain link to the relevant X view.
  */
 export function XTimeline({ compact = false, card = false, days }: XTimelineProps) {
-  const { t, theme } = usePortal();
+  const { locale, t, theme } = usePortal();
   const containerRef = useRef<HTMLDivElement>(null);
   const [failed, setFailed] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const recentSearch = typeof days === "number" && Number.isFinite(days) ? getRecentSearch(days) : null;
+  const [feedItems, setFeedItems] = useState<XFeedItem[]>([]);
+  const [feedIsRecent, setFeedIsRecent] = useState(true);
+  const [feedStatus, setFeedStatus] = useState<"idle" | "loading" | "ready" | "empty" | "error">("idle");
+  const hasRecentFeed = typeof days === "number" && Number.isFinite(days);
+  const recentSearch = hasRecentFeed ? getRecentSearch(days) : null;
   const profileHref = `https://x.com/${HANDLE}`;
   const profileWidgetHref = `https://twitter.com/${HANDLE}?ref_src=twsrc%5Etfw`;
   const fallbackHref = recentSearch?.fallbackHref ?? profileHref;
@@ -57,6 +90,8 @@ export function XTimeline({ compact = false, card = false, days }: XTimelineProp
   const anchorLabel = tx("تحديثات من", "Updates from");
 
   useEffect(() => {
+    if (hasRecentFeed) return;
+
     let cancelled = false;
     const markLoaded = () => {
       if (!cancelled && containerRef.current?.querySelector("iframe")) setLoaded(true);
@@ -95,7 +130,37 @@ export function XTimeline({ compact = false, card = false, days }: XTimelineProp
       observer.disconnect();
       window.clearTimeout(timer);
     };
-  }, []);
+  }, [hasRecentFeed]);
+
+  useEffect(() => {
+    if (!hasRecentFeed) {
+      setFeedStatus("idle");
+      return;
+    }
+
+    const safeDays = Math.max(1, Math.floor(days));
+    const controller = new AbortController();
+    setFeedStatus("loading");
+
+    fetch(`/api/x-feed?days=${safeDays}&limit=${compact ? 4 : 6}`, { signal: controller.signal })
+      .then((response) => {
+        if (!response.ok) throw new Error("Feed request failed");
+        return response.json() as Promise<XFeedResponse>;
+      })
+      .then((payload) => {
+        const items = payload.items || [];
+        setFeedItems(items);
+        setFeedIsRecent(payload.isRecentWindow !== false);
+        setFeedStatus(items.length > 0 ? "ready" : "empty");
+      })
+      .catch((error) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setFeedItems([]);
+        setFeedStatus("error");
+      });
+
+    return () => controller.abort();
+  }, [compact, days, hasRecentFeed]);
 
   const className = [
     "x-timeline",
@@ -114,7 +179,58 @@ export function XTimeline({ compact = false, card = false, days }: XTimelineProp
           <ExternalLink size={14} />
         </a>
       </div>
-      {failed ? (
+      {hasRecentFeed ? (
+        <div className="x-feed-panel">
+          {feedStatus === "loading" || feedStatus === "idle" ? (
+            <div className="x-timeline-loading">
+              {t(tx("تحميل تحديثات تجمع الجوف الصحي...", "Loading Al-Jouf Cluster updates..."))}
+            </div>
+          ) : feedStatus === "ready" ? (
+            <>
+              {!feedIsRecent ? (
+                <p className="x-feed-note">
+                  {t(tx("لا توجد تحديثات خلال آخر 7 أيام، لذلك نعرض آخر تحديثات متاحة.", "No updates were found in the last 7 days, so the latest available updates are shown."))}
+                </p>
+              ) : null}
+              <div className="x-feed-list">
+                {feedItems.map((item) => (
+                  <article className="x-feed-item" key={item.id}>
+                    <div className="x-feed-meta">
+                      <span>{formatDisplayDate(item.createdAt, locale === "ar" ? "ar-SA" : "en-US")}</span>
+                      <a href={item.url} target="_blank" rel="noreferrer" aria-label={t(tx("فتح التغريدة", "Open post"))}>
+                        <ExternalLink size={14} />
+                      </a>
+                    </div>
+                    <p>{item.text}</p>
+                    {item.media.length > 0 ? (
+                      <div className="x-feed-media">
+                        {item.media.map((media) => (
+                          <a href={media.expandedUrl || item.url} target="_blank" rel="noreferrer" key={media.url}>
+                            <img src={media.url} alt="" loading="lazy" />
+                            {media.type === "video" ? <span>{t(tx("فيديو", "Video"))}</span> : null}
+                          </a>
+                        ))}
+                      </div>
+                    ) : null}
+                  </article>
+                ))}
+              </div>
+              <a className="btn btn-secondary x-feed-action" href={fallbackHref} target="_blank" rel="noreferrer">
+                <ExternalLink size={16} />
+                {t(fallbackLabel)}
+              </a>
+            </>
+          ) : (
+            <div className="x-feed-empty">
+              <p>{t(tx("تعذر عرض التحديثات داخل الصفحة الآن.", "Updates could not be shown inside the page right now."))}</p>
+              <a className="btn btn-secondary" href={fallbackHref} target="_blank" rel="noreferrer">
+                <ExternalLink size={16} />
+                {t(fallbackLabel)}
+              </a>
+            </div>
+          )}
+        </div>
+      ) : failed ? (
         <a className="btn btn-secondary" href={fallbackHref} target="_blank" rel="noreferrer">
           <ExternalLink size={16} />
           {t(fallbackLabel)}

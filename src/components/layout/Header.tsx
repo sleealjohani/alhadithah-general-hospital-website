@@ -13,11 +13,15 @@ export function Header() {
   const scrollDirection = useScrollDirection();
   const condensed = scrollDirection === "down" && !open;
   const headerNav = useNavigationItems("header");
-  const coreNav = headerNav.filter((item) =>
-    ["/", "/about", "/services", "/departments", "/knowledge", "/contact"].includes(item.path || "")
-  );
+  /* Show every nav item rather than filtering to a hardcoded path list (which
+     silently dropped Home/Departments whenever the DB nav differed). Always
+     guarantee a Home entry, then split into a primary bar + a "More" menu. */
+  const fullNav = headerNav.some((item) => item.path === "/")
+    ? headerNav
+    : [{ path: "/", label: tx("الرئيسية", "Home") }, ...headerNav];
+  const coreNav = fullNav.slice(0, 6);
   const secondaryNav = [
-    ...headerNav.filter((item) => ["/links", "/news"].includes(item.path || "")),
+    ...fullNav.slice(6),
     { path: "/initiatives", label: tx("المبادرات", "Initiatives") },
     { path: "/faq", label: tx("الأسئلة الشائعة", "FAQ") }
   ];

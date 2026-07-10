@@ -1,37 +1,86 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { Accessibility, Languages, LockKeyhole, Menu, Search, Sun, Moon, X } from "lucide-react";
+import { Accessibility, ChevronDown, Languages, LockKeyhole, Menu, Moon, Search, Sun, X } from "lucide-react";
 import { usePortal } from "../../providers/PortalProvider";
-import { identity, navItems } from "../../data/content";
-import { useNavigationItems } from "../../hooks/useNavigationItems";
+import { identity, megaMenu } from "../../data/content";
 import { tx } from "../../utils/i18n";
-import type { NavMenuItem } from "../../types";
 
 export function Header() {
   const { t, locale, setLocale, theme, setTheme, highContrast, setHighContrast } = usePortal();
-  const [open, setOpen] = useState(false);
-  const headerNav = useNavigationItems("header");
-  /* Merge the standard pages with any admin-defined nav so every page always
-     appears even when the DB navigation is partial; custom items and order
-     still take effect. All items live on a dedicated full-width row below the
-     brand, so nothing is hidden behind a "More" menu. */
-  const seen = new Set(headerNav.map((item) => item.path).filter(Boolean));
-  const nav: NavMenuItem[] = [...headerNav, ...navItems.filter((item) => !seen.has(item.path))];
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const navRef = useRef<HTMLElement>(null);
+
+  const closeAll = () => {
+    setMobileOpen(false);
+    setOpenIndex(null);
+  };
+
+  /* Close an open dropdown when clicking outside or pressing Escape. */
+  useEffect(() => {
+    if (openIndex === null) return;
+    const onDown = (event: MouseEvent) => {
+      if (navRef.current && !navRef.current.contains(event.target as Node)) setOpenIndex(null);
+    };
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpenIndex(null);
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [openIndex]);
 
   return (
     <header className="site-header">
       <a className="skip-link" href="#main-content">
         {t(tx("تجاوز إلى المحتوى", "Skip to content"))}
       </a>
+
+      {/* Top utility bar */}
       <div className="top-strip">
         <div className="container top-strip-inner">
-          <span>{t(identity.cluster)}</span>
-          <span>{t(tx("بوابة رسمية للخدمات والمعلومات الصحية", "Official portal for health services and information"))}</span>
+          <span className="top-strip-name">{t(identity.cluster)}</span>
+          <div className="utility-actions">
+            <Link className="utility-btn" to="/search" onClick={closeAll} aria-label={t(tx("بحث", "Search"))}>
+              <Search size={16} />
+              <span>{t(tx("بحث", "Search"))}</span>
+            </Link>
+            <button
+              className="utility-btn"
+              onClick={() => setLocale(locale === "ar" ? "en" : "ar")}
+              aria-label={t(tx("تغيير اللغة", "Change language"))}
+            >
+              <Languages size={16} />
+              <span>{locale === "ar" ? "English" : "عربي"}</span>
+            </button>
+            <button
+              className="utility-btn utility-icon"
+              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+              aria-label={t(tx("تغيير الوضع", "Change theme"))}
+            >
+              {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
+            </button>
+            <button
+              className={`utility-btn utility-icon ${highContrast ? "is-active" : ""}`}
+              onClick={() => setHighContrast(!highContrast)}
+              aria-label={t(tx("تباين أعلى", "Higher contrast"))}
+            >
+              <Accessibility size={16} />
+            </button>
+            <Link className="utility-btn utility-login" to="/admin" onClick={closeAll}>
+              <LockKeyhole size={15} />
+              <span>{t(tx("دخول الموظفين", "Staff access"))}</span>
+            </Link>
+          </div>
         </div>
       </div>
 
+      {/* Main row: brand + mega-menu */}
       <div className="container navbar">
-        <Link className="brand" to="/" aria-label={t(identity.name)}>
+        <Link className="brand" to="/" onClick={closeAll} aria-label={t(identity.name)}>
           <span className="brand-logo-wrap">
             <img src={identity.logo} alt={t(identity.cluster)} width={72} height={42} fetchPriority="high" />
           </span>
@@ -41,53 +90,48 @@ export function Header() {
           </span>
         </Link>
 
-        <div className="nav-actions">
-          <Link className="icon-button" to="/search" aria-label={t(tx("بحث", "Search"))}>
-            <Search size={19} />
-          </Link>
-          <button
-            className="icon-button"
-            onClick={() => setLocale(locale === "ar" ? "en" : "ar")}
-            aria-label={t(tx("تغيير اللغة", "Change language"))}
-          >
-            <Languages size={19} />
-          </button>
-          <button
-            className="icon-button"
-            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-            aria-label={t(tx("تغيير الوضع", "Change theme"))}
-          >
-            {theme === "light" ? <Moon size={19} /> : <Sun size={19} />}
-          </button>
-          <button
-            className={`icon-button ${highContrast ? "is-active" : ""}`}
-            onClick={() => setHighContrast(!highContrast)}
-            aria-label={t(tx("تباين أعلى", "Higher contrast"))}
-          >
-            <Accessibility size={19} />
-          </button>
-          <Link className="admin-entry" to="/admin">
-            <LockKeyhole size={17} />
-            <span>{t(tx("دخول الموظفين", "Staff access"))}</span>
-          </Link>
-          <button
-            className="nav-toggle"
-            onClick={() => setOpen((value) => !value)}
-            aria-label={t(tx("القائمة", "Menu"))}
-            aria-expanded={open}
-          >
-            {open ? <X size={22} /> : <Menu size={22} />}
-          </button>
-        </div>
-      </div>
+        <button
+          className="nav-toggle"
+          onClick={() => setMobileOpen((value) => !value)}
+          aria-label={t(tx("القائمة", "Menu"))}
+          aria-expanded={mobileOpen}
+        >
+          {mobileOpen ? <X size={22} /> : <Menu size={22} />}
+        </button>
 
-      <div className={`primary-nav-wrap ${open ? "is-open" : ""}`}>
-        <nav className="container primary-nav" aria-label="Primary">
-          {nav.map((item) => (
-            <NavLink key={item.path || item.url || item.label.en} to={item.path || "/"} onClick={() => setOpen(false)}>
-              {t(item.label)}
-            </NavLink>
-          ))}
+        <nav className={`mega-nav ${mobileOpen ? "is-open" : ""}`} aria-label="Primary" ref={navRef}>
+          {megaMenu.map((item, index) =>
+            item.children ? (
+              <div
+                key={item.label.en}
+                className={`mega-item ${openIndex === index ? "is-open" : ""}`}
+                onMouseEnter={() => setOpenIndex(index)}
+                onMouseLeave={() => setOpenIndex((current) => (current === index ? null : current))}
+              >
+                <button
+                  type="button"
+                  className="mega-trigger"
+                  aria-expanded={openIndex === index}
+                  aria-haspopup="true"
+                  onClick={() => setOpenIndex((current) => (current === index ? null : index))}
+                >
+                  {t(item.label)}
+                  <ChevronDown size={15} className="mega-chevron" aria-hidden="true" />
+                </button>
+                <div className="mega-panel">
+                  {item.children.map((child) => (
+                    <NavLink key={child.path} to={child.path} onClick={closeAll}>
+                      {t(child.label)}
+                    </NavLink>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <NavLink key={item.path} to={item.path || "/"} className="mega-link" onClick={closeAll} end={item.path === "/"}>
+                {t(item.label)}
+              </NavLink>
+            )
+          )}
         </nav>
       </div>
     </header>

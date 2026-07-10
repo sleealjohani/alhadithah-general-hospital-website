@@ -24,6 +24,49 @@ export const navItems = [
   { path: "/contact", label: tx("تواصل معنا", "Contact") }
 ];
 
+/* Grouped mega-menu: a few top categories, each opening a dropdown panel of
+   related pages. Covers every page in six clean top-level items. */
+export type MegaMenuChild = { path: string; label: LocalizedText };
+export type MegaMenuItem = { label: LocalizedText; path?: string; children?: MegaMenuChild[] };
+
+export const megaMenu: MegaMenuItem[] = [
+  { path: "/", label: tx("الرئيسية", "Home") },
+  {
+    label: tx("عن المستشفى", "About"),
+    children: [
+      { path: "/about", label: tx("نبذة عن المستشفى", "About the hospital") },
+      { path: "/employees", label: tx("دليل الموظفين", "Employee directory") }
+    ]
+  },
+  {
+    label: tx("الخدمات والأقسام", "Services & Departments"),
+    children: [
+      { path: "/services", label: tx("دليل الخدمات", "Services directory") },
+      { path: "/departments", label: tx("الأقسام", "Departments") },
+      { path: "/nursing", label: tx("التمريض", "Nursing") },
+      { path: "/quality", label: tx("الجودة وسلامة المرضى", "Quality & patient safety") }
+    ]
+  },
+  {
+    label: tx("مركز المعرفة", "Knowledge"),
+    children: [
+      { path: "/knowledge", label: tx("مركز المعرفة", "Knowledge center") },
+      { path: "/reports", label: tx("التقارير", "Reports") },
+      { path: "/links", label: tx("النماذج والروابط", "Forms & links") },
+      { path: "/faq", label: tx("الأسئلة الشائعة", "FAQ") }
+    ]
+  },
+  {
+    label: tx("الأخبار والمبادرات", "News & Initiatives"),
+    children: [
+      { path: "/news", label: tx("الأخبار والإعلانات", "News & announcements") },
+      { path: "/initiatives", label: tx("المبادرات", "Initiatives") },
+      { path: "/experience", label: tx("تجربة المستفيد", "Patient experience") }
+    ]
+  },
+  { path: "/contact", label: tx("تواصل معنا", "Contact us") }
+];
+
 export const pageCopy = {
   common: {
     noOfficialLinks: tx("الرابط غير متاح حاليًا.", "The link is not available at this time."),

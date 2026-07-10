@@ -187,3 +187,45 @@
   color: var(--text-secondary);
 }
 
+
+/* CMS page hero image */
+.cms-hero-image {
+  width: 100%;
+  max-height: 420px;
+  object-fit: cover;
+  border-radius: var(--radius-lg);
+  margin-bottom: 22px;
+  border: 1px solid var(--border);
+}
+
+/* X (Twitter) live updates embed */
+.x-timeline {
+  display: grid;
+  gap: 14px;
+}
+
+.x-timeline-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.x-timeline-head h2 {
+  margin: 0;
+}
+
+.x-timeline-head .text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.x-timeline-embed {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  min-height: 200px;
+  background: var(--surface);
+}

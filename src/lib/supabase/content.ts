@@ -25,6 +25,7 @@ export function mapRowToItem(row: PublicContentRow): PortalItem {
     icon: row.icon || "FileText",
     path: row.path || undefined,
     url: row.url || undefined,
+    image: row.metadata?.image_url || undefined,
     status: row.status === "published" ? "published" : "draft",
     updatedAt: row.updated_at || row.created_at || undefined
   };

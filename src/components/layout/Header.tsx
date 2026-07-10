@@ -2,23 +2,27 @@ import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { Accessibility, Languages, LockKeyhole, Menu, Moon, Search, Sun, X } from "lucide-react";
 import { usePortal } from "../../providers/PortalProvider";
-import { identity } from "../../data/content";
+import { identity, navItems } from "../../data/content";
 import { useNavigationItems } from "../../hooks/useNavigationItems";
-import { useScrollDirection } from "../../hooks/useScrollDirection";
 import { tx } from "../../utils/i18n";
+import type { NavMenuItem } from "../../types";
 
 export function Header() {
   const { t, locale, setLocale, theme, setTheme, highContrast, setHighContrast } = usePortal();
   const [open, setOpen] = useState(false);
-  const scrollDirection = useScrollDirection();
-  const condensed = scrollDirection === "down" && !open;
   const headerNav = useNavigationItems("header");
-  const fullNav = headerNav.some((item) => item.path === "/") ? headerNav : [{ path: "/", label: tx("الرئيسية", "Home") }, ...headerNav];
-  const coreNav = fullNav.slice(0, 6);
-  const secondaryNav = fullNav.slice(6);
+  /* Merge the standard pages with any admin-defined nav so core pages
+     (Departments, Services, ...) always appear even when the DB navigation
+     is partial; custom items and order still take effect. */
+  const seen = new Set(headerNav.map((item) => item.path).filter(Boolean));
+  const merged: NavMenuItem[] = [...headerNav, ...navItems.filter((item) => !seen.has(item.path))];
+  /* A clean primary bar plus a "More" menu for the overflow, so every page
+     stays reachable without crowding the header. */
+  const coreNav = merged.slice(0, 7);
+  const secondaryNav = merged.slice(7);
 
   return (
-    <header className={`site-header ${condensed ? "is-condensed" : ""}`}>
+    <header className="site-header">
       <a className="skip-link" href="#main-content">
         {t(tx("تجاوز إلى المحتوى", "Skip to content"))}
       </a>
@@ -49,6 +53,7 @@ export function Header() {
               {t(item.label)}
             </NavLink>
           ))}
+          {secondaryNav.length > 0 && (
           <details className="more-menu">
             <summary>{t(tx("المزيد", "More"))}</summary>
             <div>
@@ -59,6 +64,7 @@ export function Header() {
               ))}
             </div>
           </details>
+          )}
         </nav>
 
         <div className="nav-actions">

@@ -400,3 +400,33 @@
 .x-news-card::after {
   display: none;
 }
+
+/* Admin-built homepage sections (Homepage Builder) */
+.home-rich {
+  display: grid;
+  gap: 18px;
+}
+
+.home-rich-split {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);
+  align-items: center;
+}
+
+.home-rich-copy p {
+  color: var(--text-secondary);
+  margin: 12px 0 18px;
+  max-width: 68ch;
+}
+
+.home-rich-media img {
+  width: 100%;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  object-fit: cover;
+}
+
+@media (max-width: 860px) {
+  .home-rich-split {
+    grid-template-columns: 1fr;
+  }
+}

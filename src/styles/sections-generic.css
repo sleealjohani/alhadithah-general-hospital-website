@@ -359,6 +359,17 @@
   padding: 20px;
 }
 
+.x-feed-empty-embed {
+  display: block;
+  min-height: 0;
+  padding: 0;
+}
+
+.x-feed-empty-embed > p,
+.x-feed-empty-embed > .btn {
+  display: none;
+}
+
 .x-feed-action {
   width: 100%;
   justify-content: center;

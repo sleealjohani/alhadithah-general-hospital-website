@@ -4,7 +4,7 @@ import { usePortal } from "../../providers/PortalProvider";
 import { tx } from "../../utils/i18n";
 
 const HANDLE = "AljoufCluster";
-const WIDGET_SRC = "https://platform.twitter.com/widgets.js";
+const WIDGET_SRC = "https://platform.x.com/widgets.js";
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 type XTimelineProps = {
@@ -83,9 +83,10 @@ export function XTimeline({ compact = false, card = false, days }: XTimelineProp
   const [feedIsStale, setFeedIsStale] = useState(false);
   const [feedStatus, setFeedStatus] = useState<"idle" | "loading" | "ready" | "empty" | "error">("idle");
   const hasRecentFeed = typeof days === "number" && Number.isFinite(days);
+  const shouldUseWidget = !hasRecentFeed || feedStatus === "empty" || feedStatus === "error";
   const recentSearch = hasRecentFeed ? getRecentSearch(days) : null;
   const profileHref = `https://x.com/${HANDLE}`;
-  const profileWidgetHref = `https://twitter.com/${HANDLE}?ref_src=twsrc%5Etfw`;
+  const profileWidgetHref = `https://x.com/${HANDLE}?ref_src=twsrc%5Etfw`;
   const fallbackHref = recentSearch?.fallbackHref ?? profileHref;
   const heading = tx("آخر تحديثات تجمع الجوف الصحي", "Al-Jouf Cluster updates");
   const fallbackLabel = recentSearch
@@ -94,9 +95,12 @@ export function XTimeline({ compact = false, card = false, days }: XTimelineProp
   const anchorLabel = tx("تحديثات من", "Updates from");
 
   useEffect(() => {
-    if (hasRecentFeed) return;
+    if (!shouldUseWidget) return;
 
     let cancelled = false;
+    setFailed(false);
+    setLoaded(false);
+
     const markLoaded = () => {
       if (!cancelled && containerRef.current?.querySelector("iframe")) setLoaded(true);
     };
@@ -134,7 +138,7 @@ export function XTimeline({ compact = false, card = false, days }: XTimelineProp
       observer.disconnect();
       window.clearTimeout(timer);
     };
-  }, [hasRecentFeed]);
+  }, [shouldUseWidget]);
 
   useEffect(() => {
     if (!hasRecentFeed) {
@@ -175,6 +179,19 @@ export function XTimeline({ compact = false, card = false, days }: XTimelineProp
   ]
     .filter(Boolean)
     .join(" ");
+  const embedTimeline = (
+    <div className="x-timeline-embed x-publish-fallback" ref={containerRef}>
+      {!loaded ? <div className="x-timeline-loading">{t(tx("تحميل تحديثات تجمع الجوف الصحي...", "Loading Al-Jouf Cluster updates..."))}</div> : null}
+      <a
+        className="twitter-timeline x-timeline-anchor"
+        data-height={compact ? "420" : "620"}
+        data-theme={theme === "dark" ? "dark" : "light"}
+        href={profileWidgetHref}
+      >
+        Posts by {HANDLE}
+      </a>
+    </div>
+  );
 
   return (
     <section className={className} aria-label={t(tx("آخر التحديثات على منصة إكس", "Latest updates on X"))}>
@@ -232,7 +249,8 @@ export function XTimeline({ compact = false, card = false, days }: XTimelineProp
               </a>
             </>
           ) : (
-            <div className="x-feed-empty">
+            <div className={failed ? "x-feed-empty" : "x-feed-empty x-feed-empty-embed"}>
+              {!failed ? embedTimeline : null}
               <p>{t(tx("تعذر عرض التحديثات داخل الصفحة الآن.", "Updates could not be shown inside the page right now."))}</p>
               <a className="btn btn-secondary" href={fallbackHref} target="_blank" rel="noreferrer">
                 <ExternalLink size={16} />

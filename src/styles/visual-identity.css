@@ -807,7 +807,7 @@ textarea,
 
 /* Second-pass public experience refinements. */
 .page-transition {
-  animation: routeEnter 360ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  animation: routeEnter var(--duration-slow) var(--ease-decelerate);
 }
 
 .reference-hero {
@@ -1107,7 +1107,7 @@ textarea,
 @keyframes routeEnter {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(var(--distance-sm));
   }
 
   to {

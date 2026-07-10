@@ -45,7 +45,7 @@ img {
 }
 
 :focus-visible {
-  outline: 3px solid rgba(14, 122, 95, 0.32);
+  outline: 3px solid var(--focus-ring-color);
   outline-offset: 3px;
 }
 

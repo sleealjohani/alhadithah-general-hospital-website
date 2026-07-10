@@ -42,7 +42,10 @@ export function PortalProvider({ children }: { children: ReactNode }) {
     localValue<boolean>("hadetha_high_contrast", false)
   );
   const [reduceMotion, setReduceMotionState] = useState<boolean>(() =>
-    localValue<boolean>("hadetha_reduce_motion", false)
+    localValue<boolean>(
+      "hadetha_reduce_motion",
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    )
   );
   const [fontScale, setFontScaleState] = useState<number>(() =>
     localValue<number>("hadetha_font_scale", 1)

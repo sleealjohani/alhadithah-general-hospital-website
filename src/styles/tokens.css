@@ -43,6 +43,23 @@
   --radius-lg: 8px;
   --radius-xl: 8px;
 
+  /* Motion — CSS mirror of src/lib/motion.ts; change them together */
+  --duration-instant: 100ms;
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 400ms;
+  --duration-slower: 600ms;
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-decelerate: cubic-bezier(0, 0, 0, 1);
+  --ease-accelerate: cubic-bezier(0.3, 0, 1, 1);
+  --distance-subtle: 4px;
+  --distance-sm: 8px;
+  --distance-md: 16px;
+  --distance-lg: 32px;
+
+  /* Focus ring — brand-derived so it adapts per theme automatically */
+  --focus-ring-color: color-mix(in srgb, var(--primary) 55%, transparent);
+
   font-family: "IBM Plex Sans Arabic", Tahoma, "Segoe UI", Arial, sans-serif;
   color: var(--text);
   background: var(--bg);

@@ -1,10 +1,12 @@
 import { type FormEvent, useCallback, useEffect, useRef, useState } from "react";
-import { Download, Loader2, Pencil, Save, Trash2, UploadCloud, X } from "lucide-react";
+import { Download, Loader2, Pencil, Trash2, UploadCloud } from "lucide-react";
 import { usePortal } from "../../providers/PortalProvider";
 import { SectionHeading } from "../../components/ui/SectionHeading";
 import { supabase } from "../../lib/supabase/client";
+import { logAdminAction } from "../../lib/audit";
 import { displayRowValue } from "../../utils/format";
 import { tx } from "../../utils/i18n";
+import { CrudFormActions, Field, StatusBadge, TableLoadingRows, useDeleteConfirm } from "./shared";
 
 type FileAssetRow = Record<string, unknown>;
 
@@ -24,14 +26,17 @@ const emptyForm = {
 export function AdminMedia() {
   const { t, notify } = usePortal();
   const [rows, setRows] = useState<FileAssetRow[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const loadRows = useCallback(async () => {
-    if (!supabase) return;
+    if (!supabase) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const { data, error } = await supabase.from("file_assets").select("*").order("created_at", { ascending: false });
     setLoading(false);
@@ -55,6 +60,7 @@ export function AdminMedia() {
       visibility: displayRowValue(row, ["visibility"], "public"),
       status: displayRowValue(row, ["status"], "draft")
     });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const cancelEdit = () => {
@@ -63,46 +69,50 @@ export function AdminMedia() {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const saveMetadata = async (event: FormEvent) => {
+  const submit = async (event: FormEvent) => {
     event.preventDefault();
-    if (!supabase || !editingId) return;
-    const { error } = await supabase
-      .from("file_assets")
-      .update({
-        title_ar: form.title_ar,
-        title_en: form.title_en,
-        visibility: form.visibility,
-        status: form.status
-      })
-      .eq("id", editingId);
-    if (error) {
-      notify(error.message, "error");
-      return;
-    }
-    notify(t(tx("تم تحديث بيانات الملف.", "File metadata updated.")), "success");
-    cancelEdit();
-    loadRows();
-  };
-
-  const upload = async (event: FormEvent) => {
-    event.preventDefault();
+    if (busy) return;
     if (!supabase) {
       notify(t(tx("Supabase غير متصل.", "Supabase is not connected.")), "error");
       return;
     }
+
+    if (editingId) {
+      setBusy(true);
+      const { error } = await supabase
+        .from("file_assets")
+        .update({
+          title_ar: form.title_ar,
+          title_en: form.title_en,
+          visibility: form.visibility,
+          status: form.status
+        })
+        .eq("id", editingId);
+      setBusy(false);
+      if (error) {
+        notify(error.message, "error");
+        return;
+      }
+      logAdminAction("media.update", "file_assets", editingId, { title_ar: form.title_ar });
+      notify(t(tx("تم تحديث بيانات الملف.", "File metadata updated.")), "success");
+      cancelEdit();
+      loadRows();
+      return;
+    }
+
     const file = fileInputRef.current?.files?.[0];
     if (!file) {
       notify(t(tx("اختر ملفًا للرفع.", "Choose a file to upload.")), "error");
       return;
     }
 
-    setUploading(true);
+    setBusy(true);
     const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
     const objectPath = `${Date.now()}-${safeName}`;
 
     const { error: uploadError } = await supabase.storage.from(form.bucket).upload(objectPath, file);
     if (uploadError) {
-      setUploading(false);
+      setBusy(false);
       notify(uploadError.message, "error");
       return;
     }
@@ -116,34 +126,42 @@ export function AdminMedia() {
       visibility: form.visibility,
       status: form.status
     });
-    setUploading(false);
 
     if (insertError) {
+      /* Roll the orphaned object back so storage and the table stay in sync. */
+      await supabase.storage.from(form.bucket).remove([objectPath]);
+      setBusy(false);
       notify(insertError.message, "error");
       return;
     }
 
+    setBusy(false);
+    logAdminAction("media.upload", "file_assets", null, { object_path: objectPath });
     notify(t(tx("تم رفع الملف وحفظه.", "File uploaded and saved.")), "success");
-    setForm(emptyForm);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    cancelEdit();
     loadRows();
   };
 
-  const remove = async (row: FileAssetRow) => {
-    if (!supabase || typeof row.id !== "string") return;
-    const bucket = displayRowValue(row, ["bucket"]);
-    const objectPath = displayRowValue(row, ["object_path"]);
+  const { dialog: deleteDialog, requestDelete } = useDeleteConfirm(async (id) => {
+    if (!supabase) return;
+    const row = rows.find((item) => String(item.id) === id);
+    /* Delete the DB row first: if that fails we keep the file rather than
+       leaving a record that points at a now-missing object. */
+    const { error } = await supabase.from("file_assets").delete().eq("id", id);
+    if (error) {
+      notify(error.message, "error");
+      return;
+    }
+    const bucket = row ? displayRowValue(row, ["bucket"]) : "";
+    const objectPath = row ? displayRowValue(row, ["object_path"]) : "";
     if (bucket && objectPath) {
       await supabase.storage.from(bucket).remove([objectPath]);
     }
-    const { error } = await supabase.from("file_assets").delete().eq("id", row.id);
-    if (error) notify(error.message, "error");
-    else {
-      if (editingId === row.id) cancelEdit();
-      notify(t(tx("تم حذف الملف.", "File deleted.")), "success");
-      loadRows();
-    }
-  };
+    if (editingId === id) cancelEdit();
+    logAdminAction("media.delete", "file_assets", id);
+    notify(t(tx("تم حذف الملف.", "File deleted.")), "success");
+    loadRows();
+  });
 
   const openFile = async (row: FileAssetRow) => {
     if (!supabase) return;
@@ -175,61 +193,67 @@ export function AdminMedia() {
         )}
       />
       <div className="admin-panel">
-        <form className="admin-form" onSubmit={editingId ? saveMetadata : upload}>
-          <input
-            required
-            placeholder={t(tx("العنوان بالعربية", "Arabic title"))}
-            value={form.title_ar}
-            onChange={(event) => setForm({ ...form, title_ar: event.target.value })}
-          />
-          <input
-            required
-            placeholder={t(tx("العنوان بالإنجليزية", "English title"))}
-            value={form.title_en}
-            onChange={(event) => setForm({ ...form, title_en: event.target.value })}
-          />
-          <select
-            value={form.bucket}
-            disabled={Boolean(editingId)}
-            onChange={(event) => setForm({ ...form, bucket: event.target.value })}
-          >
-            {buckets.map((bucket) => (
-              <option key={bucket.id} value={bucket.id}>
-                {t(bucket.label)}
-              </option>
-            ))}
-          </select>
-          <select value={form.visibility} onChange={(event) => setForm({ ...form, visibility: event.target.value })}>
-            <option value="public">{t(tx("عام", "Public"))}</option>
-            <option value="employees">{t(tx("الموظفون", "Employees"))}</option>
-            <option value="admin">{t(tx("الإدارة فقط", "Admin only"))}</option>
-          </select>
-          <select value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value })}>
-            <option value="draft">{t(tx("مسودة", "Draft"))}</option>
-            <option value="published">{t(tx("منشور", "Published"))}</option>
-            <option value="archived">{t(tx("مؤرشف", "Archived"))}</option>
-          </select>
-          {editingId ? null : <input ref={fileInputRef} type="file" />}
-          <button className="btn btn-primary" disabled={uploading}>
-            {uploading ? <Loader2 className="spin" size={18} /> : editingId ? <Save size={18} /> : <UploadCloud size={18} />}
-            {editingId ? t(tx("تحديث البيانات", "Update metadata")) : t(tx("رفع الملف", "Upload file"))}
-          </button>
+        <form className="admin-form" onSubmit={submit}>
+          <Field label={tx("العنوان بالعربية", "Arabic title")}>
+            <input required value={form.title_ar} onChange={(e) => setForm({ ...form, title_ar: e.target.value })} />
+          </Field>
+          <Field label={tx("العنوان بالإنجليزية", "English title")}>
+            <input required dir="ltr" value={form.title_en} onChange={(e) => setForm({ ...form, title_en: e.target.value })} />
+          </Field>
+          <Field label={tx("المساحة", "Bucket")}>
+            <select
+              value={form.bucket}
+              disabled={Boolean(editingId)}
+              onChange={(e) => setForm({ ...form, bucket: e.target.value })}
+            >
+              {buckets.map((bucket) => (
+                <option key={bucket.id} value={bucket.id}>
+                  {t(bucket.label)}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label={tx("الظهور", "Visibility")}>
+            <select value={form.visibility} onChange={(e) => setForm({ ...form, visibility: e.target.value })}>
+              <option value="public">{t(tx("عام", "Public"))}</option>
+              <option value="employees">{t(tx("الموظفون", "Employees"))}</option>
+              <option value="admin">{t(tx("الإدارة فقط", "Admin only"))}</option>
+            </select>
+          </Field>
+          <Field label={tx("الحالة", "Status")}>
+            <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
+              <option value="draft">{t(tx("مسودة", "Draft"))}</option>
+              <option value="published">{t(tx("منشور", "Published"))}</option>
+              <option value="archived">{t(tx("مؤرشف", "Archived"))}</option>
+            </select>
+          </Field>
+          {editingId ? null : (
+            <Field label={tx("الملف", "File")} wide>
+              <input ref={fileInputRef} type="file" required />
+            </Field>
+          )}
           {editingId ? (
-            <button type="button" className="btn btn-secondary" onClick={cancelEdit}>
-              <X size={18} />
-              {t(tx("إلغاء التعديل", "Cancel edit"))}
+            <CrudFormActions
+              busy={busy}
+              editing
+              onCancel={cancelEdit}
+              updateLabel={tx("تحديث البيانات", "Update metadata")}
+            />
+          ) : (
+            <button className="btn btn-primary" disabled={busy} type="submit">
+              {busy ? <Loader2 className="spin" size={18} /> : <UploadCloud size={18} />}
+              {t(tx("رفع الملف", "Upload file"))}
             </button>
-          ) : null}
+          )}
         </form>
       </div>
 
       <div className="admin-panel">
         <div className="admin-toolbar">
           <h2>{t(tx("الملفات", "Files"))}</h2>
-          {loading ? <Loader2 className="spin" /> : null}
         </div>
         <div className="admin-table-wrap">
-          <table className="admin-table">
+          <table className="admin-table" aria-busy={loading}>
             <thead>
               <tr>
                 <th>{t(tx("العنوان", "Title"))}</th>
@@ -240,26 +264,36 @@ export function AdminMedia() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((row) => (
-                <tr key={String(row.id)} className={editingId === row.id ? "is-editing" : ""}>
-                  <td>{displayRowValue(row, ["title_ar"])}</td>
-                  <td>{displayRowValue(row, ["bucket"])}</td>
-                  <td>{displayRowValue(row, ["visibility"])}</td>
-                  <td>{displayRowValue(row, ["status"], "-")}</td>
-                  <td>
-                    <button className="icon-button" onClick={() => openFile(row)} aria-label={t(tx("فتح", "Open"))}>
-                      <Download size={17} />
-                    </button>
-                    <button className="icon-button" onClick={() => edit(row)} aria-label={t(tx("تعديل", "Edit"))}>
-                      <Pencil size={17} />
-                    </button>
-                    <button className="icon-button danger" onClick={() => remove(row)} aria-label={t(tx("حذف", "Delete"))}>
-                      <Trash2 size={17} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {rows.length === 0 ? (
+              {loading ? (
+                <TableLoadingRows cols={5} />
+              ) : (
+                rows.map((row) => (
+                  <tr key={String(row.id)} className={editingId === row.id ? "is-editing" : ""}>
+                    <td>{displayRowValue(row, ["title_ar"])}</td>
+                    <td dir="ltr">{displayRowValue(row, ["bucket"])}</td>
+                    <td>{displayRowValue(row, ["visibility"])}</td>
+                    <td>
+                      <StatusBadge value={displayRowValue(row, ["status"], "-")} />
+                    </td>
+                    <td>
+                      <button className="icon-button" onClick={() => openFile(row)} aria-label={t(tx("فتح", "Open"))}>
+                        <Download size={17} />
+                      </button>
+                      <button className="icon-button" onClick={() => edit(row)} aria-label={t(tx("تعديل", "Edit"))}>
+                        <Pencil size={17} />
+                      </button>
+                      <button
+                        className="icon-button danger"
+                        onClick={() => requestDelete(String(row.id), displayRowValue(row, ["title_ar", "id"]))}
+                        aria-label={t(tx("حذف", "Delete"))}
+                      >
+                        <Trash2 size={17} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+              {!loading && rows.length === 0 ? (
                 <tr>
                   <td colSpan={5}>{t(tx("لا توجد ملفات بعد.", "No files yet."))}</td>
                 </tr>
@@ -268,6 +302,7 @@ export function AdminMedia() {
           </table>
         </div>
       </div>
+      {deleteDialog}
     </div>
   );
 }

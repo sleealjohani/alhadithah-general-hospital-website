@@ -18,6 +18,7 @@ import {
   HeartPulse,
   Home,
   Images,
+  Inbox,
   LayoutDashboard,
   Library,
   Lightbulb,
@@ -42,6 +43,7 @@ import {
   Target,
   UploadCloud,
   UserCog,
+  UserRound,
   Workflow,
   Zap,
   type LucideIcon
@@ -67,6 +69,7 @@ const icons: Record<string, LucideIcon> = {
   HeartPulse,
   Home,
   Images,
+  Inbox,
   LayoutDashboard,
   Library,
   Lightbulb,
@@ -91,6 +94,7 @@ const icons: Record<string, LucideIcon> = {
   Target,
   UploadCloud,
   UserCog,
+  UserRound,
   Workflow,
   Zap
 };

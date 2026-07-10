@@ -1,4 +1,4 @@
-import { Link, NavLink, Route, Routes, useNavigate } from "react-router-dom";
+import { Link, NavLink, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
 import { usePortal } from "../../providers/PortalProvider";
 import { Icon } from "../../components/ui/Icon";
@@ -23,8 +23,15 @@ export function AdminLayout() {
   const { t, notify } = usePortal();
   const { profile, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   if (!profile) return null;
+
+  /* The h1 names the current screen, not the visitor — matching what each
+     page's content is actually about. */
+  const activeItem =
+    adminNav.find((item) => item.path !== "/admin" && location.pathname.startsWith(item.path)) ??
+    adminNav[0];
 
   const logout = async () => {
     await signOut();
@@ -51,13 +58,19 @@ export function AdminLayout() {
       <section className="admin-main">
         <header className="admin-topbar">
           <div>
-            <span className="eyebrow">{t(roleLabels[profile.role] || roleLabels.viewer)}</span>
-            <h1>{profile.full_name || profile.email || t(tx("مستخدم إداري", "Admin user"))}</h1>
+            <span className="eyebrow">{t(tx("لوحة التحكم", "Admin Console"))}</span>
+            <h1>{t(activeItem.label)}</h1>
           </div>
-          <button className="btn btn-secondary" onClick={logout}>
-            <LogOut size={18} />
-            {t(tx("خروج", "Logout"))}
-          </button>
+          <div className="admin-user">
+            <div className="admin-user-meta">
+              <strong>{profile.full_name || profile.email || t(tx("مستخدم إداري", "Admin user"))}</strong>
+              <span className="badge badge-info">{t(roleLabels[profile.role] || roleLabels.viewer)}</span>
+            </div>
+            <button className="btn btn-secondary" onClick={logout}>
+              <LogOut size={18} />
+              {t(tx("خروج", "Logout"))}
+            </button>
+          </div>
         </header>
         <Routes>
           <Route index element={<AdminDashboard />} />

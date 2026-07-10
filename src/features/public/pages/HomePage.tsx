@@ -266,7 +266,7 @@ export function HomePage() {
             />
             <div className="home-news-stack">
               <Suspense fallback={null}>
-                <XTimeline compact card />
+                <XTimeline compact card days={7} />
               </Suspense>
             </div>
           </div>

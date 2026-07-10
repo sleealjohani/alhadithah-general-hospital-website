@@ -326,3 +326,69 @@
   outline: none;
   box-shadow: none;
 }
+
+/* --- Homepage Builder admin --- */
+.builtin-toggles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+  gap: 10px;
+}
+
+.builtin-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.builtin-toggle span {
+  flex: 1;
+  font-weight: 650;
+}
+
+.cards-editor {
+  display: grid;
+  gap: 14px;
+}
+
+.cards-editor-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.card-editor {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-soft);
+}
+
+.card-editor-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 750;
+}
+
+.card-editor-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.card-editor-grid .field-wide {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 640px) {
+  .card-editor-grid {
+    grid-template-columns: 1fr;
+  }
+}

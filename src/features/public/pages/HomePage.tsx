@@ -5,6 +5,7 @@ import { usePortal } from "../../../providers/PortalProvider";
 import { Icon } from "../../../components/ui/Icon";
 import { SectionHeading } from "../../../components/ui/SectionHeading";
 import { ContentGrid } from "../../../components/ui/ContentGrid";
+import { HomeBuilderSections } from "../components/HomeBuilderSections";
 import { usePublishedItems } from "../../../hooks/usePublishedItems";
 import { useHomepageSectionVisibility } from "../../../hooks/useHomepageSectionVisibility";
 import { useHomepageHero } from "../../../hooks/useHomepageHero";
@@ -63,6 +64,8 @@ export function HomePage() {
         </div>
       </section>
       )}
+
+      <HomeBuilderSections />
 
       {isActive("quick_access") && (
       <section className="quick-ribbon" aria-label={t(tx("روابط رئيسية", "Primary links"))}>

@@ -18,7 +18,7 @@ export async function fetchPublishedContent(table: string): Promise<PublicConten
 
 export function mapRowToItem(row: PublicContentRow): PortalItem {
   return {
-    id: row.id,
+    id: row.slug || row.id,
     title: tx(row.title_ar, row.title_en || row.title_ar),
     description: tx(row.description_ar || "", row.description_en || row.description_ar || ""),
     category: tx(row.category_ar || "عام", row.category_en || row.category_ar || "General"),

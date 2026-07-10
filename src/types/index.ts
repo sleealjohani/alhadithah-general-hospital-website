@@ -52,6 +52,7 @@ export type NavMenuItem = {
 
 export type PublicContentRow = {
   id: string;
+  slug: string | null;
   title_ar: string;
   title_en: string;
   description_ar: string | null;

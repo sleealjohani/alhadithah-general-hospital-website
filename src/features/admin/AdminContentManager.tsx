@@ -9,6 +9,7 @@ import { tx } from "../../utils/i18n";
 import { AdminEditorPanel, AdminField, AdminFormActions, AdminHelpPanel } from "./AdminUX";
 
 const emptyForm = {
+  slug: "",
   title_ar: "",
   title_en: "",
   description_ar: "",
@@ -19,12 +20,22 @@ const emptyForm = {
   status: "draft"
 };
 
+function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+}
+
 export function AdminContentManager() {
   const { t, notify } = usePortal();
   const [table, setTable] = useState(contentTables[0].table);
   const [rows, setRows] = useState<Array<Record<string, unknown>>>([]);
   const [loading, setLoading] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [slugTouched, setSlugTouched] = useState(false);
   const [form, setForm] = useState(emptyForm);
 
   const currentTable = contentTables.find((item) => item.table === table) ?? contentTables[0];
@@ -43,13 +54,16 @@ export function AdminContentManager() {
 
   useEffect(() => {
     setEditingId(null);
+    setSlugTouched(false);
     setForm(emptyForm);
     loadRows();
   }, [loadRows]);
 
   const edit = (row: Record<string, unknown>) => {
     setEditingId(String(row.id));
+    setSlugTouched(true);
     setForm({
+      slug: displayRowValue(row, ["slug"]),
       title_ar: displayRowValue(row, ["title_ar"]),
       title_en: displayRowValue(row, ["title_en"]),
       description_ar: displayRowValue(row, ["description_ar"]),
@@ -63,6 +77,7 @@ export function AdminContentManager() {
 
   const cancelEdit = () => {
     setEditingId(null);
+    setSlugTouched(false);
     setForm(emptyForm);
   };
 
@@ -94,6 +109,7 @@ export function AdminContentManager() {
     }
 
     setEditingId(null);
+    setSlugTouched(false);
     setForm(emptyForm);
     loadRows();
   };
@@ -154,13 +170,36 @@ export function AdminContentManager() {
 
         <form className="admin-form" onSubmit={save}>
           <AdminField
+            label={tx("المعرف slug", "Slug")}
+            help={tx("استخدم أحرفًا إنجليزية وأرقامًا وشرطات فقط. يظهر في الروابط والبحث، مثال: emergency-services.", "Use English letters, numbers, and hyphens only. Used in links and search, for example emergency-services.")}
+          >
+            <input
+              required
+              dir="ltr"
+              pattern="[a-z0-9-]+"
+              placeholder="emergency-services"
+              value={form.slug}
+              onChange={(event) => {
+                setSlugTouched(true);
+                setForm({ ...form, slug: slugify(event.target.value) });
+              }}
+            />
+          </AdminField>
+          <AdminField
             label={tx("العنوان بالعربية", "Arabic title")}
             help={tx("يظهر كعنوان البطاقة أو الخبر في صفحة الموقع.", "Shown as the public card or article title.")}
           >
             <input required value={form.title_ar} onChange={(event) => setForm({ ...form, title_ar: event.target.value })} />
           </AdminField>
           <AdminField label={tx("العنوان بالإنجليزية", "English title")}>
-            <input required value={form.title_en} onChange={(event) => setForm({ ...form, title_en: event.target.value })} />
+            <input
+              required
+              value={form.title_en}
+              onChange={(event) => {
+                const title_en = event.target.value;
+                setForm({ ...form, title_en, slug: slugTouched ? form.slug : slugify(title_en) });
+              }}
+            />
           </AdminField>
           <AdminField
             wide

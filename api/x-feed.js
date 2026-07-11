@@ -4,18 +4,16 @@
  * Vercel maps this file to the /api/x-feed route automatically, so the client
  * keeps calling /api/x-feed exactly as before (no redirect config needed).
  *
- * Order of attempts:
- *   1. X API v2 recent search — only if X_BEARER_TOKEN is set (paid tier).
- *   2. X syndication timeline — free, no token, server-side.
- * Results are served from the Supabase external_feed_cache first (populated by
- * the scheduled GitHub Action, which runs on an IP X actually serves), and a
- * stale cached copy is returned if a live fetch fails.
+ * How it works: the Supabase external_feed_cache table is populated every few
+ * minutes by the scheduled GitHub Action (which runs on an IP X actually
+ * serves). This function returns that cached copy first; if it's stale it makes
+ * a best-effort live syndication fetch, and falls back to the stale cache if
+ * that fetch is blocked (as it usually is from datacenter IPs).
  */
 
 const HANDLE = "AljoufCluster";
 const DAY_MS = 24 * 60 * 60 * 1000;
 const CACHE_MINUTES = 10;
-const X_RECENT_SEARCH_URL = "https://api.x.com/2/tweets/search/recent";
 const SYNDICATION_URL = `https://syndication.twitter.com/srv/timeline-profile/screen-name/${HANDLE}`;
 const BROWSER_UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
@@ -104,8 +102,8 @@ function extractMedia(tweet) {
     .slice(0, 4);
 }
 
-/* --- Free path: X syndication timeline (no token) ------------------------ */
-async function fetchFromSyndication(days, limit) {
+/* Free path: X syndication timeline (no token) — the only strategy. */
+async function fetchLive(days, limit) {
   const response = await fetch(`${SYNDICATION_URL}?showReplies=false&lang=ar`, {
     headers: {
       "user-agent": BROWSER_UA,
@@ -149,77 +147,6 @@ async function fetchFromSyndication(days, limit) {
     source: "x-syndication",
     windowDays: days
   };
-}
-
-/* --- Optional paid path: X API v2 recent search -------------------------- */
-function buildRecentSearchUrl(days, limit) {
-  const params = new URLSearchParams({
-    expansions: "attachments.media_keys,author_id",
-    max_results: String(Math.max(10, Math.min(100, limit * 2))),
-    "media.fields": "alt_text,preview_image_url,type,url",
-    query: `from:${HANDLE} -is:retweet`,
-    sort_order: "recency",
-    start_time: new Date(Date.now() - days * DAY_MS).toISOString(),
-    "tweet.fields": "attachments,created_at,entities",
-    "user.fields": "name,profile_image_url,username"
-  });
-  return `${X_RECENT_SEARCH_URL}?${params.toString()}`;
-}
-
-async function fetchFromApi(days, limit) {
-  const bearerToken = getEnv("X_BEARER_TOKEN");
-  if (!bearerToken) throw new Error("missing_x_bearer_token");
-
-  const response = await fetch(buildRecentSearchUrl(days, limit), {
-    headers: { authorization: `Bearer ${bearerToken}` }
-  });
-  if (!response.ok) throw new Error(`x_api_${response.status}`);
-
-  const payload = await response.json();
-  const mediaMap = new Map((payload.includes?.media || []).map((m) => [m.media_key, m]));
-  const items = (payload.data || [])
-    .map((tweet) => ({
-      id: tweet.id,
-      createdAt: tweet.created_at,
-      text: cleanText(tweet.text),
-      url: `https://x.com/${HANDLE}/status/${tweet.id}`,
-      media: (tweet.attachments?.media_keys || [])
-        .map((k) => mediaMap.get(k))
-        .filter(Boolean)
-        .map((m) => ({
-          type: m.type || "photo",
-          url: m.url || m.preview_image_url,
-          expandedUrl: `https://x.com/${HANDLE}/status/${tweet.id}`
-        }))
-        .filter((m) => m.url)
-        .slice(0, 4)
-    }))
-    .filter((item) => item.id && item.createdAt && item.text)
-    .slice(0, limit);
-
-  return {
-    generatedAt: new Date().toISOString(),
-    handle: HANDLE,
-    isRecentWindow: true,
-    isStale: false,
-    items,
-    profileUrl: `https://x.com/${HANDLE}`,
-    source: "x-api",
-    windowDays: days
-  };
-}
-
-async function fetchLive(days, limit) {
-  /* Prefer the paid API only when a token is present; otherwise use the free
-     syndication feed. If the API path errors, fall back to syndication. */
-  if (getEnv("X_BEARER_TOKEN")) {
-    try {
-      return await fetchFromApi(days, limit);
-    } catch {
-      /* fall through to the free path */
-    }
-  }
-  return fetchFromSyndication(days, limit);
 }
 
 export default async function handler(req, res) {

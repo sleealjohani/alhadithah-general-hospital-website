@@ -235,9 +235,12 @@ textarea,
   transform: scale(1.12);
 }
 
-/* Richer scroll reveal — a touch of rise + settle, still transform/opacity. */
+/* Richer scroll reveal — a more pronounced rise + settle, still transform/opacity. */
 [data-reveal] {
-  transform: translateY(24px) scale(0.99);
+  transform: translateY(46px) scale(0.965);
+  transition:
+    opacity var(--duration-lux) var(--ease-bloom) var(--reveal-delay, 0ms),
+    transform var(--duration-lux) var(--ease-bloom) var(--reveal-delay, 0ms);
 }
 
 [data-reveal].is-visible {
@@ -433,10 +436,27 @@ textarea,
   z-index: 0;
   display: block;
   width: min(48vw, 560px);
-  height: auto;
-  opacity: 0.1;
+  opacity: 0.11;
   pointer-events: none;
   will-change: transform;
+}
+
+/* Inner image floats continuously so the mark is alive even before scrolling. */
+.brand-watermark-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  animation: brandFloat 16s ease-in-out infinite;
+}
+
+@keyframes brandFloat {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(0, -18px, 0) rotate(-3deg);
+  }
 }
 
 .hero-watermark-mark {

@@ -16,10 +16,6 @@ const STAGGER_CAP_MS = 300;
  */
 export function useScrollReveal() {
   useEffect(() => {
-    const reduced = () =>
-      document.documentElement.dataset.motion === "reduced" ||
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
     const io = new IntersectionObserver(
       (entries) => {
         const entering = entries.filter((entry) => entry.isIntersecting);
@@ -42,7 +38,7 @@ export function useScrollReveal() {
 
       const rect = el.getBoundingClientRect();
       const alreadyOnScreen = rect.top < window.innerHeight * 0.92 && rect.bottom > 0;
-      if (reduced() || alreadyOnScreen) {
+      if (alreadyOnScreen) {
         el.classList.add("is-immediate", "is-visible");
         return;
       }

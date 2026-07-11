@@ -8,7 +8,7 @@ export type PaletteCommand = {
   group: "pages" | "actions";
   /** Route to navigate to, or a named action handled by the palette. */
   to?: string;
-  action?: "toggle-theme" | "toggle-locale" | "toggle-contrast";
+  action?: "toggle-theme" | "toggle-locale";
 };
 
 export const paletteCommands: PaletteCommand[] = [
@@ -39,12 +39,6 @@ export const paletteCommands: PaletteCommand[] = [
     group: "actions",
     action: "toggle-locale",
     label: tx("تبديل اللغة", "Switch language")
-  },
-  {
-    id: "contrast",
-    group: "actions",
-    action: "toggle-contrast",
-    label: tx("تبديل التباين العالي", "Toggle high contrast")
   }
 ];
 

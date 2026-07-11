@@ -16,7 +16,7 @@ type MagneticProps = {
  * so it stays on the compositor. Under reduced motion it renders a plain span
  * with no listeners and never moves.
  */
-export function Magnetic({ children, className, strength = 14 }: MagneticProps) {
+export function Magnetic({ children, className, strength = 20 }: MagneticProps) {
   const reduced = useReducedMotionPref();
   const ref = useRef<HTMLSpanElement>(null);
   const x = useMotionValue(0);

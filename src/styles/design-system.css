@@ -1,0 +1,271 @@
+/* Next Level Design System — component signatures.
+
+   Imported last so it layers the v3.0 look onto the app's existing classes:
+   pill buttons on the sky primary, the asymmetric Bloom radius on cards
+   (RTL-aware via logical corner properties), sand editorial eyebrows, a glass
+   header, and the editorial ink hero rule. Everything animates transform /
+   opacity and derives timing from tokens; the reduced-motion kill switch in
+   base.css silences all of it. */
+
+/* --- Buttons: pill, confident, sky primary ---------------------------- */
+.btn,
+.admin-entry {
+  min-height: 44px;
+  border-radius: var(--radius-pill);
+  border-width: 1.5px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  transition:
+    transform var(--duration-fast) var(--ease-accelerate),
+    box-shadow var(--duration-base) var(--ease-bloom),
+    background var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard);
+}
+
+.btn-primary,
+.admin-entry {
+  border-color: transparent;
+  background: var(--primary);
+  color: #ffffff;
+  box-shadow: var(--shadow-brand-glow);
+}
+
+.btn-primary:hover:not(:disabled),
+.admin-entry:hover {
+  border-color: transparent;
+  background: var(--primary-strong);
+  transform: translateY(-1px);
+}
+
+:root[data-theme="dark"] .btn-primary,
+:root[data-theme="dark"] .admin-entry {
+  color: #06122c;
+}
+
+.btn-secondary {
+  border-color: var(--primary);
+  background: var(--surface);
+  color: var(--primary);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--surface-soft);
+  transform: translateY(-1px);
+}
+
+.btn-ghost {
+  border-color: transparent;
+  background: transparent;
+  color: var(--text);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  background: var(--surface-sunken);
+}
+
+.btn-danger {
+  border-color: transparent;
+  background: var(--danger);
+  color: #ffffff;
+}
+
+.btn:active:not(:disabled),
+.admin-entry:active {
+  transform: scale(0.97);
+  transition-duration: var(--duration-instant);
+}
+
+.btn:disabled {
+  color: var(--text-muted);
+  background: var(--surface-sunken);
+  border-color: var(--border);
+  box-shadow: none;
+  transform: none;
+  cursor: not-allowed;
+}
+
+/* --- Cards: the Bloom motif (RTL-aware) + lift on hover --------------- */
+.info-card,
+.portal-card,
+.mini-card,
+.rich-panel {
+  border-start-start-radius: 24px;
+  border-start-end-radius: 8px;
+  border-end-end-radius: 8px;
+  border-end-start-radius: 8px;
+  transition:
+    transform var(--duration-base) var(--ease-bloom),
+    box-shadow var(--duration-base) var(--ease-bloom),
+    border-color var(--duration-base) var(--ease-standard);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .info-card:hover,
+  .portal-card:hover,
+  .mini-card:hover {
+    border-color: color-mix(in srgb, var(--primary-decorative) 55%, var(--border));
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-6px);
+  }
+}
+
+/* --- Eyebrow: sand, editorial, quietly premium ----------------------- */
+.eyebrow,
+.reference-hero .eyebrow,
+.path-stage .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--accent);
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: var(--tracking-widest);
+  text-transform: uppercase;
+}
+
+:root[dir="rtl"] .eyebrow {
+  font-family: var(--font-arabic);
+  letter-spacing: 0;
+}
+
+.eyebrow::before {
+  content: "";
+  width: 26px;
+  height: 2px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+}
+
+/* --- Section headings: Poppins display, clear hierarchy -------------- */
+.section-heading h2,
+.home-hero h1,
+.page-hero h1 {
+  letter-spacing: var(--tracking-tight);
+}
+
+/* --- Inputs: calmer 1.5px field, Bloom-lite corners ------------------ */
+input,
+select,
+textarea,
+.input,
+.select,
+.textarea {
+  border-width: 1.5px;
+  border-radius: var(--radius-md);
+}
+
+/* --- Header: glass chrome ------------------------------------------- */
+.site-header {
+  backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  background: var(--glass-bg);
+  border-bottom: 1px solid var(--glass-border);
+}
+
+/* --- Ink hero: sand + sky bottom rule (the brand signature edge) ----- */
+.pro-hero,
+.reference-hero {
+  isolation: isolate;
+}
+
+.pro-hero::before {
+  content: "";
+  position: absolute;
+  inset-block: auto 0;
+  inset-inline: 0;
+  z-index: 2;
+  height: 6px;
+  background: var(--grad-bloom-rule);
+}
+
+/* --- Gold/sand rule utility (editorial divider) ---------------------- */
+.bloom-rule {
+  width: 56px;
+  height: 4px;
+  margin: 18px 0;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+}
+
+/* ===================================================================== */
+/* Motion polish — meaningful, tied to interaction, reduced-motion safe.  */
+/* ===================================================================== */
+
+/* Primary buttons get a light sheen that sweeps across on hover. */
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(105deg, transparent 32%, rgba(255, 255, 255, 0.38) 50%, transparent 68%);
+  transform: translateX(-130%);
+  transition: transform var(--duration-slower) var(--ease-standard);
+  pointer-events: none;
+}
+
+.btn-primary:hover::after {
+  transform: translateX(130%);
+}
+
+[dir="rtl"] .btn-primary::after {
+  transform: translateX(130%);
+}
+
+[dir="rtl"] .btn-primary:hover::after {
+  transform: translateX(-130%);
+}
+
+/* Button icons breathe slightly on hover. */
+.btn svg {
+  transition: transform var(--duration-fast) var(--ease-bloom);
+}
+
+.btn:hover:not(:disabled) svg {
+  transform: scale(1.12);
+}
+
+/* Richer scroll reveal — a touch of rise + settle, still transform/opacity. */
+[data-reveal] {
+  transform: translateY(24px) scale(0.99);
+}
+
+[data-reveal].is-visible {
+  transform: none;
+}
+
+/* The hero experience panel drifts in with a longer, luxe entrance. */
+.hero-experience {
+  animation: heroPanelIn var(--duration-lux) var(--ease-bloom) both;
+}
+
+@keyframes heroPanelIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+}
+
+/* Quick-ribbon + portal cards: the trailing arrow slides toward its edge. */
+.quick-ribbon-card .arrow-mark,
+.card-action {
+  transition: transform var(--duration-base) var(--ease-bloom);
+}
+
+.quick-ribbon-card:hover .arrow-mark {
+  transform: translateX(-6px);
+}
+
+[dir="rtl"] .quick-ribbon-card:hover .arrow-mark {
+  transform: translateX(6px);
+}

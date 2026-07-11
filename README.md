@@ -2,13 +2,13 @@
 
 Arabic-first bilingual portal for **مستشفى الحديثة العام** under **تجمع الجوف الصحي**.
 
-The app is built for Netlify + Supabase and can be previewed locally from VS Code.
+The app is built for Vercel + Supabase and can be previewed locally from VS Code.
 
 ## Stack
 
 - React + Vite + TypeScript, organized as a modular feature-based app (see `docs/ARCHITECTURE.md`)
 - Supabase Database + Auth + Storage + RLS, with a full CMS content model
-- Netlify static deployment
+- Vercel deployment (static frontend + `/api` serverless function)
 - CSS variables for light/dark/high contrast themes, split into a design-token
   system under `src/styles/`
 - Browser-side QR generation and Excel-compatible CSV export
@@ -84,6 +84,6 @@ See `docs/ADMIN_GUIDE.md` for the full walkthrough.
 - `supabase/seed.sql` - starter content without fake contact details.
 - `docs/ARCHITECTURE.md` - folder structure and data-flow guide.
 - `docs/SUPABASE_SETUP.md` - first admin and Supabase setup.
-- `docs/DEPLOYMENT.md` - Netlify deployment.
+- `docs/DEPLOYMENT.md` - Vercel deployment.
 - `docs/ADMIN_GUIDE.md` - admin operation guide.
 - `docs/CONTENT_GUIDE.md` - content tone and publishing rules.

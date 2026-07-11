@@ -1,6 +1,7 @@
 -- Server-side cache for external feeds such as the Al-Jouf Cluster X feed.
--- Public clients do not read or write this table directly; Netlify Functions
--- use the Supabase service-role key and expose only normalized public JSON.
+-- Public clients do not read or write this table directly; the server function
+-- and refresh workflow use the Supabase service-role key and expose only
+-- normalized public JSON.
 
 create table if not exists public.external_feed_cache (
   cache_key text primary key,

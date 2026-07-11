@@ -10,48 +10,50 @@
    domain once it's known — search engines require absolute URLs there, and
    this repo doesn't have a domain to fill in yet.
 
-## Netlify
+## Vercel
 
 1. Push this repository to GitHub.
-2. In Netlify, create a new site from Git.
-3. Use these build settings:
+2. In Vercel, import the repository as a new project. The framework is
+   auto-detected as **Vite** (build `npm run build`, output `dist`).
+   `vercel.json` already sets this plus the SPA rewrite, so deep links such as
+   `/admin` and `/services` work.
+3. Add environment variables (Project → Settings → Environment Variables) for
+   all environments:
 
 ```text
-Build command: npm run build
-Publish directory: dist
+VITE_SUPABASE_URL                # client — Supabase project URL
+VITE_SUPABASE_PUBLISHABLE_KEY    # client — anon/publishable key
+SUPABASE_URL                     # server — same project URL
+SUPABASE_SERVICE_ROLE_KEY        # server — service_role key
 ```
 
-4. Add environment variables:
+`SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are server-side only and are
+used by the function behind `/api/x-feed`. Never prefix them with `VITE_`.
 
-```text
-VITE_SUPABASE_URL
-VITE_SUPABASE_PUBLISHABLE_KEY
-SUPABASE_URL
-SUPABASE_SERVICE_ROLE_KEY
-X_BEARER_TOKEN
-```
-
-`SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `X_BEARER_TOKEN` are server-side only and are used by the Netlify Function behind `/api/x-feed`. Never prefix them with `VITE_`.
-
-5. Deploy.
-
-`netlify.toml` already includes SPA redirects so deep links such as `/admin` and `/services` work.
+4. Deploy.
 
 ## X Feed
 
-The homepage news card calls `/api/x-feed`, which runs as a Netlify Function. The function uses X Recent Search with this query:
+The homepage news card calls `/api/x-feed` (a Vercel function at
+`api/x-feed.js`). X blocks the free syndication endpoint from datacenter IPs
+(Vercel, Netlify), so the feed is populated out-of-band:
 
-```text
-from:AljoufCluster -is:retweet
-```
+1. The scheduled GitHub Action `.github/workflows/refresh-x-feed.yml` runs
+   `scripts/refresh-x-feed.mjs` on GitHub's runners (an IP X serves), fetches
+   the public @AljoufCluster syndication timeline, and upserts it into the
+   Supabase `external_feed_cache` table.
+2. `/api/x-feed` returns that cached copy. If the cache is stale it makes a
+   best-effort live fetch, then falls back to the stale cache. The card is
+   never blank — with no data it shows a "follow @AljoufCluster on X" button.
 
-Apply `supabase/migrations/20260710180000_external_feed_cache.sql` before production deployment so the function can cache the latest response in Supabase. If `X_BEARER_TOKEN` is missing or X is temporarily unavailable, the site shows cached posts when available and otherwise falls back to a button that opens the last seven days on X.
+Requirements:
 
-Required X access:
+- Apply `supabase/migrations/20260710180000_external_feed_cache.sql` before
+  production deployment.
+- Add the two GitHub repository secrets the Action needs (Settings → Secrets
+  and variables → Actions): `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`.
 
-```text
-X_BEARER_TOKEN=<X API app bearer token>
-```
+No paid X API access or `X_BEARER_TOKEN` is required.
 
 ## Local Preview
 

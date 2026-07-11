@@ -156,4 +156,4 @@ VITE_SUPABASE_URL=https://ihoghgaljgcwitxiywyo.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_iYpt-Qh_j_L-u2wkjK773w_JR41i-vt
 ```
 
-For Netlify, add the same variables in **Site settings → Environment variables**.
+For Vercel, add the same variables in **Project → Settings → Environment Variables**.

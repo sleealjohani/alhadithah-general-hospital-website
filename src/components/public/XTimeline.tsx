@@ -19,7 +19,7 @@ function formatDate(value: string, locale: string) {
 }
 
 /**
- * Latest @AljoufCluster posts on the homepage. Reads the /api/x-feed Netlify
+ * Latest @AljoufCluster posts on the homepage. Reads the /api/x-feed Vercel
  * function (free X syndication, cached in Supabase). It renders one of three
  * states and is never blank: a loading skeleton, the posts, or a clean
  * "follow on X" card when the feed can't be reached.

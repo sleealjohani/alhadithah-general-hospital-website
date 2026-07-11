@@ -6,6 +6,7 @@ import { Icon } from "../../../components/ui/Icon";
 import { SectionHeading } from "../../../components/ui/SectionHeading";
 import { ContentGrid } from "../../../components/ui/ContentGrid";
 import { HomeBuilderSections } from "../components/HomeBuilderSections";
+import { Magnetic } from "../../../components/motion/Magnetic";
 import { usePublishedItems } from "../../../hooks/usePublishedItems";
 import { useHomepageSectionVisibility } from "../../../hooks/useHomepageSectionVisibility";
 import { useHomepageHero } from "../../../hooks/useHomepageHero";
@@ -46,18 +47,24 @@ export function HomePage() {
             <h1>{t(pageCopy.hero.title)}</h1>
             <p>{t(pageCopy.hero.description)}</p>
             <div className="hero-actions">
-              <Link className="btn btn-primary" to="/services">
-                <HeartPulse size={18} />
-                {t(tx("الخدمات الصحية", "Health services"))}
-              </Link>
-              <Link className="btn btn-secondary" to="/contact">
-                <CalendarCheck size={18} />
-                {t(tx("تواصل مع المستشفى", "Contact the hospital"))}
-              </Link>
-              <Link className="btn btn-ghost" to="/experience">
-                <MessageSquareText size={18} />
-                {t(tx("شارك ملاحظتك", "Share feedback"))}
-              </Link>
+              <Magnetic>
+                <Link className="btn btn-primary" to="/services">
+                  <HeartPulse size={18} />
+                  {t(tx("الخدمات الصحية", "Health services"))}
+                </Link>
+              </Magnetic>
+              <Magnetic>
+                <Link className="btn btn-secondary" to="/contact">
+                  <CalendarCheck size={18} />
+                  {t(tx("تواصل مع المستشفى", "Contact the hospital"))}
+                </Link>
+              </Magnetic>
+              <Magnetic>
+                <Link className="btn btn-ghost" to="/experience">
+                  <MessageSquareText size={18} />
+                  {t(tx("شارك ملاحظتك", "Share feedback"))}
+                </Link>
+              </Magnetic>
             </div>
           </div>
           <HeroExperiencePanel />

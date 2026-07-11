@@ -191,3 +191,81 @@ textarea,
   border-radius: var(--radius-pill);
   background: var(--accent);
 }
+
+/* ===================================================================== */
+/* Motion polish — meaningful, tied to interaction, reduced-motion safe.  */
+/* ===================================================================== */
+
+/* Primary buttons get a light sheen that sweeps across on hover. */
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(105deg, transparent 32%, rgba(255, 255, 255, 0.38) 50%, transparent 68%);
+  transform: translateX(-130%);
+  transition: transform var(--duration-slower) var(--ease-standard);
+  pointer-events: none;
+}
+
+.btn-primary:hover::after {
+  transform: translateX(130%);
+}
+
+[dir="rtl"] .btn-primary::after {
+  transform: translateX(130%);
+}
+
+[dir="rtl"] .btn-primary:hover::after {
+  transform: translateX(-130%);
+}
+
+/* Button icons breathe slightly on hover. */
+.btn svg {
+  transition: transform var(--duration-fast) var(--ease-bloom);
+}
+
+.btn:hover:not(:disabled) svg {
+  transform: scale(1.12);
+}
+
+/* Richer scroll reveal — a touch of rise + settle, still transform/opacity. */
+[data-reveal] {
+  transform: translateY(24px) scale(0.99);
+}
+
+[data-reveal].is-visible {
+  transform: none;
+}
+
+/* The hero experience panel drifts in with a longer, luxe entrance. */
+.hero-experience {
+  animation: heroPanelIn var(--duration-lux) var(--ease-bloom) both;
+}
+
+@keyframes heroPanelIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+}
+
+/* Quick-ribbon + portal cards: the trailing arrow slides toward its edge. */
+.quick-ribbon-card .arrow-mark,
+.card-action {
+  transition: transform var(--duration-base) var(--ease-bloom);
+}
+
+.quick-ribbon-card:hover .arrow-mark {
+  transform: translateX(-6px);
+}
+
+[dir="rtl"] .quick-ribbon-card:hover .arrow-mark {
+  transform: translateX(6px);
+}

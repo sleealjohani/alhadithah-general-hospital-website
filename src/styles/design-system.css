@@ -524,6 +524,104 @@ textarea,
   height: auto;
 }
 
+/* ===================================================================== */
+/* Admin — the "serious tool" treatment: dark chrome, dense data, mono ids */
+/* ===================================================================== */
+
+.admin-shell {
+  background: var(--surface-sunken);
+  color: var(--text);
+}
+
+/* Deep navy sidebar (aligned to the brand, not the old teal). */
+.admin-sidebar {
+  background: #0a1826;
+}
+
+:root[data-theme="dark"] .admin-sidebar {
+  background: #060f20;
+}
+
+.admin-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-brand img {
+  width: 40px;
+  height: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.admin-sidebar a {
+  min-height: 44px;
+  padding-inline: 12px;
+  border-inline-start: 3px solid transparent;
+  border-radius: var(--radius-sm);
+  color: rgba(255, 255, 255, 0.72);
+  font-weight: 700;
+  font-size: 0.92rem;
+  transition:
+    background var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard);
+}
+
+.admin-sidebar a:hover {
+  background: rgba(92, 194, 240, 0.1);
+  color: #ffffff;
+}
+
+.admin-sidebar a.active {
+  border-inline-start-color: var(--primary-decorative);
+  background: rgba(92, 194, 240, 0.15);
+  color: #ffffff;
+}
+
+/* Data tables: compact ~44px rows, sunken mono headers, hover highlight. */
+.admin-table th {
+  padding: 10px 14px;
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-strong);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.admin-table td {
+  padding: 8px 14px;
+}
+
+.admin-table tbody tr {
+  transition: background var(--duration-fast) var(--ease-standard);
+}
+
+.admin-table tbody tr:hover {
+  background: var(--surface-soft);
+}
+
+/* Identifiers, slugs, and paths render in the mono voice. */
+.admin-table td code,
+.admin-table .mono,
+.admin-path,
+.admin-id {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+/* Metric figures get the display face for a confident dashboard. */
+.admin-metric strong {
+  font-family: var(--font-display);
+  letter-spacing: var(--tracking-tight);
+}
+
 @keyframes waveDrift {
   from {
     transform: translateX(0);

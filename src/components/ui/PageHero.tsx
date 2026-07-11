@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { usePortal } from "../../providers/PortalProvider";
 import { identity } from "../../data/content";
+import { BrandWatermark, BrandWave } from "../motion/BrandDecor";
 import type { LocalizedText } from "../../types";
 
 export function PageHero({
@@ -19,6 +20,8 @@ export function PageHero({
   const { t } = usePortal();
   return (
     <section className={`page-hero ${compact ? "page-hero-compact" : ""}`}>
+      <BrandWatermark src={identity.mark} className="page-hero-watermark" />
+      <BrandWave src={identity.wave} className="page-hero-wave" />
       <div className="container page-hero-inner">
         <div>
           <span className="eyebrow">{t(eyebrow)}</span>
@@ -27,8 +30,7 @@ export function PageHero({
           {actions ? <div className="hero-actions">{actions}</div> : null}
         </div>
         <div className="hero-identity-card" aria-hidden="true">
-          <img src={identity.logo} alt="" />
-          <span>{t(identity.cluster)}</span>
+          <img src={identity.lockupWhite} alt="" width={300} height={102} />
         </div>
       </div>
     </section>

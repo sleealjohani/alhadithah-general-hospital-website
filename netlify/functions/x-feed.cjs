@@ -119,7 +119,12 @@ function extractMedia(tweet) {
 /* --- Free path: X syndication timeline (no token) ------------------------ */
 async function fetchFromSyndication(days, limit) {
   const response = await fetch(`${SYNDICATION_URL}?showReplies=false&lang=ar`, {
-    headers: { "user-agent": BROWSER_UA, accept: "text/html" }
+    headers: {
+      "user-agent": BROWSER_UA,
+      accept: "text/html,application/xhtml+xml",
+      "accept-language": "ar,en;q=0.8",
+      referer: "https://platform.twitter.com/"
+    }
   });
   if (!response.ok) throw new Error(`syndication_${response.status}`);
 

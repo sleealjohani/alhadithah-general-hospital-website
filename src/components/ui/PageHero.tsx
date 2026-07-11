@@ -20,7 +20,7 @@ export function PageHero({
   const { t } = usePortal();
   return (
     <section className={`page-hero ${compact ? "page-hero-compact" : ""}`}>
-      <BrandWatermark src={identity.mark} className="page-hero-watermark" />
+      <BrandWatermark src={identity.markWhite} className="page-hero-watermark" />
       <BrandWave src={identity.wave} className="page-hero-wave" />
       <div className="container page-hero-inner">
         <div>

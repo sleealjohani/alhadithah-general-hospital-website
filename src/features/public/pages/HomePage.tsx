@@ -7,6 +7,7 @@ import { SectionHeading } from "../../../components/ui/SectionHeading";
 import { ContentGrid } from "../../../components/ui/ContentGrid";
 import { HomeBuilderSections } from "../components/HomeBuilderSections";
 import { Magnetic } from "../../../components/motion/Magnetic";
+import { RevealText } from "../../../components/motion/RevealText";
 import { BrandWatermark, BrandWave } from "../../../components/motion/BrandDecor";
 import { usePublishedItems } from "../../../hooks/usePublishedItems";
 import { useHomepageSectionVisibility } from "../../../hooks/useHomepageSectionVisibility";
@@ -47,7 +48,7 @@ export function HomePage() {
         <div className="container home-hero-grid">
           <div className="home-hero-copy" data-reveal>
             <span className="eyebrow">{t(pageCopy.hero.eyebrow)}</span>
-            <h1>{t(pageCopy.hero.title)}</h1>
+            <RevealText as="h1" text={t(pageCopy.hero.title)} immediate />
             <p>{t(pageCopy.hero.description)}</p>
             <div className="hero-actions">
               <Magnetic>

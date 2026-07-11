@@ -642,6 +642,49 @@ textarea,
   letter-spacing: var(--tracking-tight);
 }
 
+/* ===================================================================== */
+/* Pro techniques: masked heading reveal + kinetic variable-weight.       */
+/* ===================================================================== */
+
+/* Editorial heading reveal — each word rises out of a clip mask. The
+   padding/margin pair gives glyph ascenders/descenders room so nothing is
+   clipped at rest, without shifting layout. */
+.reveal-text {
+  display: inline;
+}
+
+.reveal-word {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding: 0.16em 0 0.14em;
+  margin: -0.16em 0 -0.14em;
+}
+
+.reveal-word-inner {
+  display: inline-block;
+  will-change: transform;
+}
+
+/* Kinetic type: Inter is a variable font, so its weight interpolates
+   smoothly on hover for a live, tactile feel (no-ops on static faces). */
+.mega-link,
+.mega-trigger,
+.text-link,
+.card-action {
+  font-variation-settings: "wght" 700;
+  transition:
+    font-variation-settings var(--duration-base) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard);
+}
+
+.mega-link:hover,
+.mega-item:hover .mega-trigger,
+.text-link:hover,
+.card-action:hover {
+  font-variation-settings: "wght" 860;
+}
+
 @keyframes waveDrift {
   from {
     transform: translateX(0);

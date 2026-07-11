@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { usePortal } from "../../providers/PortalProvider";
+import { RevealText } from "../motion/RevealText";
 import type { LocalizedText } from "../../types";
 
 export function SectionHeading({
@@ -18,7 +19,7 @@ export function SectionHeading({
     <div className="section-heading">
       <div>
         {eyebrow ? <span className="eyebrow">{t(eyebrow)}</span> : null}
-        <h2>{t(title)}</h2>
+        <RevealText as="h2" text={t(title)} />
         {description ? <p>{t(description)}</p> : null}
       </div>
       {action}

@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { usePortal } from "../../providers/PortalProvider";
 import { identity } from "../../data/content";
 import { useNavigationItems } from "../../hooks/useNavigationItems";
+import { BrandWave } from "../motion/BrandDecor";
 import { tx } from "../../utils/i18n";
 
 export function Footer() {
@@ -9,10 +10,10 @@ export function Footer() {
   const headerNav = useNavigationItems("header");
   return (
     <footer className="site-footer">
+      <BrandWave src={identity.wave} className="footer-wave" />
       <div className="container footer-grid">
         <div>
-          <img className="footer-logo" src={identity.logo} alt={t(identity.cluster)} width={160} height={94} loading="lazy" decoding="async" />
-          <h2>{t(identity.name)}</h2>
+          <img className="footer-logo" src={identity.lockupWhite} alt={t(identity.name)} width={280} height={95} loading="lazy" decoding="async" />
           <p>{t(identity.tagline)}</p>
         </div>
         <div>

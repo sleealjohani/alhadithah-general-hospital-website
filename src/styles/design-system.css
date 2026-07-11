@@ -269,3 +269,364 @@ textarea,
 [dir="rtl"] .quick-ribbon-card:hover .arrow-mark {
   transform: translateX(6px);
 }
+
+/* ===================================================================== */
+/* Badges, chips, tabs, alerts, toasts — semantic soft surfaces.          */
+/* ===================================================================== */
+
+/* Badges: pill, confident weight, semantic soft-surface pairs. */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-pill);
+  padding: 4px 12px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+  line-height: 1.4;
+}
+
+.badge-success {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.badge-info {
+  background: var(--info-soft);
+  color: var(--info);
+}
+
+.badge-warning {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.badge-danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.badge-muted {
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+}
+
+/* Admin tables get denser, square status chips (operational, not soft). */
+.admin-table .badge {
+  border-radius: var(--radius-sm);
+  padding: 3px 9px;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* Tabs: a pill group; the active tab rides the sky primary. */
+.tab-row {
+  display: inline-flex;
+  gap: 6px;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface-sunken);
+}
+
+.tab-row button {
+  min-height: 40px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 0 15px;
+  white-space: nowrap;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard);
+}
+
+.tab-row button:hover {
+  color: var(--text);
+}
+
+.tab-row button.is-active {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+:root[data-theme="dark"] .tab-row button.is-active {
+  color: #06122c;
+}
+
+/* Alert band: a leading semantic accent so status reads at a glance. */
+.alert-band {
+  border-inline-start: 3px solid var(--primary);
+}
+
+/* Toasts: elevated surface cards with a colored leading accent. */
+.toast {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+}
+
+.toast-success {
+  border-inline-start: 4px solid var(--success);
+}
+
+.toast-error {
+  border-inline-start: 4px solid var(--danger);
+}
+
+/* ===================================================================== */
+/* Brand — official Al-Hadeethah logo, mark watermark, and wave motif.    */
+/* ===================================================================== */
+
+/* Header mark: full-colour on light, white knockout on dark — no chip, so the
+   official mark sits cleanly on the glass header. */
+.brand-logo-wrap {
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.brand-logo-wrap img,
+.brand img {
+  width: 48px;
+  height: auto;
+  padding: 0;
+}
+
+/* Footer lockup sits directly on the navy panel — no chip. */
+.footer-logo {
+  border: 0;
+  background: transparent;
+}
+
+.brand-mark-white {
+  display: none;
+}
+
+:root[data-theme="dark"] .brand-mark-color {
+  display: none;
+}
+
+:root[data-theme="dark"] .brand-mark-white {
+  display: block;
+}
+
+/* Footer carries the full official lockup (white) on the navy panel. */
+.footer-logo {
+  width: 280px;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Star-mark watermark — faint, behind content, driven by scroll (see
+   BrandDecor.tsx). Never intercepts pointer events. */
+.brand-watermark {
+  position: absolute;
+  z-index: 0;
+  display: block;
+  width: min(48vw, 560px);
+  height: auto;
+  opacity: 0.1;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.hero-watermark-mark {
+  inset-block-start: -14%;
+  inset-inline-end: -6%;
+}
+
+/* Wave motif — outer track parallaxes with scroll; inner layer drifts
+   continuously so the brand is always subtly alive. */
+.brand-wave {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  z-index: 0;
+  display: block;
+  height: 240px;
+  overflow: hidden;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.brand-wave-layer {
+  position: absolute;
+  inset: 0;
+  inset-inline: -10%;
+  display: block;
+  background-repeat: no-repeat;
+  background-position: bottom center;
+  background-size: cover;
+  opacity: 0.55;
+  animation: waveDrift 20s ease-in-out infinite alternate;
+}
+
+.hero-wave {
+  height: 220px;
+}
+
+/* Footer wave sits along the top edge, flowing into the navy panel. */
+.site-footer {
+  position: relative;
+  overflow: hidden;
+}
+
+.footer-wave {
+  inset-block: 0 auto;
+  height: 300px;
+}
+
+.footer-wave .brand-wave-layer {
+  background-position: top center;
+  opacity: 0.35;
+}
+
+.site-footer .container {
+  position: relative;
+  z-index: 1;
+}
+
+/* Inner page heroes: brand watermark + wave, and the official lockup card. */
+.page-hero {
+  position: relative;
+  overflow: hidden;
+}
+
+.page-hero-watermark {
+  inset-block-start: -18%;
+  inset-inline-end: -7%;
+  width: min(42vw, 460px);
+  opacity: 0.07;
+}
+
+.page-hero-wave {
+  height: 190px;
+  opacity: 0.5;
+}
+
+.hero-identity-card {
+  display: grid;
+  place-items: center;
+  padding: 28px;
+}
+
+.hero-identity-card img {
+  width: min(320px, 84%);
+  height: auto;
+}
+
+/* ===================================================================== */
+/* Admin — the "serious tool" treatment: dark chrome, dense data, mono ids */
+/* ===================================================================== */
+
+.admin-shell {
+  background: var(--surface-sunken);
+  color: var(--text);
+}
+
+/* Deep navy sidebar (aligned to the brand, not the old teal). */
+.admin-sidebar {
+  background: #0a1826;
+}
+
+:root[data-theme="dark"] .admin-sidebar {
+  background: #060f20;
+}
+
+.admin-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-brand img {
+  width: 40px;
+  height: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.admin-sidebar a {
+  min-height: 44px;
+  padding-inline: 12px;
+  border-inline-start: 3px solid transparent;
+  border-radius: var(--radius-sm);
+  color: rgba(255, 255, 255, 0.72);
+  font-weight: 700;
+  font-size: 0.92rem;
+  transition:
+    background var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard);
+}
+
+.admin-sidebar a:hover {
+  background: rgba(92, 194, 240, 0.1);
+  color: #ffffff;
+}
+
+.admin-sidebar a.active {
+  border-inline-start-color: var(--primary-decorative);
+  background: rgba(92, 194, 240, 0.15);
+  color: #ffffff;
+}
+
+/* Data tables: compact ~44px rows, sunken mono headers, hover highlight. */
+.admin-table th {
+  padding: 10px 14px;
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-strong);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.admin-table td {
+  padding: 8px 14px;
+}
+
+.admin-table tbody tr {
+  transition: background var(--duration-fast) var(--ease-standard);
+}
+
+.admin-table tbody tr:hover {
+  background: var(--surface-soft);
+}
+
+/* Identifiers, slugs, and paths render in the mono voice. */
+.admin-table td code,
+.admin-table .mono,
+.admin-path,
+.admin-id {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+/* Metric figures get the display face for a confident dashboard. */
+.admin-metric strong {
+  font-family: var(--font-display);
+  letter-spacing: var(--tracking-tight);
+}
+
+@keyframes waveDrift {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-44px);
+  }
+}

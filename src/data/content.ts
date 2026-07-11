@@ -10,7 +10,13 @@ export const identity = {
     "A unified entry point for services, information, links, forms, and announcements."
   ),
   logo: "/assets/aljouf-cluster-logo.webp",
-  hhcMark: "/assets/hhc-mark.webp"
+  hhcMark: "/assets/hhc-mark.webp",
+  /* Official Al-Hadeethah brand, extracted from the letterhead. */
+  mark: "/assets/brand/brand-mark.webp",
+  markWhite: "/assets/brand/brand-mark-white.webp",
+  lockup: "/assets/brand/hospital-logo.webp",
+  lockupWhite: "/assets/brand/hospital-logo-white.webp",
+  wave: "/assets/brand/brand-wave.webp"
 };
 
 export const navItems = [

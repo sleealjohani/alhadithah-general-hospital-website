@@ -43,7 +43,7 @@ export function AdminLayout() {
     <main className="admin-shell">
       <aside className="admin-sidebar">
         <Link className="admin-brand" to="/">
-          <img src={identity.logo} alt={t(identity.cluster)} />
+          <img src={identity.markWhite} alt={t(identity.cluster)} />
           <span>{t(tx("لوحة التحكم", "Admin"))}</span>
         </Link>
         <nav>

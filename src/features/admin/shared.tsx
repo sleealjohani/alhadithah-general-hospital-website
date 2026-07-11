@@ -116,7 +116,7 @@ export function TableLoadingRows({ cols, count = 4 }: { cols: number; count?: nu
 const STATUS_TONES: Record<string, string> = {
   published: "badge-success",
   new: "badge-info",
-  draft: "badge-muted",
+  draft: "badge-warning",
   in_review: "badge-info",
   closed: "badge-muted",
   archived: "badge-muted"

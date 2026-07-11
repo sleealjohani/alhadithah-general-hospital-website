@@ -1,105 +1,231 @@
-/* Design tokens — light theme (default). Dark and high-contrast overrides
-   follow below and only redeclare what changes. */
+/* Design tokens — the Al-Hadithah "Next Level Design System v3.0".
+
+   Light theme is the default; dark ([data-theme="dark"]) and high-contrast
+   ([data-contrast="high"]) override only what changes.
+
+   Structure: raw ramps (primary sky / accent sand / neutrals / semantics) are
+   the palette; semantic ALIASES below them are what components consume. Change
+   an alias here and the whole site follows. Never hardcode a ramp hex in a
+   component — always reference an alias. */
 :root {
   --font-scale: 1;
 
-  /* Surfaces */
-  --bg: #f6f8fb;
-  --surface: #ffffff;
-  --surface-soft: #eef4f8;
-  --surface-strong: #dceaf1;
+  /* --- Primary: Sky (brand) ---------------------------------------------- */
+  --primary-50: #eaf6fd;
+  --primary-100: #d3edfb;
+  --primary-200: #a8dbf6;
+  --primary-300: #78c5ee;
+  --primary-400: #4fb0e4;
+  --primary-500: #2ea3e0; /* decorative brand sky (logo, glows) */
+  --primary-600: #1d89c4;
+  --primary-700: #166b9b; /* AA-safe interactive blue */
+  --primary-800: #123f5c;
+  --primary-900: #0e2841; /* deep ink — heroes, footer */
 
-  /* Text */
-  --text: #17213d;
-  --text-secondary: #465571;
-  --text-muted: #6f7d91;
+  /* --- Accent: Sand (controlled highlight) ------------------------------- */
+  --accent-50: #fbf3e6;
+  --accent-100: #f5e4c6;
+  --accent-200: #eacb93;
+  --accent-300: #ddaf66;
+  --accent-400: #c89a4c;
+  --accent-500: #b8863a;
+  --accent-600: #9c6e2c;
+  --accent-700: #7a5220;
+  --accent-800: #593a16;
+  --accent-900: #38240d;
 
-  /* Brand + semantic colors (Aljouf Health Cluster blue family) */
-  --primary: #35a9e0;
-  --primary-strong: #253783;
-  --primary-soft: #e7f6fc;
-  --blue: #253783;
-  --gold: #b9d90f;
-  --navy: #07132f;
-  --cyan: #35a9e0;
-  --cyan-deep: #007fa5;
-  --lime: #b9d90f;
-  --danger: #c53030;
-  --success: #148a5b;
-  --border: #d7e0ea;
-  --brand-ink: #07132f;
-  --brand-line: #35a9e0;
-  --brand-accent: #b9d90f;
-  --brand-panel: #101f4d;
-  /* Solid action surfaces carry white text in BOTH themes, so they get their
-     own tokens instead of reusing --brand-ink (which flips light in dark
-     mode and turned primary buttons white-on-white). */
-  --action-solid: #07132f;
-  --action-solid-hover: #253783;
+  /* --- Neutrals ---------------------------------------------------------- */
+  --neutral-0: #ffffff;
+  --neutral-50: #f7fafd;
+  --neutral-100: #eef3f8;
+  --neutral-200: #e1eaf1;
+  --neutral-300: #cbd9e4;
+  --neutral-400: #a8bccc;
+  --neutral-500: #7e93a6;
+  --neutral-600: #5c7186;
+  --neutral-700: #435a72;
+  --neutral-800: #253c54;
+  --neutral-900: #14283a;
 
-  /* Elevation */
-  --shadow-sm: 0 1px 2px rgba(7, 19, 47, 0.06);
-  --shadow-md: 0 8px 18px rgba(7, 19, 47, 0.1);
-  --shadow-lg: 0 18px 36px rgba(7, 19, 47, 0.14);
+  /* --- Semantic (with soft surfaces) ------------------------------------- */
+  --success: #187d57;
+  --success-soft: #e6f7f0;
+  --danger: #b7364a;
+  --danger-soft: #fce9ec;
+  --warning: #966c1f;
+  --warning-soft: #fbf3e2;
+  --info: #166b9b;
+  --info-soft: #e7f3fc;
 
-  /* Radius scale */
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
-  --radius-xl: 8px;
+  /* --- Typography -------------------------------------------------------- */
+  --font-ui: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: "Poppins", var(--font-ui);
+  --font-arabic: "Janna LT", "IBM Plex Sans Arabic", Tahoma, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Consolas, monospace;
+  /* --font-body flips to the Arabic voice under [dir="rtl"] (see base.css). */
+  --font-body: var(--font-ui);
+  --tracking-tight: -0.01em;
+  --tracking-wide: 0.06em;
+  --tracking-widest: 0.14em;
 
-  /* Motion — CSS mirror of src/lib/motion.ts; change them together */
+  /* --- Surface + text aliases -------------------------------------------- */
+  --bg: var(--neutral-50);
+  --surface: var(--neutral-0);
+  --surface-soft: var(--primary-50);
+  --surface-strong: var(--neutral-200);
+  --surface-sunken: var(--neutral-100);
+  --text: var(--neutral-900);
+  --text-secondary: var(--neutral-700);
+  --text-muted: var(--neutral-600);
+  --border: var(--neutral-200);
+  --border-strong: var(--neutral-300);
+
+  /* --- Brand + interactive aliases --------------------------------------- */
+  --primary: var(--primary-700);
+  --primary-strong: var(--primary-800);
+  --primary-soft: var(--primary-50);
+  --primary-decorative: var(--primary-500);
+  --blue: var(--primary-800);
+  --navy: var(--primary-900);
+  --cyan: var(--primary-500);
+  --cyan-deep: var(--primary-700);
+  --lime: var(--accent-500);
+  --gold: var(--accent-500);
+  --gold-deep: var(--accent-700);
+  --accent: var(--accent-500);
+  --accent-strong: var(--accent-700);
+  --hairline: color-mix(in srgb, var(--accent-500) 55%, transparent);
+  --brand-ink: var(--primary-900);
+  --brand-line: var(--primary-500);
+  --brand-accent: var(--accent-500);
+  --brand-panel: var(--primary-900);
+  /* Solid dark action surfaces carry white text in both themes. */
+  --action-solid: var(--primary-900);
+  --action-solid-hover: var(--primary-800);
+
+  /* --- Signature gradients (used sparingly, per the spec) ---------------- */
+  --grad-ink: linear-gradient(90deg, color-mix(in srgb, var(--primary-900) 92%, #000), color-mix(in srgb, var(--primary-800) 66%, var(--bg)));
+  --grad-bloom-rule: linear-gradient(90deg, var(--accent), var(--primary-decorative), var(--accent));
+  --glass-bg: color-mix(in srgb, var(--surface) 84%, transparent);
+  --glass-border: color-mix(in srgb, var(--border) 70%, transparent);
+  --glass-blur: 18px;
+
+  /* --- Elevation --------------------------------------------------------- */
+  --shadow-sm: 0 1px 2px rgba(20, 40, 58, 0.08);
+  --shadow-md: 0 8px 20px rgba(20, 40, 58, 0.12);
+  --shadow-lg: 0 18px 44px rgba(20, 40, 58, 0.16);
+  --shadow-xl: 0 30px 80px rgba(10, 20, 30, 0.28);
+  --shadow-brand-glow: 0 8px 20px color-mix(in srgb, var(--primary) 34%, transparent);
+
+  /* --- Radius (incl. the asymmetric "Bloom" motif) ---------------------- */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-pill: 999px;
+  --radius-bloom: 24px 8px 8px 8px;
+
+  /* --- Motion — CSS mirror of src/lib/motion.ts; change them together ---- */
   --duration-instant: 100ms;
   --duration-fast: 150ms;
   --duration-base: 250ms;
   --duration-slow: 400ms;
   --duration-slower: 600ms;
+  --duration-lux: 900ms;
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
   --ease-decelerate: cubic-bezier(0, 0, 0, 1);
   --ease-accelerate: cubic-bezier(0.3, 0, 1, 1);
+  /* Emphasized "bloom" easing for signature hover/enter moments. */
+  --ease-bloom: cubic-bezier(0.22, 1, 0.36, 1);
   --distance-subtle: 4px;
   --distance-sm: 8px;
   --distance-md: 16px;
   --distance-lg: 32px;
 
-  /* Focus ring — brand-derived so it adapts per theme automatically */
-  --focus-ring-color: color-mix(in srgb, var(--primary) 55%, transparent);
+  /* Distinct orange focus ring — identical across all themes. */
+  --focus-ring: #ff6a00;
+  --focus-ring-color: #ff6a00;
 
-  font-family: "IBM Plex Sans Arabic", Tahoma, "Segoe UI", Arial, sans-serif;
+  color-scheme: light;
+  font-family: var(--font-body);
   color: var(--text);
   background: var(--bg);
 }
 
-/* Dark theme override */
+/* Dark theme override — deep midnight navy. */
 :root[data-theme="dark"] {
-  --bg: #07132f;
-  --surface: #101f4d;
-  --surface-soft: #162b63;
-  --surface-strong: #1d3a79;
-  --text: #f7fbff;
-  --text-secondary: #c9d6e8;
-  --text-muted: #95a9c3;
-  --primary: #61c6e9;
-  --primary-strong: #aee8fb;
-  --primary-soft: #132f5e;
+  color-scheme: dark;
+  --bg: #060b12;
+  --surface: #0d1826;
+  --surface-soft: #14304a;
+  --surface-strong: #122238;
+  --surface-sunken: #08111c;
+  --text: #f1f6fa;
+  --text-secondary: #b9c9d8;
+  --text-muted: #8fa3b8;
+  --border: #1b2c40;
+  --border-strong: #2d4562;
+  --primary: #5cc2f0;
+  --primary-strong: #bfe6fa;
+  --primary-soft: #12283a;
+  --primary-decorative: #2ea3e0;
   --blue: #9dc8f0;
-  --gold: #d4ea42;
-  --border: #284477;
-  --brand-ink: #f7fbff;
-  --brand-line: #61c6e9;
-  --brand-accent: #d4ea42;
-  --brand-panel: #07132f;
-  --action-solid: #007fa5;
-  --action-solid-hover: #00688a;
-  --shadow-sm: 0 0 0 1px rgba(97, 198, 233, 0.12);
-  --shadow-md: 0 0 0 1px rgba(97, 198, 233, 0.18);
-  --shadow-lg: 0 0 0 1px rgba(97, 198, 233, 0.24);
+  --navy: #0a1826;
+  --cyan: #2ea3e0;
+  --cyan-deep: #5cc2f0;
+  --lime: #e4b768;
+  --gold: #e4b768;
+  --gold-deep: #efc685;
+  --accent: #e4b768;
+  --accent-strong: #efc685;
+  --hairline: color-mix(in srgb, #e4b768 40%, transparent);
+  --brand-ink: #f1f6fa;
+  --brand-line: #5cc2f0;
+  --brand-accent: #e4b768;
+  --brand-panel: #0a1826;
+  --action-solid: #0a6f96;
+  --action-solid-hover: #085a7b;
+  --success: #34c98d;
+  --success-soft: #123425;
+  --danger: #f16c82;
+  --danger-soft: #3b1620;
+  --warning: #e0aa4e;
+  --warning-soft: #3a2c10;
+  --info: #57b8ec;
+  --info-soft: #12283a;
+  --glass-bg: color-mix(in srgb, var(--surface) 80%, transparent);
+  --glass-border: color-mix(in srgb, #78a0d2 22%, transparent);
+  --grad-ink: linear-gradient(90deg, #0a1826, #0d1826);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 10px 28px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 20px 52px rgba(0, 0, 0, 0.55);
+  --shadow-xl: 0 34px 90px rgba(0, 0, 0, 0.68);
 }
 
-/* High-contrast accessibility override */
+/* High-contrast accessibility override (toggled via data-contrast="high"). */
 :root[data-contrast="high"] {
-  --primary: #006c91;
-  --primary-strong: #061949;
-  --border: #4d5f78;
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-soft: #f0f0f0;
+  --surface-strong: #e8e8e8;
+  --surface-sunken: #e8e8e8;
+  --text: #000000;
+  --text-secondary: #1a1a1a;
+  --text-muted: #333333;
+  --border: #000000;
+  --border-strong: #000000;
+  --primary: #005a9e;
+  --primary-strong: #00457c;
+  --primary-soft: #eef3f8;
+  --brand-line: #005a9e;
+  --accent: #7a4e00;
+  --gold: #7a4e00;
+  --brand-accent: #7a4e00;
+  --action-solid: #001f3f;
+  --action-solid-hover: #00457c;
+  --shadow-sm: none;
+  --shadow-md: none;
+  --shadow-lg: none;
+  --shadow-xl: none;
 }
-

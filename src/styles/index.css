@@ -1,5 +1,6 @@
 /* Design system entry point. Import order matters — it mirrors the original
    cascade, so keep this sequence when adding new partials. */
+@import "./fonts.css";
 @import "./tokens.css";
 @import "./base.css";
 @import "./header-nav.css";

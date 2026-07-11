@@ -10,6 +10,7 @@ import { Magnetic } from "../../../components/motion/Magnetic";
 import { RevealText } from "../../../components/motion/RevealText";
 import { CountUp } from "../../../components/motion/CountUp";
 import { LuxBackdrop } from "../../../components/motion/LuxBackdrop";
+import { HeroScrollLayer } from "../../../components/motion/HeroScrollLayer";
 import { BrandWatermark, BrandWave } from "../../../components/motion/BrandDecor";
 import { usePublishedItems } from "../../../hooks/usePublishedItems";
 import { useHomepageSectionVisibility } from "../../../hooks/useHomepageSectionVisibility";
@@ -49,7 +50,7 @@ export function HomePage() {
         <BrandWatermark src={identity.markWhite} className="hero-watermark-mark" />
         <BrandWave src={identity.wave} className="hero-wave" />
         <div className="container home-hero-grid">
-          <div className="home-hero-copy" data-reveal>
+          <HeroScrollLayer className="home-hero-copy">
             <span className="eyebrow">{t(pageCopy.hero.eyebrow)}</span>
             <RevealText as="h1" text={t(pageCopy.hero.title)} immediate />
             <p>{t(pageCopy.hero.description)}</p>
@@ -73,7 +74,7 @@ export function HomePage() {
                 </Link>
               </Magnetic>
             </div>
-          </div>
+          </HeroScrollLayer>
           <HeroExperiencePanel />
         </div>
       </section>

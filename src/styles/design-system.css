@@ -474,6 +474,27 @@ textarea,
   height: 220px;
 }
 
+/* Footer wave sits along the top edge, flowing into the navy panel. */
+.site-footer {
+  position: relative;
+  overflow: hidden;
+}
+
+.footer-wave {
+  inset-block: 0 auto;
+  height: 300px;
+}
+
+.footer-wave .brand-wave-layer {
+  background-position: top center;
+  opacity: 0.35;
+}
+
+.site-footer .container {
+  position: relative;
+  z-index: 1;
+}
+
 @keyframes waveDrift {
   from {
     transform: translateX(0);

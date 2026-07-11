@@ -19,7 +19,7 @@ function readRecent(): string[] {
 }
 
 export function CommandPalette({ onClose }: { onClose: () => void }) {
-  const { t, locale, setLocale, theme, setTheme, highContrast, setHighContrast } = usePortal();
+  const { t, locale, setLocale, theme, setTheme } = usePortal();
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLUListElement>(null);
@@ -87,9 +87,6 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
         break;
       case "toggle-locale":
         setLocale(locale === "ar" ? "en" : "ar");
-        break;
-      case "toggle-contrast":
-        setHighContrast(!highContrast);
         break;
       default:
         if (command.to) navigate(command.to);

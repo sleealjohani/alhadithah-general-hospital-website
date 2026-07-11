@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
-import { Accessibility, ChevronDown, Languages, LockKeyhole, Menu, Moon, Search, Sun, X } from "lucide-react";
+import { ChevronDown, Languages, LockKeyhole, Menu, Moon, Search, Sun, X } from "lucide-react";
 import { usePortal } from "../../providers/PortalProvider";
 import { identity, megaMenu } from "../../data/content";
 import { tx } from "../../utils/i18n";
 
 export function Header() {
-  const { t, locale, setLocale, theme, setTheme, highContrast, setHighContrast } = usePortal();
+  const { t, locale, setLocale, theme, setTheme } = usePortal();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const navRef = useRef<HTMLElement>(null);
@@ -62,13 +62,6 @@ export function Header() {
               aria-label={t(tx("تغيير الوضع", "Change theme"))}
             >
               {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
-            </button>
-            <button
-              className={`utility-btn utility-icon ${highContrast ? "is-active" : ""}`}
-              onClick={() => setHighContrast(!highContrast)}
-              aria-label={t(tx("تباين أعلى", "Higher contrast"))}
-            >
-              <Accessibility size={16} />
             </button>
             <Link className="utility-btn utility-login" to="/admin" onClick={closeAll}>
               <LockKeyhole size={15} />

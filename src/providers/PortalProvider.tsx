@@ -17,12 +17,6 @@ type PortalContextValue = {
   setLocale: (locale: Locale) => void;
   theme: Theme;
   setTheme: (theme: Theme) => void;
-  highContrast: boolean;
-  setHighContrast: (value: boolean) => void;
-  reduceMotion: boolean;
-  setReduceMotion: (value: boolean) => void;
-  fontScale: number;
-  setFontScale: (value: number) => void;
   isRtl: boolean;
   t: (value: LocalizedText) => string;
   notify: (message: string, tone?: Toast["tone"]) => void;
@@ -39,18 +33,6 @@ export function usePortal() {
 export function PortalProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(() => localValue<Locale>("hadetha_locale", "ar"));
   const [theme, setThemeState] = useState<Theme>(() => localValue<Theme>("hadetha_theme", "light"));
-  const [highContrast, setHighContrastState] = useState<boolean>(() =>
-    localValue<boolean>("hadetha_high_contrast", false)
-  );
-  const [reduceMotion, setReduceMotionState] = useState<boolean>(() =>
-    localValue<boolean>(
-      "hadetha_reduce_motion",
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches
-    )
-  );
-  const [fontScale, setFontScaleState] = useState<number>(() =>
-    localValue<number>("hadetha_font_scale", 1)
-  );
   const [toasts, setToasts] = useState<(Toast & { leaving?: boolean })[]>([]);
   /* Per-toast dismissal timers so hovering pauses the countdown. */
   const toastTimers = useRef(new Map<string, { timeout: number; startedAt: number; remaining: number }>());
@@ -61,10 +43,7 @@ export function PortalProvider({ children }: { children: ReactNode }) {
     document.documentElement.lang = locale;
     document.documentElement.dir = isRtl ? "rtl" : "ltr";
     document.documentElement.dataset.theme = theme;
-    document.documentElement.dataset.contrast = highContrast ? "high" : "normal";
-    document.documentElement.dataset.motion = reduceMotion ? "reduced" : "full";
-    document.documentElement.style.setProperty("--font-scale", String(fontScale));
-  }, [fontScale, highContrast, isRtl, locale, reduceMotion, theme]);
+  }, [isRtl, locale, theme]);
 
   const dismissToast = useCallback((id: string) => {
     const timer = toastTimers.current.get(id);
@@ -118,27 +97,11 @@ export function PortalProvider({ children }: { children: ReactNode }) {
         localStorage.setItem("hadetha_theme", nextTheme);
         setThemeState(nextTheme);
       },
-      highContrast,
-      setHighContrast: (value) => {
-        localStorage.setItem("hadetha_high_contrast", String(value));
-        setHighContrastState(value);
-      },
-      reduceMotion,
-      setReduceMotion: (value) => {
-        localStorage.setItem("hadetha_reduce_motion", String(value));
-        setReduceMotionState(value);
-      },
-      fontScale,
-      setFontScale: (value) => {
-        const nextValue = Math.min(1.18, Math.max(0.92, value));
-        localStorage.setItem("hadetha_font_scale", String(nextValue));
-        setFontScaleState(nextValue);
-      },
       isRtl,
       t: (text) => text[locale],
       notify
     }),
-    [fontScale, highContrast, isRtl, locale, notify, reduceMotion, theme]
+    [isRtl, locale, notify, theme]
   );
 
   return (

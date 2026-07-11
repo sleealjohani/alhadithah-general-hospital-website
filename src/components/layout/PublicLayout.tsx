@@ -2,7 +2,6 @@ import { lazy, Suspense, type ReactNode } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
-import { AccessibilityPanel } from "./AccessibilityPanel";
 import { useCardGlow } from "../../hooks/useCardGlow";
 
 /* Lazy so the motion runtime never rides in the critical bundle — the
@@ -25,7 +24,6 @@ export function PublicLayout({ children }: { children?: ReactNode }) {
         {children || <Outlet />}
       </main>
       <Footer />
-      <AccessibilityPanel />
     </>
   );
 }

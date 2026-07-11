@@ -269,3 +269,115 @@ textarea,
 [dir="rtl"] .quick-ribbon-card:hover .arrow-mark {
   transform: translateX(6px);
 }
+
+/* ===================================================================== */
+/* Badges, chips, tabs, alerts, toasts — semantic soft surfaces.          */
+/* ===================================================================== */
+
+/* Badges: pill, confident weight, semantic soft-surface pairs. */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-pill);
+  padding: 4px 12px;
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.01em;
+  line-height: 1.4;
+}
+
+.badge-success {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.badge-info {
+  background: var(--info-soft);
+  color: var(--info);
+}
+
+.badge-warning {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.badge-danger {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.badge-muted {
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+}
+
+/* Admin tables get denser, square status chips (operational, not soft). */
+.admin-table .badge {
+  border-radius: var(--radius-sm);
+  padding: 3px 9px;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+/* Tabs: a pill group; the active tab rides the sky primary. */
+.tab-row {
+  display: inline-flex;
+  gap: 6px;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  background: var(--surface-sunken);
+}
+
+.tab-row button {
+  min-height: 40px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 0 15px;
+  white-space: nowrap;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard);
+}
+
+.tab-row button:hover {
+  color: var(--text);
+}
+
+.tab-row button.is-active {
+  background: var(--primary);
+  color: #ffffff;
+}
+
+:root[data-theme="dark"] .tab-row button.is-active {
+  color: #06122c;
+}
+
+/* Alert band: a leading semantic accent so status reads at a glance. */
+.alert-band {
+  border-inline-start: 3px solid var(--primary);
+}
+
+/* Toasts: elevated surface cards with a colored leading accent. */
+.toast {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+}
+
+.toast-success {
+  border-inline-start: 4px solid var(--success);
+}
+
+.toast-error {
+  border-inline-start: 4px solid var(--danger);
+}

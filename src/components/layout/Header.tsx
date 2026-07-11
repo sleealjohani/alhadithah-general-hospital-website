@@ -82,7 +82,8 @@ export function Header() {
       <div className="container navbar">
         <Link className="brand" to="/" onClick={closeAll} aria-label={t(identity.name)}>
           <span className="brand-logo-wrap">
-            <img src={identity.logo} alt={t(identity.cluster)} width={72} height={42} fetchPriority="high" />
+            <img className="brand-mark-color" src={identity.mark} alt="" width={48} height={49} fetchPriority="high" />
+            <img className="brand-mark-white" src={identity.markWhite} alt="" width={48} height={49} fetchPriority="high" />
           </span>
           <span>
             <strong>{t(identity.name)}</strong>

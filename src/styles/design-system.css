@@ -381,3 +381,104 @@ textarea,
 .toast-error {
   border-inline-start: 4px solid var(--danger);
 }
+
+/* ===================================================================== */
+/* Brand — official Al-Hadeethah logo, mark watermark, and wave motif.    */
+/* ===================================================================== */
+
+/* Header mark: full-colour on light, white knockout on dark — no chip, so the
+   official mark sits cleanly on the glass header. */
+.brand-logo-wrap {
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+.brand-logo-wrap img,
+.brand img {
+  width: 48px;
+  height: auto;
+  padding: 0;
+}
+
+/* Footer lockup sits directly on the navy panel — no chip. */
+.footer-logo {
+  border: 0;
+  background: transparent;
+}
+
+.brand-mark-white {
+  display: none;
+}
+
+:root[data-theme="dark"] .brand-mark-color {
+  display: none;
+}
+
+:root[data-theme="dark"] .brand-mark-white {
+  display: block;
+}
+
+/* Footer carries the full official lockup (white) on the navy panel. */
+.footer-logo {
+  width: 280px;
+  max-width: 100%;
+  height: auto;
+}
+
+/* Star-mark watermark — faint, behind content, driven by scroll (see
+   BrandDecor.tsx). Never intercepts pointer events. */
+.brand-watermark {
+  position: absolute;
+  z-index: 0;
+  display: block;
+  width: min(48vw, 560px);
+  height: auto;
+  opacity: 0.1;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.hero-watermark-mark {
+  inset-block-start: -14%;
+  inset-inline-end: -6%;
+}
+
+/* Wave motif — outer track parallaxes with scroll; inner layer drifts
+   continuously so the brand is always subtly alive. */
+.brand-wave {
+  position: absolute;
+  inset-inline: 0;
+  inset-block-end: 0;
+  z-index: 0;
+  display: block;
+  height: 240px;
+  overflow: hidden;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.brand-wave-layer {
+  position: absolute;
+  inset: 0;
+  inset-inline: -10%;
+  display: block;
+  background-repeat: no-repeat;
+  background-position: bottom center;
+  background-size: cover;
+  opacity: 0.55;
+  animation: waveDrift 20s ease-in-out infinite alternate;
+}
+
+.hero-wave {
+  height: 220px;
+}
+
+@keyframes waveDrift {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-44px);
+  }
+}

@@ -7,11 +7,12 @@ import { SectionHeading } from "../../../components/ui/SectionHeading";
 import { ContentGrid } from "../../../components/ui/ContentGrid";
 import { HomeBuilderSections } from "../components/HomeBuilderSections";
 import { Magnetic } from "../../../components/motion/Magnetic";
+import { BrandWatermark, BrandWave } from "../../../components/motion/BrandDecor";
 import { usePublishedItems } from "../../../hooks/usePublishedItems";
 import { useHomepageSectionVisibility } from "../../../hooks/useHomepageSectionVisibility";
 import { useHomepageHero } from "../../../hooks/useHomepageHero";
 import { useQuickLinks } from "../../../hooks/useQuickLinks";
-import { journeySteps, knowledgeItems, pageCopy, services } from "../../../data/content";
+import { identity, journeySteps, knowledgeItems, pageCopy, services } from "../../../data/content";
 import { tx } from "../../../utils/i18n";
 
 const HERO_SCRIM =
@@ -41,6 +42,8 @@ export function HomePage() {
             : undefined
         }
       >
+        <BrandWatermark src={identity.markWhite} className="hero-watermark-mark" />
+        <BrandWave src={identity.wave} className="hero-wave" />
         <div className="container home-hero-grid">
           <div className="home-hero-copy" data-reveal>
             <span className="eyebrow">{t(pageCopy.hero.eyebrow)}</span>

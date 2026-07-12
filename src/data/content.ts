@@ -89,6 +89,15 @@ export const pageCopy = {
   }
 };
 
+/* Trust figures for the animated count-up band. Edit these to the hospital's
+   real numbers (beds, clinics, staff, years of service) any time. */
+export const heroStats: { value: number; suffix: string; label: LocalizedText }[] = [
+  { value: 6, suffix: "", label: tx("خدمات رئيسية", "Core services") },
+  { value: 24, suffix: "/7", label: tx("جاهزية الطوارئ", "Emergency readiness") },
+  { value: 4, suffix: "", label: tx("ركائز الجودة", "Quality pillars") },
+  { value: 100, suffix: "%", label: tx("وصول رقمي", "Digital access") }
+];
+
 export const journeySteps = [
   {
     title: tx("يدخل المستخدم", "User enters"),

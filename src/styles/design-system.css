@@ -642,6 +642,149 @@ textarea,
   letter-spacing: var(--tracking-tight);
 }
 
+/* ===================================================================== */
+/* Pro techniques: masked heading reveal + kinetic variable-weight.       */
+/* ===================================================================== */
+
+/* Editorial heading reveal — each word rises out of a clip mask. The
+   padding/margin pair gives glyph ascenders/descenders room so nothing is
+   clipped at rest, without shifting layout. */
+.reveal-text {
+  display: inline;
+}
+
+.reveal-word {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding: 0.16em 0 0.14em;
+  margin: -0.16em 0 -0.14em;
+}
+
+.reveal-word-inner {
+  display: inline-block;
+  will-change: transform;
+}
+
+/* Kinetic type: Inter is a variable font, so its weight interpolates
+   smoothly on hover for a live, tactile feel (no-ops on static faces). */
+.mega-link,
+.mega-trigger,
+.text-link,
+.card-action {
+  font-variation-settings: "wght" 700;
+  transition:
+    font-variation-settings var(--duration-base) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard);
+}
+
+.mega-link:hover,
+.mega-item:hover .mega-trigger,
+.text-link:hover,
+.card-action:hover {
+  font-variation-settings: "wght" 860;
+}
+
+/* ===================================================================== */
+/* Count-up stat band.                                                    */
+/* ===================================================================== */
+
+.stat-band {
+  padding: 44px 0;
+  border-block: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.stat-band-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.stat-item {
+  position: relative;
+  display: grid;
+  gap: 6px;
+  justify-items: center;
+  text-align: center;
+}
+
+.stat-item:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  inset-inline-end: -12px;
+  inset-block: 12%;
+  width: 1px;
+  background: var(--border);
+}
+
+.stat-value {
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 5vw, 3.5rem);
+  line-height: 1;
+  letter-spacing: var(--tracking-tight);
+  background: linear-gradient(120deg, var(--primary) 0%, var(--primary-strong) 60%, var(--accent) 130%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.stat-label {
+  color: var(--text-secondary);
+  font-weight: 800;
+  font-size: 0.92rem;
+}
+
+@media (max-width: 720px) {
+  .stat-band-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 32px 16px;
+  }
+
+  .stat-item:nth-child(2)::after {
+    display: none;
+  }
+}
+
+/* ===================================================================== */
+/* Depth: aurora mesh + film grain for dark sections (via LuxBackdrop).   */
+/* ===================================================================== */
+
+.lux-aurora {
+  position: absolute;
+  inset: -25%;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(38% 48% at 18% 22%, color-mix(in srgb, var(--primary) 42%, transparent), transparent 62%),
+    radial-gradient(34% 42% at 82% 28%, color-mix(in srgb, var(--accent) 30%, transparent), transparent 60%),
+    radial-gradient(46% 56% at 52% 96%, color-mix(in srgb, var(--primary-strong) 40%, transparent), transparent 62%);
+  filter: blur(36px);
+  opacity: 0.45;
+  will-change: transform;
+  animation: auroraDrift 22s ease-in-out infinite alternate;
+}
+
+@keyframes auroraDrift {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(-32px, 22px, 0) scale(1.12);
+  }
+}
+
+.lux-grain {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.07;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 140px 140px;
+}
+
 @keyframes waveDrift {
   from {
     transform: translateX(0);

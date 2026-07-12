@@ -3,6 +3,7 @@ import { usePortal } from "../../providers/PortalProvider";
 import { identity } from "../../data/content";
 import { useNavigationItems } from "../../hooks/useNavigationItems";
 import { BrandWave } from "../motion/BrandDecor";
+import { LuxBackdrop } from "../motion/LuxBackdrop";
 import { tx } from "../../utils/i18n";
 
 export function Footer() {
@@ -10,6 +11,7 @@ export function Footer() {
   const headerNav = useNavigationItems("header");
   return (
     <footer className="site-footer">
+      <LuxBackdrop aurora />
       <BrandWave src={identity.wave} className="footer-wave" />
       <div className="container footer-grid">
         <div>

@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 import { usePortal } from "../../providers/PortalProvider";
 import { identity } from "../../data/content";
 import { BrandWatermark, BrandWave } from "../motion/BrandDecor";
+import { LuxBackdrop } from "../motion/LuxBackdrop";
+import { RevealText } from "../motion/RevealText";
 import type { LocalizedText } from "../../types";
 
 export function PageHero({
@@ -20,12 +22,13 @@ export function PageHero({
   const { t } = usePortal();
   return (
     <section className={`page-hero ${compact ? "page-hero-compact" : ""}`}>
+      <LuxBackdrop aurora />
       <BrandWatermark src={identity.markWhite} className="page-hero-watermark" />
       <BrandWave src={identity.wave} className="page-hero-wave" />
       <div className="container page-hero-inner">
         <div>
           <span className="eyebrow">{t(eyebrow)}</span>
-          <h1>{t(title)}</h1>
+          <RevealText as="h1" text={t(title)} immediate />
           <p>{t(description)}</p>
           {actions ? <div className="hero-actions">{actions}</div> : null}
         </div>

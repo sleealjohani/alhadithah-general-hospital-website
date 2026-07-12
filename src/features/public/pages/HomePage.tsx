@@ -7,12 +7,16 @@ import { SectionHeading } from "../../../components/ui/SectionHeading";
 import { ContentGrid } from "../../../components/ui/ContentGrid";
 import { HomeBuilderSections } from "../components/HomeBuilderSections";
 import { Magnetic } from "../../../components/motion/Magnetic";
+import { RevealText } from "../../../components/motion/RevealText";
+import { CountUp } from "../../../components/motion/CountUp";
+import { LuxBackdrop } from "../../../components/motion/LuxBackdrop";
+import { HeroScrollLayer } from "../../../components/motion/HeroScrollLayer";
 import { BrandWatermark, BrandWave } from "../../../components/motion/BrandDecor";
 import { usePublishedItems } from "../../../hooks/usePublishedItems";
 import { useHomepageSectionVisibility } from "../../../hooks/useHomepageSectionVisibility";
 import { useHomepageHero } from "../../../hooks/useHomepageHero";
 import { useQuickLinks } from "../../../hooks/useQuickLinks";
-import { identity, journeySteps, knowledgeItems, pageCopy, services } from "../../../data/content";
+import { heroStats, identity, journeySteps, knowledgeItems, pageCopy, services } from "../../../data/content";
 import { tx } from "../../../utils/i18n";
 
 const HERO_SCRIM =
@@ -42,12 +46,13 @@ export function HomePage() {
             : undefined
         }
       >
+        <LuxBackdrop />
         <BrandWatermark src={identity.markWhite} className="hero-watermark-mark" />
         <BrandWave src={identity.wave} className="hero-wave" />
         <div className="container home-hero-grid">
-          <div className="home-hero-copy" data-reveal>
+          <HeroScrollLayer className="home-hero-copy">
             <span className="eyebrow">{t(pageCopy.hero.eyebrow)}</span>
-            <h1>{t(pageCopy.hero.title)}</h1>
+            <RevealText as="h1" text={t(pageCopy.hero.title)} immediate />
             <p>{t(pageCopy.hero.description)}</p>
             <div className="hero-actions">
               <Magnetic>
@@ -69,11 +74,24 @@ export function HomePage() {
                 </Link>
               </Magnetic>
             </div>
-          </div>
+          </HeroScrollLayer>
           <HeroExperiencePanel />
         </div>
       </section>
       )}
+
+      <section className="stat-band" aria-label={t(tx("مؤشرات المستشفى", "Hospital figures"))}>
+        <div className="container stat-band-grid">
+          {heroStats.map((stat, index) => (
+            <div className="stat-item" data-reveal key={stat.label.en}>
+              <strong className="stat-value">
+                <CountUp value={stat.value} suffix={stat.suffix} durationMs={1500 + index * 150} />
+              </strong>
+              <span className="stat-label">{t(stat.label)}</span>
+            </div>
+          ))}
+        </div>
+      </section>
 
       <HomeBuilderSections />
 

@@ -11,7 +11,15 @@
  */
 
 const HANDLE = "AljoufCluster";
-const SYNDICATION_URL = `https://syndication.twitter.com/srv/timeline-profile/screen-name/${HANDLE}?showReplies=false&lang=ar`;
+const SYNDICATION_BASE = `https://syndication.twitter.com/srv/timeline-profile/screen-name/${HANDLE}`;
+/* Tried in order until one returns parseable tweets — resilience against a
+   transient block, a language quirk, or a small endpoint change. */
+const URL_VARIANTS = [
+  `${SYNDICATION_BASE}?showReplies=false&lang=ar`,
+  `${SYNDICATION_BASE}?showReplies=false&lang=en`,
+  `${SYNDICATION_BASE}?showReplies=true&lang=ar`,
+  SYNDICATION_BASE
+];
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -25,6 +33,8 @@ if (!SUPABASE_URL || !KEY) {
   console.error("Missing SUPABASE_URL and/or SUPABASE_SERVICE_ROLE_KEY.");
   process.exit(1);
 }
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function permalink(tweet) {
   return tweet.permalink
@@ -47,38 +57,65 @@ function extractMedia(tweet) {
     .slice(0, 4);
 }
 
-const response = await fetch(SYNDICATION_URL, {
-  headers: { "user-agent": UA, accept: "text/html", "accept-language": "ar,en;q=0.8" }
-});
-if (!response.ok) {
-  console.error("Syndication request failed:", response.status);
-  process.exit(1);
+function parseTweets(html) {
+  const match = html.match(/<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/s);
+  if (!match) return [];
+  let data;
+  try {
+    data = JSON.parse(match[1]);
+  } catch {
+    return [];
+  }
+  const entries = data?.props?.pageProps?.timeline?.entries || [];
+  return entries
+    .map((entry) => entry?.content?.tweet)
+    .filter(Boolean)
+    .map((tweet) => ({
+      id: tweet.id_str || tweet.id,
+      createdAt: new Date(tweet.created_at).toISOString(),
+      text: cleanText(tweet.full_text || tweet.text),
+      url: permalink(tweet),
+      media: extractMedia(tweet)
+    }))
+    .filter((item) => item.id && item.text)
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
-const html = await response.text();
-const match = html.match(/<script id="__NEXT_DATA__" type="application\/json">(.*?)<\/script>/s);
-if (!match) {
-  console.error("Could not find __NEXT_DATA__ in syndication response.");
-  process.exit(1);
+/* Try each URL variant, each with a few retries + backoff, until tweets parse. */
+async function fetchTweets() {
+  for (const url of URL_VARIANTS) {
+    for (let attempt = 1; attempt <= 3; attempt += 1) {
+      try {
+        const response = await fetch(url, {
+          headers: {
+            "user-agent": UA,
+            accept: "text/html,application/xhtml+xml",
+            "accept-language": "ar,en;q=0.8",
+            referer: "https://platform.twitter.com/"
+          }
+        });
+        if (response.ok) {
+          const tweets = parseTweets(await response.text());
+          if (tweets.length > 0) {
+            console.log(`Fetched ${tweets.length} tweets from ${url}`);
+            return tweets;
+          }
+          console.warn(`No tweets parsed from ${url} (attempt ${attempt}).`);
+        } else {
+          console.warn(`HTTP ${response.status} from ${url} (attempt ${attempt}).`);
+        }
+      } catch (error) {
+        console.warn(`Fetch error from ${url} (attempt ${attempt}):`, error.message);
+      }
+      await sleep(attempt * 1500);
+    }
+  }
+  return [];
 }
 
-const data = JSON.parse(match[1]);
-const entries = data?.props?.pageProps?.timeline?.entries || [];
-const all = entries
-  .map((entry) => entry?.content?.tweet)
-  .filter(Boolean)
-  .map((tweet) => ({
-    id: tweet.id_str || tweet.id,
-    createdAt: new Date(tweet.created_at).toISOString(),
-    text: cleanText(tweet.full_text || tweet.text),
-    url: permalink(tweet),
-    media: extractMedia(tweet)
-  }))
-  .filter((item) => item.id && item.text)
-  .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
+const all = await fetchTweets();
 if (all.length === 0) {
-  console.error("No tweets parsed.");
+  console.error("Could not retrieve any tweets from any syndication variant.");
   process.exit(1);
 }
 

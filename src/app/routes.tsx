@@ -21,6 +21,7 @@ const ContactPage = lazy(() => import("../features/public/pages/ContactPage").th
 const FaqPage = lazy(() => import("../features/public/pages/FaqPage").then((m) => ({ default: m.FaqPage })));
 const SearchPage = lazy(() => import("../features/public/pages/SearchPage").then((m) => ({ default: m.SearchPage })));
 const CmsPage = lazy(() => import("../features/public/pages/CmsPage").then((m) => ({ default: m.CmsPage })));
+const TrainingPage = lazy(() => import("../features/public/pages/TrainingPage").then((m) => ({ default: m.TrainingPage })));
 const NotFoundPage = lazy(() => import("../features/public/pages/NotFoundPage").then((m) => ({ default: m.NotFoundPage })));
 
 const AdminLoginPage = lazy(() => import("../features/auth/AdminLoginPage").then((m) => ({ default: m.AdminLoginPage })));
@@ -52,6 +53,10 @@ export function AppRoutes() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/faq" element={<FaqPage />} />
           <Route path="/search" element={<SearchPage />} />
+          {/* Custom Training experience — served at the generated CMS slug and a
+              clean /training alias; must precede the dynamic :slug route. */}
+          <Route path="/training" element={<TrainingPage />} />
+          <Route path="/pages/academic-affairs-training" element={<TrainingPage />} />
           <Route path="/pages/:slug" element={<CmsPage />} />
         </Route>
         <Route path="/admin/login" element={<AdminLoginPage />} />

@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { Trash2, Pencil } from "lucide-react";
+import { Download, Trash2, Pencil, Users } from "lucide-react";
 import { usePortal } from "../../providers/PortalProvider";
 import { SectionHeading } from "../../components/ui/SectionHeading";
+import { Modal } from "../../components/ui/Modal";
 import { logAdminAction } from "../../lib/audit";
+import { exportRowsToExcel } from "../../lib/exports";
 import { tx } from "../../utils/i18n";
 import {
   deleteCourse,
@@ -53,6 +55,84 @@ function fromLocalInput(value: string) {
   return value ? new Date(value).toISOString() : null;
 }
 
+/* Flat, Excel-friendly rows for participant export. */
+function registrationExportRows(rows: TrainingRegistration[]) {
+  return rows.map((r) => ({
+    Name: r.full_name,
+    Phone: r.phone,
+    Email: r.email ?? "",
+    "National ID": r.national_id ?? "",
+    "Job / Org": r.job_title ?? "",
+    Course: r.course_title ?? "",
+    Audience: r.audience ?? "",
+    Status: r.status,
+    Submitted: r.created_at ? r.created_at.slice(0, 16).replace("T", " ") : ""
+  }));
+}
+
+/* Participants of a single course, with export. */
+function ParticipantsModal({
+  course,
+  registrations,
+  onClose
+}: {
+  course: TrainingCourse;
+  registrations: TrainingRegistration[];
+  onClose: () => void;
+}) {
+  const { t } = usePortal();
+  const title = t(tx(course.title_ar, course.title_en));
+  return (
+    <Modal title={`${t(tx("المشاركون", "Participants"))} — ${title}`} onClose={onClose} wide>
+      <div className="participants-head">
+        <strong>
+          {registrations.length} {t(tx("مشارك", "registered"))}
+          {course.capacity ? ` / ${course.capacity}` : ""}
+        </strong>
+        <button
+          type="button"
+          className="btn btn-secondary"
+          disabled={registrations.length === 0}
+          onClick={() => exportRowsToExcel(`participants-${title}`, registrationExportRows(registrations))}
+        >
+          <Download size={16} />
+          {t(tx("تصدير Excel", "Export Excel"))}
+        </button>
+      </div>
+      {registrations.length === 0 ? (
+        <p className="muted">{t(tx("لا يوجد مشاركون بعد.", "No participants yet."))}</p>
+      ) : (
+        <div className="admin-table-wrap">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th>{t(tx("الاسم", "Name"))}</th>
+                <th>{t(tx("الجوال", "Phone"))}</th>
+                <th>{t(tx("البريد", "Email"))}</th>
+                <th>{t(tx("الهوية", "National ID"))}</th>
+                <th>{t(tx("الجهة", "Job / Org"))}</th>
+                <th>{t(tx("التاريخ", "Date"))}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {registrations.map((r) => (
+                <tr key={r.id}>
+                  <td>{r.full_name}</td>
+                  <td className="mono">{r.phone}</td>
+                  <td>{r.email || "—"}</td>
+                  <td className="mono">{r.national_id || "—"}</td>
+                  <td>{r.job_title || "—"}</td>
+                  <td className="mono">{r.created_at.slice(0, 10)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </Modal>
+  );
+}
+
 export function AdminTraining() {
   const { t, notify } = usePortal();
   const [tab, setTab] = useState<Tab>("courses");
@@ -97,14 +177,27 @@ export function AdminTraining() {
 function CoursesManager({ notify }: { notify: (m: string, tone?: "success" | "error" | "info") => void }) {
   const { t } = usePortal();
   const [rows, setRows] = useState<TrainingCourse[] | null>(null);
+  const [regs, setRegs] = useState<TrainingRegistration[]>([]);
   const [form, setForm] = useState<Partial<TrainingCourse>>(EMPTY_COURSE);
   const [busy, setBusy] = useState(false);
+  const [viewCourse, setViewCourse] = useState<TrainingCourse | null>(null);
   const editing = Boolean(form.id);
 
-  const load = () => fetchAllCourses().then(setRows);
+  const load = () => {
+    fetchAllCourses().then(setRows);
+    fetchRegistrations().then(setRegs);
+  };
   useEffect(() => {
     load();
   }, []);
+
+  const counts = useMemo(() => {
+    const map: Record<string, number> = {};
+    regs.forEach((r) => {
+      if (r.course_id) map[r.course_id] = (map[r.course_id] ?? 0) + 1;
+    });
+    return map;
+  }, [regs]);
 
   const { dialog, requestDelete } = useDeleteConfirm(async (id) => {
     const { error } = await deleteCourse(id);
@@ -202,6 +295,7 @@ function CoursesManager({ notify }: { notify: (m: string, tone?: "success" | "er
               <th>{t(tx("العنوان", "Title"))}</th>
               <th>{t(tx("التاريخ", "Date"))}</th>
               <th>{t(tx("الفئة", "Audience"))}</th>
+              <th>{t(tx("المسجّلون", "Booked"))}</th>
               <th>{t(tx("الحالة", "Status"))}</th>
               <th>{t(tx("إجراءات", "Actions"))}</th>
             </tr>
@@ -211,7 +305,7 @@ function CoursesManager({ notify }: { notify: (m: string, tone?: "success" | "er
               <TableLoadingRows cols={5} />
             ) : rows.length === 0 ? (
               <tr>
-                <td colSpan={5} className="muted">{t(tx("لا توجد دورات بعد.", "No courses yet."))}</td>
+                <td colSpan={6} className="muted">{t(tx("لا توجد دورات بعد.", "No courses yet."))}</td>
               </tr>
             ) : (
               rows.map((row) => (
@@ -219,6 +313,13 @@ function CoursesManager({ notify }: { notify: (m: string, tone?: "success" | "er
                   <td>{t(tx(row.title_ar, row.title_en))}</td>
                   <td className="mono">{row.starts_at ? row.starts_at.slice(0, 10) : "—"}</td>
                   <td><span className="badge badge-info">{row.audience}</span></td>
+                  <td>
+                    <button className="booked-pill" onClick={() => setViewCourse(row)} title={t(tx("عرض المشاركين", "View participants"))}>
+                      <Users size={14} />
+                      {counts[row.id] ?? 0}
+                      {row.capacity ? ` / ${row.capacity}` : ""}
+                    </button>
+                  </td>
                   <td><span className={`badge ${row.status === "published" ? "badge-success" : "badge-muted"}`}>{row.status}</span></td>
                   <td>
                     <button className="icon-button" onClick={() => setForm(row)} aria-label={t(tx("تعديل", "Edit"))}><Pencil size={16} /></button>
@@ -230,6 +331,13 @@ function CoursesManager({ notify }: { notify: (m: string, tone?: "success" | "er
           </tbody>
         </table>
       </div>
+      {viewCourse ? (
+        <ParticipantsModal
+          course={viewCourse}
+          registrations={regs.filter((r) => r.course_id === viewCourse.id)}
+          onClose={() => setViewCourse(null)}
+        />
+      ) : null}
       {dialog}
     </>
   );
@@ -338,39 +446,88 @@ function MediaManager({ notify }: { notify: (m: string, tone?: "success" | "erro
 function RegistrationsInbox() {
   const { t } = usePortal();
   const [rows, setRows] = useState<TrainingRegistration[] | null>(null);
+  const [courseFilter, setCourseFilter] = useState("all");
   useEffect(() => {
     fetchRegistrations().then(setRows);
   }, []);
 
+  const courseOptions = useMemo(
+    () => Array.from(new Set((rows ?? []).map((r) => r.course_title).filter(Boolean))) as string[],
+    [rows]
+  );
+  const filtered = useMemo(
+    () => (rows ?? []).filter((r) => courseFilter === "all" || r.course_title === courseFilter),
+    [rows, courseFilter]
+  );
+
   return (
-    <div className="admin-panel admin-table-wrap">
-      <table className="admin-table">
-        <thead>
-          <tr>
-            <th>{t(tx("الاسم", "Name"))}</th>
-            <th>{t(tx("الجوال", "Phone"))}</th>
-            <th>{t(tx("الدورة", "Course"))}</th>
-            <th>{t(tx("التاريخ", "Submitted"))}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows === null ? (
-            <TableLoadingRows cols={4} />
-          ) : rows.length === 0 ? (
-            <tr><td colSpan={4} className="muted">{t(tx("لا توجد تسجيلات بعد.", "No registrations yet."))}</td></tr>
-          ) : (
-            rows.map((row) => (
-              <tr key={row.id}>
-                <td>{row.full_name}</td>
-                <td className="mono">{row.phone}</td>
-                <td>{row.course_title || "—"}</td>
-                <td className="mono">{row.created_at.slice(0, 10)}</td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-    </div>
+    <>
+      <div className="inbox-toolbar">
+        <label className="inbox-filter">
+          {t(tx("تصفية بالدورة", "Filter by course"))}
+          <select value={courseFilter} onChange={(e) => setCourseFilter(e.target.value)}>
+            <option value="all">{t(tx("كل الدورات", "All courses"))}</option>
+            {courseOptions.map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        </label>
+        <div className="inbox-toolbar-end">
+          <span className="muted">
+            {filtered.length} {t(tx("مشارك", "registered"))}
+          </span>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            disabled={filtered.length === 0}
+            onClick={() =>
+              exportRowsToExcel(
+                courseFilter === "all" ? "training-registrations" : `registrations-${courseFilter}`,
+                registrationExportRows(filtered)
+              )
+            }
+          >
+            <Download size={16} />
+            {t(tx("تصدير Excel", "Export Excel"))}
+          </button>
+        </div>
+      </div>
+
+      <div className="admin-panel admin-table-wrap">
+        <table className="admin-table">
+          <thead>
+            <tr>
+              <th>{t(tx("الاسم", "Name"))}</th>
+              <th>{t(tx("الجوال", "Phone"))}</th>
+              <th>{t(tx("البريد", "Email"))}</th>
+              <th>{t(tx("الهوية", "National ID"))}</th>
+              <th>{t(tx("الجهة", "Job / Org"))}</th>
+              <th>{t(tx("الدورة", "Course"))}</th>
+              <th>{t(tx("التاريخ", "Submitted"))}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows === null ? (
+              <TableLoadingRows cols={7} />
+            ) : filtered.length === 0 ? (
+              <tr><td colSpan={7} className="muted">{t(tx("لا توجد تسجيلات بعد.", "No registrations yet."))}</td></tr>
+            ) : (
+              filtered.map((row) => (
+                <tr key={row.id}>
+                  <td>{row.full_name}</td>
+                  <td className="mono">{row.phone}</td>
+                  <td>{row.email || "—"}</td>
+                  <td className="mono">{row.national_id || "—"}</td>
+                  <td>{row.job_title || "—"}</td>
+                  <td>{row.course_title || "—"}</td>
+                  <td className="mono">{row.created_at.slice(0, 10)}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }
 

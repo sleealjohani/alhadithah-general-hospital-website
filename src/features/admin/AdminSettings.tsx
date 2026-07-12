@@ -14,8 +14,10 @@ export function AdminSettings() {
   const { t, notify } = usePortal();
   const [settings, setSettings] = useState<ContactSettings | null>(null);
   const [heroImage, setHeroImage] = useState<string | null>(null);
+  const [xWidget, setXWidget] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [savingHero, setSavingHero] = useState(false);
+  const [savingWidget, setSavingWidget] = useState(false);
 
   /* Load the stored values first — saving used to overwrite the row with
      defaults because the form always started blank. */
@@ -26,23 +28,27 @@ export function AdminSettings() {
         if (active) {
           setSettings({ showContact: false, notice: "" });
           setHeroImage("");
+          setXWidget("");
         }
         return;
       }
-      const [{ data: contact, error }, { data: hero }] = await Promise.all([
+      const [{ data: contact, error }, { data: hero }, { data: widget }] = await Promise.all([
         supabase.from("site_settings").select("value").eq("key", "public_contact").maybeSingle(),
-        supabase.from("site_settings").select("value").eq("key", "homepage_hero").maybeSingle()
+        supabase.from("site_settings").select("value").eq("key", "homepage_hero").maybeSingle(),
+        supabase.from("site_settings").select("value").eq("key", "x_feed_widget").maybeSingle()
       ]);
       if (!active) return;
       if (error) {
         notify(error.message, "error");
         setSettings({ showContact: false, notice: "" });
         setHeroImage("");
+        setXWidget("");
         return;
       }
       const value = (contact?.value ?? {}) as Partial<ContactSettings>;
       setSettings({ showContact: Boolean(value.showContact), notice: value.notice ?? "" });
       setHeroImage(((hero?.value ?? {}) as { image_url?: string }).image_url ?? "");
+      setXWidget(((widget?.value ?? {}) as { embed?: string }).embed ?? "");
     }
     load();
     return () => {
@@ -92,6 +98,26 @@ export function AdminSettings() {
     }
     logAdminAction("settings.update", "site_settings", null, { key: "homepage_hero" });
     notify(t(tx("تم تحديث صورة الصفحة الرئيسية.", "Homepage image updated.")), "success");
+  };
+
+  const saveWidget = async () => {
+    if (xWidget === null || savingWidget) return;
+    if (!supabase) {
+      notify(t(tx("Supabase غير متصل.", "Supabase is not connected.")), "error");
+      return;
+    }
+    setSavingWidget(true);
+    const { error } = await supabase.from("site_settings").upsert(
+      { key: "x_feed_widget", value: { embed: xWidget.trim() }, is_public: true },
+      { onConflict: "key" }
+    );
+    setSavingWidget(false);
+    if (error) {
+      notify(error.message, "error");
+      return;
+    }
+    logAdminAction("settings.update", "site_settings", null, { key: "x_feed_widget" });
+    notify(t(tx("تم حفظ إعداد خلاصة إكس.", "X feed setting saved.")), "success");
   };
 
   return (
@@ -150,6 +176,41 @@ export function AdminSettings() {
             <button className="btn btn-primary" onClick={save} disabled={saving}>
               {saving ? <Loader2 className="spin" size={18} /> : <Save size={18} />}
               {t(tx("حفظ الإعدادات", "Save settings"))}
+            </button>
+          </>
+        )}
+      </div>
+
+      <div className="admin-panel admin-form">
+        <h2 className="field-wide">{t(tx("خلاصة منصة إكس (Widget)", "X (Twitter) feed widget"))}</h2>
+        {xWidget === null ? (
+          <>
+            <Skeleton variant="text" />
+            <Skeleton variant="block" />
+          </>
+        ) : (
+          <>
+            <p className="field-wide muted">
+              {t(
+                tx(
+                  "الصق كود التضمين (Embed) من خدمة الودجت (مثل Elfsight أو Taggbox) لعرض آخر تغريدات @AljoufCluster مباشرة في بطاقة الأخبار. اتركه فارغًا لعرض زر المتابعة فقط.",
+                  "Paste the embed snippet from your widget service (e.g. Elfsight or Taggbox) to show the latest @AljoufCluster posts live in the news card. Leave empty to show just the follow button."
+                )
+              )}
+            </p>
+            <label className="field-wide">
+              {t(tx("كود التضمين", "Embed code"))}
+              <textarea
+                value={xWidget}
+                onChange={(event) => setXWidget(event.target.value)}
+                rows={6}
+                placeholder='<div class="elfsight-app-…"></div><script src="https://static.elfsight.com/platform/platform.js" async></script>'
+                spellCheck={false}
+              />
+            </label>
+            <button className="btn btn-primary" onClick={saveWidget} disabled={savingWidget}>
+              {savingWidget ? <Loader2 className="spin" size={18} /> : <Save size={18} />}
+              {t(tx("حفظ خلاصة إكس", "Save X feed"))}
             </button>
           </>
         )}

@@ -785,6 +785,15 @@ textarea,
   background-size: 140px 140px;
 }
 
+/* Third-party X-feed widget container reserves space while the vendor loads. */
+.x-widget-embed {
+  min-height: 220px;
+}
+
+.x-widget-embed :is(iframe, .taggbox, [class*="elfsight"]) {
+  max-width: 100%;
+}
+
 @keyframes waveDrift {
   from {
     transform: translateX(0);

@@ -1,0 +1,331 @@
+/* Nursing portal — public page + staff portal. */
+
+.nursing-values {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.nursing-value {
+  display: grid;
+  gap: 8px;
+  padding: 24px;
+}
+
+.nursing-value h3 {
+  margin: 4px 0 0;
+}
+
+.nursing-signin-band {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 20px;
+  padding: 26px;
+  background:
+    radial-gradient(120% 140% at 100% 0%, color-mix(in srgb, var(--primary) 12%, transparent), transparent 60%),
+    var(--surface);
+}
+
+.nursing-signin-band h2 {
+  margin: 4px 0 6px;
+}
+
+.nursing-signin-icon {
+  width: 56px;
+  height: 56px;
+}
+
+/* --- Sign-in modal ------------------------------------------------------- */
+.nursing-signin {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.nursing-signin-form {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  text-align: start;
+}
+
+.nursing-signin-form label {
+  display: grid;
+  gap: 6px;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.nursing-signin-form :is(input) {
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 11px 13px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 1.05rem;
+  letter-spacing: 0.1em;
+}
+
+.nursing-signin-form .btn {
+  justify-content: center;
+  margin-top: 4px;
+}
+
+/* --- Staff portal -------------------------------------------------------- */
+.portal-hero {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 20px;
+  padding: 26px;
+  margin-bottom: 22px;
+  border-radius: var(--radius-lg);
+  color: #fff;
+  background: var(--grad-ink);
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.portal-avatar {
+  display: grid;
+  place-items: center;
+  width: 76px;
+  height: 76px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.portal-hero-copy h1 {
+  margin: 4px 0 8px;
+  color: #fff;
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+}
+
+.portal-hero .eyebrow {
+  color: var(--accent);
+}
+
+.portal-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.portal-meta > span:not(.badge) {
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.portal-signout {
+  align-self: start;
+}
+
+.portal-services {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.portal-service-card {
+  display: grid;
+  gap: 6px;
+  padding: 18px;
+  text-align: start;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  transition: transform var(--duration-base) var(--ease-bloom), border-color var(--duration-base) var(--ease-standard);
+}
+
+.portal-service-card:hover {
+  transform: translateY(-4px);
+}
+
+.portal-service-card.is-active {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.portal-service-card strong {
+  font-size: 1.05rem;
+}
+
+.portal-panel {
+  min-height: 200px;
+}
+
+.portal-overview {
+  display: grid;
+  gap: 16px;
+}
+
+.portal-alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  border-inline-start: 3px solid var(--warning);
+  background: var(--warning-soft);
+  color: var(--warning);
+  font-weight: 700;
+}
+
+.portal-mini-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr));
+  gap: 14px;
+}
+
+.portal-mini-stats > div {
+  display: grid;
+  gap: 4px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+
+.portal-mini-stats strong {
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  color: var(--primary-strong);
+}
+
+.portal-mini-stats span {
+  color: var(--text-secondary);
+  font-weight: 700;
+  font-size: 0.86rem;
+}
+
+.portal-two-col {
+  display: grid;
+  grid-template-columns: minmax(0, 360px) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.portal-form {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+}
+
+.portal-form h3,
+.portal-list h3,
+.manager-section h3 {
+  margin: 0 0 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.portal-form label {
+  display: grid;
+  gap: 5px;
+  font-weight: 700;
+  font-size: 0.88rem;
+}
+
+.portal-form :is(input, select, textarea) {
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 9px 12px;
+  background: var(--surface);
+  color: var(--text);
+}
+
+.portal-form .btn {
+  justify-content: center;
+}
+
+.portal-list {
+  display: grid;
+  gap: 10px;
+}
+
+.portal-list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px;
+}
+
+.portal-list-row p {
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+}
+
+/* --- Policies ------------------------------------------------------------ */
+.policy-list {
+  display: grid;
+  gap: 10px;
+}
+
+.policy-item {
+  padding: 0;
+  overflow: hidden;
+}
+
+.policy-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 16px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  text-align: start;
+}
+
+.policy-title {
+  display: grid;
+}
+
+.policy-title small {
+  color: var(--text-muted);
+}
+
+.policy-body {
+  padding: 0 16px 16px 62px;
+  color: var(--text-secondary);
+}
+
+.manager-section {
+  margin-top: 20px;
+  display: grid;
+  gap: 10px;
+}
+
+@media (max-width: 900px) {
+  .portal-two-col {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .nursing-values {
+    grid-template-columns: 1fr;
+  }
+
+  .nursing-signin-band,
+  .portal-hero {
+    grid-template-columns: 1fr;
+    text-align: start;
+  }
+}

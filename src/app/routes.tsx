@@ -15,6 +15,7 @@ const InitiativesPage = lazy(() => import("../features/public/pages/InitiativesP
 const ExperiencePage = lazy(() => import("../features/public/pages/ExperiencePage").then((m) => ({ default: m.ExperiencePage })));
 const QualityPage = lazy(() => import("../features/public/pages/QualityPage").then((m) => ({ default: m.QualityPage })));
 const NursingPage = lazy(() => import("../features/public/pages/NursingPage").then((m) => ({ default: m.NursingPage })));
+const NursingPortal = lazy(() => import("../features/nursing/NursingPortal").then((m) => ({ default: m.NursingPortal })));
 const ReportsPage = lazy(() => import("../features/public/pages/ReportsPage").then((m) => ({ default: m.ReportsPage })));
 const EmployeesPage = lazy(() => import("../features/public/pages/EmployeesPage").then((m) => ({ default: m.EmployeesPage })));
 const ContactPage = lazy(() => import("../features/public/pages/ContactPage").then((m) => ({ default: m.ContactPage })));
@@ -48,6 +49,7 @@ export function AppRoutes() {
           <Route path="/experience" element={<ExperiencePage />} />
           <Route path="/quality" element={<QualityPage />} />
           <Route path="/nursing" element={<NursingPage />} />
+          <Route path="/nursing/portal" element={<NursingPortal />} />
           <Route path="/reports" element={<ReportsPage />} />
           <Route path="/employees" element={<EmployeesPage />} />
           <Route path="/contact" element={<ContactPage />} />

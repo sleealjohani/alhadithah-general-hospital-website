@@ -179,6 +179,58 @@ export async function updateHostRequestStatus(id: string, status: string): Promi
   return { error: error?.message };
 }
 
+/* Map a free-text audience from a request onto the course audience enum. */
+function mapAudience(value: string | null): CourseAudience {
+  const v = (value || "").toLowerCase();
+  if (/(موظف|staff|employ)/.test(v)) return "employees";
+  if (/(عموم|جمهور|public|community)/.test(v)) return "public";
+  return "both";
+}
+
+/**
+ * Approve a hosting request by promoting it into a draft course. The request's
+ * details seed the new course; the admin then completes the remaining fields
+ * (dates, poster, description) inside Courses. The request is marked approved
+ * so it isn't converted twice.
+ */
+export async function convertHostRequestToCourse(
+  req: TrainingHostRequest
+): Promise<{ id?: string; error?: string }> {
+  if (!supabase) return { error: "not_configured" };
+  const draft: Partial<TrainingCourse> = {
+    title_ar: req.course_name,
+    title_en: req.course_name,
+    lecturer_ar: req.lecturers || null,
+    lecturer_en: req.lecturers || null,
+    audience: mapAudience(req.audience),
+    starts_at: req.preferred_date ? new Date(req.preferred_date).toISOString() : null,
+    description_ar: req.notes || null,
+    description_en: req.notes || null,
+    status: "draft",
+    sort_order: 100,
+    metadata: {
+      source: "host_request",
+      host_request_id: req.id,
+      requested_duration: req.duration,
+      contact_phone: req.phone,
+      contact_email: req.email
+    }
+  };
+  const { data, error } = await supabase
+    .from("training_courses")
+    .insert(draft)
+    .select("id")
+    .single();
+  if (error) return { error: error.message };
+  const courseId = (data as { id: string }).id;
+  const { error: statusError } = await supabase
+    .from("training_host_requests")
+    .update({ status: "approved" })
+    .eq("id", req.id);
+  if (statusError) return { id: courseId, error: statusError.message };
+  return { id: courseId };
+}
+
 export async function updateRegistrationStatus(id: string, status: string): Promise<{ error?: string }> {
   if (!supabase) return { error: "not_configured" };
   const { error } = await supabase.from("training_registrations").update({ status }).eq("id", id);

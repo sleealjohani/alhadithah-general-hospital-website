@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Download, Trash2, Pencil, Users } from "lucide-react";
+import { ArrowRightCircle, Download, Trash2, Pencil, Users } from "lucide-react";
 import { usePortal } from "../../providers/PortalProvider";
 import { SectionHeading } from "../../components/ui/SectionHeading";
 import { Modal } from "../../components/ui/Modal";
@@ -7,6 +7,7 @@ import { logAdminAction } from "../../lib/audit";
 import { exportRowsToExcel } from "../../lib/exports";
 import { tx } from "../../utils/i18n";
 import {
+  convertHostRequestToCourse,
   deleteCourse,
   deleteMedia,
   fetchAllCourses,
@@ -136,6 +137,9 @@ function ParticipantsModal({
 export function AdminTraining() {
   const { t, notify } = usePortal();
   const [tab, setTab] = useState<Tab>("courses");
+  /* When a hosting request is approved it becomes a draft course; we jump to
+     the Courses tab and open that draft so its details can be completed. */
+  const [focusCourseId, setFocusCourseId] = useState<string | null>(null);
 
   return (
     <div className="admin-page">
@@ -162,10 +166,20 @@ export function AdminTraining() {
         </button>
       </div>
 
-      {tab === "courses" ? <CoursesManager notify={notify} /> : null}
+      {tab === "courses" ? (
+        <CoursesManager notify={notify} focusCourseId={focusCourseId} onFocusHandled={() => setFocusCourseId(null)} />
+      ) : null}
       {tab === "media" ? <MediaManager notify={notify} /> : null}
       {tab === "registrations" ? <RegistrationsInbox /> : null}
-      {tab === "requests" ? <RequestsInbox notify={notify} /> : null}
+      {tab === "requests" ? (
+        <RequestsInbox
+          notify={notify}
+          onConverted={(courseId) => {
+            setFocusCourseId(courseId);
+            setTab("courses");
+          }}
+        />
+      ) : null}
     </div>
   );
 }
@@ -174,7 +188,15 @@ export function AdminTraining() {
 /* Courses                                                                     */
 /* -------------------------------------------------------------------------- */
 
-function CoursesManager({ notify }: { notify: (m: string, tone?: "success" | "error" | "info") => void }) {
+function CoursesManager({
+  notify,
+  focusCourseId,
+  onFocusHandled
+}: {
+  notify: (m: string, tone?: "success" | "error" | "info") => void;
+  focusCourseId?: string | null;
+  onFocusHandled?: () => void;
+}) {
   const { t } = usePortal();
   const [rows, setRows] = useState<TrainingCourse[] | null>(null);
   const [regs, setRegs] = useState<TrainingRegistration[]>([]);
@@ -190,6 +212,17 @@ function CoursesManager({ notify }: { notify: (m: string, tone?: "success" | "er
   useEffect(() => {
     load();
   }, []);
+
+  /* A freshly-approved hosting request lands here — open it for completion. */
+  useEffect(() => {
+    if (!focusCourseId || !rows) return;
+    const target = rows.find((r) => r.id === focusCourseId);
+    if (target) {
+      setForm(target);
+      onFocusHandled?.();
+      if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [focusCourseId, rows, onFocusHandled]);
 
   const counts = useMemo(() => {
     const map: Record<string, number> = {};
@@ -535,9 +568,16 @@ function RegistrationsInbox() {
 /* Hosting requests inbox (status update)                                      */
 /* -------------------------------------------------------------------------- */
 
-function RequestsInbox({ notify }: { notify: (m: string, tone?: "success" | "error" | "info") => void }) {
+function RequestsInbox({
+  notify,
+  onConverted
+}: {
+  notify: (m: string, tone?: "success" | "error" | "info") => void;
+  onConverted: (courseId: string) => void;
+}) {
   const { t } = usePortal();
   const [rows, setRows] = useState<TrainingHostRequest[] | null>(null);
+  const [convertingId, setConvertingId] = useState<string | null>(null);
   const load = () => fetchHostRequests().then(setRows);
   useEffect(() => {
     load();
@@ -547,6 +587,18 @@ function RequestsInbox({ notify }: { notify: (m: string, tone?: "success" | "err
     const { error } = await updateHostRequestStatus(id, status);
     if (error) return notify(error, "error");
     setRows((prev) => (prev ? prev.map((r) => (r.id === id ? { ...r, status } : r)) : prev));
+  };
+
+  /* Approve = promote to a draft course and jump there to finish it off. */
+  const approveToCourse = async (row: TrainingHostRequest) => {
+    setConvertingId(row.id);
+    const { id, error } = await convertHostRequestToCourse(row);
+    setConvertingId(null);
+    if (error && !id) return notify(error, "error");
+    logAdminAction("training.request.approve", "training_host_requests", row.id);
+    setRows((prev) => (prev ? prev.map((r) => (r.id === row.id ? { ...r, status: "approved" } : r)) : prev));
+    notify(t(tx("تم الاعتماد ونقل الطلب إلى الدورات لإكمال بياناته.", "Approved — moved into Courses to complete its details.")), "success");
+    if (id) onConverted(id);
   };
 
   const statuses = useMemo(
@@ -569,13 +621,14 @@ function RequestsInbox({ notify }: { notify: (m: string, tone?: "success" | "err
             <th>{t(tx("الجوال", "Phone"))}</th>
             <th>{t(tx("التاريخ المقترح", "Preferred date"))}</th>
             <th>{t(tx("الحالة", "Status"))}</th>
+            <th>{t(tx("إجراء", "Action"))}</th>
           </tr>
         </thead>
         <tbody>
           {rows === null ? (
-            <TableLoadingRows cols={5} />
+            <TableLoadingRows cols={6} />
           ) : rows.length === 0 ? (
-            <tr><td colSpan={5} className="muted">{t(tx("لا توجد طلبات بعد.", "No requests yet."))}</td></tr>
+            <tr><td colSpan={6} className="muted">{t(tx("لا توجد طلبات بعد.", "No requests yet."))}</td></tr>
           ) : (
             rows.map((row) => (
               <tr key={row.id}>
@@ -589,6 +642,22 @@ function RequestsInbox({ notify }: { notify: (m: string, tone?: "success" | "err
                       <option key={s.value} value={s.value}>{t(s.label)}</option>
                     ))}
                   </select>
+                </td>
+                <td>
+                  {row.status === "approved" ? (
+                    <span className="badge badge-success">{t(tx("نُقل إلى الدورات", "In Courses"))}</span>
+                  ) : (
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      style={{ minHeight: 34, padding: "0 12px" }}
+                      disabled={convertingId === row.id}
+                      onClick={() => approveToCourse(row)}
+                    >
+                      <ArrowRightCircle size={16} />
+                      {convertingId === row.id ? t(tx("جارٍ…", "Working…")) : t(tx("اعتماد ← دورة", "Approve → Course"))}
+                    </button>
+                  )}
                 </td>
               </tr>
             ))

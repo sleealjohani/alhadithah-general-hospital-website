@@ -105,12 +105,16 @@ create index if not exists nursing_vacation_staff_idx on public.nursing_vacation
 create index if not exists nursing_profile_staff_idx on public.nursing_profile_items (staff_id);
 create index if not exists nursing_profile_expiry_idx on public.nursing_profile_items (expiry_date) where status = 'approved';
 
+drop trigger if exists set_nursing_staff_updated_at on public.nursing_staff;
 create trigger set_nursing_staff_updated_at before update on public.nursing_staff
   for each row execute function public.set_updated_at();
+drop trigger if exists set_nursing_policies_updated_at on public.nursing_policies;
 create trigger set_nursing_policies_updated_at before update on public.nursing_policies
   for each row execute function public.set_updated_at();
+drop trigger if exists set_nursing_vacation_updated_at on public.nursing_vacation_plans;
 create trigger set_nursing_vacation_updated_at before update on public.nursing_vacation_plans
   for each row execute function public.set_updated_at();
+drop trigger if exists set_nursing_profile_updated_at on public.nursing_profile_items;
 create trigger set_nursing_profile_updated_at before update on public.nursing_profile_items
   for each row execute function public.set_updated_at();
 
@@ -124,24 +128,31 @@ alter table public.nursing_vacation_plans enable row level security;
 alter table public.nursing_profile_items enable row level security;
 
 -- Policies + media: published rows are public (no PII); admins manage.
+drop policy if exists "nursing_policies_public_read" on public.nursing_policies;
 create policy "nursing_policies_public_read" on public.nursing_policies for select using (status = 'published');
+drop policy if exists "nursing_policies_admin" on public.nursing_policies;
 create policy "nursing_policies_admin" on public.nursing_policies for all
   using (public.has_admin_role(array['super_admin', 'admin', 'editor']))
   with check (public.has_admin_role(array['super_admin', 'admin', 'editor']));
 
+drop policy if exists "nursing_media_public_read" on public.nursing_media;
 create policy "nursing_media_public_read" on public.nursing_media for select using (status = 'published');
+drop policy if exists "nursing_media_admin" on public.nursing_media;
 create policy "nursing_media_admin" on public.nursing_media for all
   using (public.has_admin_role(array['super_admin', 'admin', 'editor']))
   with check (public.has_admin_role(array['super_admin', 'admin', 'editor']));
 
 -- Personal tables: NO public access. Admin/reviewer manage; staff reach their
 -- own data only through the SECURITY DEFINER RPCs below.
+drop policy if exists "nursing_staff_admin" on public.nursing_staff;
 create policy "nursing_staff_admin" on public.nursing_staff for all
   using (public.has_admin_role(array['super_admin', 'admin', 'reviewer']))
   with check (public.has_admin_role(array['super_admin', 'admin', 'reviewer']));
+drop policy if exists "nursing_vacation_admin" on public.nursing_vacation_plans;
 create policy "nursing_vacation_admin" on public.nursing_vacation_plans for all
   using (public.has_admin_role(array['super_admin', 'admin', 'reviewer']))
   with check (public.has_admin_role(array['super_admin', 'admin', 'reviewer']));
+drop policy if exists "nursing_profile_admin" on public.nursing_profile_items;
 create policy "nursing_profile_admin" on public.nursing_profile_items for all
   using (public.has_admin_role(array['super_admin', 'admin', 'reviewer']))
   with check (public.has_admin_role(array['super_admin', 'admin', 'reviewer']));

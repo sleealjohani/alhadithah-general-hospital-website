@@ -15,12 +15,15 @@ create table if not exists public.nursing_spotlight (
   updated_at timestamptz not null default now()
 );
 
+drop trigger if exists set_nursing_spotlight_updated_at on public.nursing_spotlight;
 create trigger set_nursing_spotlight_updated_at before update on public.nursing_spotlight
   for each row execute function public.set_updated_at();
 
 alter table public.nursing_spotlight enable row level security;
 
+drop policy if exists "nursing_spotlight_public_read" on public.nursing_spotlight;
 create policy "nursing_spotlight_public_read" on public.nursing_spotlight for select using (is_active);
+drop policy if exists "nursing_spotlight_admin" on public.nursing_spotlight;
 create policy "nursing_spotlight_admin" on public.nursing_spotlight for all
   using (public.has_admin_role(array['super_admin', 'admin', 'editor']))
   with check (public.has_admin_role(array['super_admin', 'admin', 'editor']));

@@ -4,28 +4,34 @@ import { usePortal } from "../../providers/PortalProvider";
 import { supabase } from "../../lib/supabase/client";
 import { tx } from "../../utils/i18n";
 import type { LocalizedText } from "../../types";
+import { ImageCropModal } from "./ImageCropModal";
 
 /* Reusable "add a picture" control: either upload a file straight to the
    public Storage bucket (and get a public URL back) or paste an existing
-   URL. Shows a live preview. Used by every admin screen that attaches
-   media, so editors never have to think about buckets or paths. */
+   URL. Shows a live preview and offers a crop step before uploading. Used by
+   every admin screen that attaches media, so editors never have to think
+   about buckets or paths. */
 
 const PUBLIC_BUCKET = "public-assets";
 
 export function ImageField({
   label,
   value,
-  onChange
+  onChange,
+  aspect = null
 }: {
   label?: LocalizedText;
   value: string;
   onChange: (url: string) => void;
+  /* Optional crop aspect lock (e.g. 1 for avatars, 16/9 for banners). */
+  aspect?: number | null;
 }) {
   const { t, notify } = usePortal();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [cropFile, setCropFile] = useState<File | null>(null);
 
-  const upload = async (file: File) => {
+  const upload = async (file: Blob, name = "image.jpg") => {
     if (!supabase) {
       notify(t(tx("Supabase غير متصل.", "Supabase is not connected.")), "error");
       return;
@@ -35,7 +41,7 @@ export function ImageField({
       return;
     }
     setUploading(true);
-    const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
+    const safeName = name.replace(/[^a-zA-Z0-9.\-_]/g, "_");
     const objectPath = `images/${Date.now()}-${safeName}`;
     const { error } = await supabase.storage.from(PUBLIC_BUCKET).upload(objectPath, file, {
       cacheControl: "3600",
@@ -105,11 +111,33 @@ export function ImageField({
           hidden
           onChange={(event) => {
             const file = event.target.files?.[0];
-            if (file) upload(file);
+            if (file) {
+              if (file.type.startsWith("image/")) setCropFile(file);
+              else notify(t(tx("اختر ملف صورة صالحًا.", "Choose a valid image file.")), "error");
+            }
             event.target.value = "";
           }}
         />
       </div>
+
+      {cropFile ? (
+        <ImageCropModal
+          file={cropFile}
+          defaultAspect={aspect}
+          onCancel={() => setCropFile(null)}
+          onUseOriginal={() => {
+            const f = cropFile;
+            setCropFile(null);
+            upload(f, f.name);
+          }}
+          onCropped={(blob) => {
+            const ext = blob.type === "image/png" ? "png" : "jpg";
+            const base = cropFile.name.replace(/\.[^.]+$/, "");
+            setCropFile(null);
+            upload(blob, `${base}-cropped.${ext}`);
+          }}
+        />
+      ) : null}
     </div>
   );
 }

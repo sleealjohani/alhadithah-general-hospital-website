@@ -306,7 +306,7 @@ function MediaManager({ notify }: { notify: Notify }) {
           {t(tx("أرفق صورة أو فيديو واكتب نصًا يظهر فوق الوسائط في الشريط المتحرك.", "Attach an image or video and write text that appears over the media in the moving reel."))}
         </p>
         <form onSubmit={save} style={{ display: "contents" }}>
-          <div className="field-wide"><ImageField label={tx("الصورة/الرابط", "Image / URL")} value={form.media_url ?? ""} onChange={(url) => setForm({ ...form, media_url: url })} /></div>
+          <div className="field-wide"><ImageField label={tx("الصورة/الرابط", "Image / URL")} value={form.media_url ?? ""} onChange={(url) => setForm({ ...form, media_url: url })} aspect={16 / 9} /></div>
           <Field label={tx("النوع", "Type")}><select value={form.media_type} onChange={(e) => setForm({ ...form, media_type: e.target.value as NursingMedia["media_type"] })}><option value="image">{t(tx("صورة", "Image"))}</option><option value="video">{t(tx("فيديو", "Video"))}</option></select></Field>
           <Field label={tx("الترتيب", "Order")}><input type="number" value={form.sort_order ?? 100} onChange={(e) => setForm({ ...form, sort_order: Number(e.target.value) })} /></Field>
           <Field label={tx("النص على الوسائط (عربي)", "Text on media (AR)")}><input value={form.caption_ar ?? ""} onChange={(e) => setForm({ ...form, caption_ar: e.target.value })} dir="auto" /></Field>
@@ -397,7 +397,7 @@ function SpotlightManager({ notify }: { notify: Notify }) {
           ))}
         </p>
         <form onSubmit={save} style={{ display: "contents" }}>
-          <div className="field-wide"><ImageField label={tx("صورة الممرض/ة", "Nurse photo")} value={form.photo_url ?? ""} onChange={(url) => setForm({ ...form, photo_url: url })} /></div>
+          <div className="field-wide"><ImageField label={tx("صورة الممرض/ة", "Nurse photo")} value={form.photo_url ?? ""} onChange={(url) => setForm({ ...form, photo_url: url })} aspect={1} /></div>
           <Field label={tx("الاسم", "Name")}><input value={form.name ?? ""} onChange={(e) => setForm({ ...form, name: e.target.value })} dir="auto" /></Field>
           <Field label={tx("التخصص", "Specialty")}><input value={form.specialty ?? ""} onChange={(e) => setForm({ ...form, specialty: e.target.value })} dir="auto" /></Field>
           <Field label={tx("عنوان الشهر (عربي)", "Month label (AR)")}><input value={form.month_label_ar ?? ""} onChange={(e) => setForm({ ...form, month_label_ar: e.target.value })} dir="auto" placeholder="ممرض شهر يوليو" /></Field>

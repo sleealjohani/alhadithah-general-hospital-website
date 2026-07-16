@@ -69,6 +69,20 @@ export type NursingMedia = {
   sort_order: number;
 };
 
+export type NursingSpotlight = {
+  id: string;
+  photo_url: string | null;
+  name: string;
+  specialty: string | null;
+  month_label_ar: string | null;
+  month_label_en: string | null;
+  message_ar: string | null;
+  message_en: string | null;
+  achievements_ar: string | null;
+  achievements_en: string | null;
+  is_active: boolean;
+};
+
 export type NursingStaffAdmin = NursingStaffSelf & {
   national_id: string | null;
   program_type: string | null;
@@ -111,6 +125,18 @@ export async function fetchNursingMedia(): Promise<NursingMedia[]> {
     .order("sort_order", { ascending: true })
     .order("created_at", { ascending: false });
   return (data ?? []) as NursingMedia[];
+}
+
+export async function fetchActiveSpotlight(): Promise<NursingSpotlight | null> {
+  if (!supabase) return null;
+  const { data } = await supabase
+    .from("nursing_spotlight")
+    .select("*")
+    .eq("is_active", true)
+    .order("updated_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  return (data as NursingSpotlight) ?? null;
 }
 
 export async function fetchPublishedPolicies(): Promise<NursingPolicy[]> {
@@ -211,6 +237,27 @@ export async function adminUpsertMedia(row: Partial<NursingMedia>) {
 export async function adminDeleteMedia(id: string) {
   if (!supabase) return { error: "not_configured" };
   const { error } = await supabase.from("nursing_media").delete().eq("id", id);
+  return { error: error?.message };
+}
+export async function adminSetMediaStatus(id: string, status: "published" | "draft" | "archived") {
+  if (!supabase) return { error: "not_configured" };
+  const { error } = await supabase.from("nursing_media").update({ status }).eq("id", id);
+  return { error: error?.message };
+}
+
+export async function adminFetchSpotlight(): Promise<NursingSpotlight[]> {
+  if (!supabase) return [];
+  const { data } = await supabase.from("nursing_spotlight").select("*").order("updated_at", { ascending: false });
+  return (data ?? []) as NursingSpotlight[];
+}
+export async function adminUpsertSpotlight(row: Partial<NursingSpotlight>) {
+  if (!supabase) return { error: "not_configured" };
+  const { error } = await supabase.from("nursing_spotlight").upsert(row, { onConflict: "id" });
+  return { error: error?.message };
+}
+export async function adminDeleteSpotlight(id: string) {
+  if (!supabase) return { error: "not_configured" };
+  const { error } = await supabase.from("nursing_spotlight").delete().eq("id", id);
   return { error: error?.message };
 }
 

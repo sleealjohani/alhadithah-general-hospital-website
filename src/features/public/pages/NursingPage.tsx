@@ -1,36 +1,27 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { HeartHandshake, ShieldCheck, Sparkles, Stethoscope, UserRound } from "lucide-react";
+import { Stethoscope, UserRound } from "lucide-react";
 import { usePortal } from "../../../providers/PortalProvider";
 import { PageHero } from "../../../components/ui/PageHero";
 import { SectionHeading } from "../../../components/ui/SectionHeading";
 import { usePageMeta } from "../../../hooks/usePageMeta";
 import { NursingSignIn } from "../../nursing/NursingSignIn";
-import { fetchNursingMedia, getNursingToken, type NursingMedia } from "../../../lib/supabase/nursing";
+import { NursingCarousel } from "../../nursing/NursingCarousel";
+import { NurseOfMonth } from "../../nursing/NurseOfMonth";
+import {
+  fetchActiveSpotlight,
+  fetchNursingMedia,
+  getNursingToken,
+  type NursingMedia,
+  type NursingSpotlight
+} from "../../../lib/supabase/nursing";
 import { tx } from "../../../utils/i18n";
-
-const VALUES = [
-  {
-    icon: HeartHandshake,
-    title: tx("الرحمة", "Compassion"),
-    text: tx("رعاية إنسانية تضع المريض وكرامته أولًا.", "Humane care that puts the patient and their dignity first.")
-  },
-  {
-    icon: ShieldCheck,
-    title: tx("السلامة", "Safety"),
-    text: tx("ممارسات قائمة على الأدلة تحمي المريض والكادر.", "Evidence-based practice that protects patients and staff.")
-  },
-  {
-    icon: Sparkles,
-    title: tx("التميّز", "Excellence"),
-    text: tx("تطوير مستمر للمهارات والكفاءات التمريضية.", "Continuous growth of nursing skills and competencies.")
-  }
-];
 
 export function NursingPage() {
   const { t } = usePortal();
   const navigate = useNavigate();
   const [media, setMedia] = useState<NursingMedia[]>([]);
+  const [spotlight, setSpotlight] = useState<NursingSpotlight | null>(null);
   const [signInOpen, setSignInOpen] = useState(false);
   const hasSession = Boolean(getNursingToken());
 
@@ -42,6 +33,7 @@ export function NursingPage() {
   useEffect(() => {
     let active = true;
     fetchNursingMedia().then((rows) => active && setMedia(rows));
+    fetchActiveSpotlight().then((row) => active && setSpotlight(row));
     return () => {
       active = false;
     };
@@ -58,7 +50,7 @@ export function NursingPage() {
         )}
       />
 
-      {/* About nursing */}
+      {/* About nursing — landscape auto-scrolling media reel */}
       <section className="section">
         <div className="container">
           <SectionHeading
@@ -69,42 +61,27 @@ export function NursingPage() {
               "Nursing is the backbone of care across emergency, clinics, and inpatient wards — a multidisciplinary team working to the highest standards of quality and patient safety."
             )}
           />
-          <div className="nursing-values">
-            {VALUES.map((value) => (
-              <article className="nursing-value info-card" data-reveal key={value.title.en}>
-                <span className="service-icon">
-                  <value.icon size={24} />
-                </span>
-                <h3>{t(value.title)}</h3>
-                <p>{t(value.text)}</p>
-              </article>
-            ))}
-          </div>
         </div>
+        {media.length > 0 ? (
+          <div className="nursing-reel-wrap" data-reveal>
+            <NursingCarousel media={media} />
+          </div>
+        ) : null}
       </section>
 
-      {/* Live media feed */}
-      {media.length > 0 ? (
-        <section className="section nursing-media-section">
+      {/* Nurse of the Month — the main character of the page */}
+      {spotlight ? (
+        <section className="section nom-section">
           <div className="container">
             <SectionHeading
-              eyebrow={tx("من فعاليات التمريض", "Nursing highlights")}
-              title={tx("صور ولقطات من ميدان التمريض", "Photos & moments from the nursing floor")}
+              eyebrow={tx("تكريم", "Recognition")}
+              title={tx("ممرض/ممرضة الشهر", "Nurse of the Month")}
+              description={tx(
+                "نحتفي بمن قدّم رعاية استثنائية هذا الشهر — اضغط أو مرّر المؤشر على البطاقة لاكتشاف إنجازاته.",
+                "Celebrating exceptional care this month — tap or hover the card to reveal the achievements."
+              )}
             />
-            <div className="training-gallery">
-              {media.map((item) => (
-                <figure className="gallery-item" key={item.id}>
-                  {item.media_type === "video" ? (
-                    <video src={item.media_url} controls preload="metadata" />
-                  ) : (
-                    <img src={item.media_url} alt={t(tx(item.title_ar || "", item.title_en || ""))} loading="lazy" />
-                  )}
-                  {item.caption_ar || item.caption_en ? (
-                    <figcaption>{t(tx(item.caption_ar || "", item.caption_en || ""))}</figcaption>
-                  ) : null}
-                </figure>
-              ))}
-            </div>
+            <NurseOfMonth spotlight={spotlight} />
           </div>
         </section>
       ) : null}

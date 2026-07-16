@@ -209,9 +209,35 @@
   border-radius: var(--radius-bloom);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  /* NOTE: no `overflow: hidden` here — combined with backface-visibility it
-     triggers the iOS Safari bug where both faces bleed through. Each face
-     clips its own children instead. */
+  /* iOS Safari ignores backface-visibility, so we don't rely on it: each face
+     is faded out at the exact midpoint of the flip (card edge-on at 90°). The
+     opacity swaps instantly after half the flip duration, so only one face is
+     ever visible and the mirrored front can never bleed through. */
+  transition: opacity 0s linear calc(var(--duration-lux) / 2);
+}
+
+.nom-front {
+  opacity: 1;
+}
+
+.nom-back {
+  opacity: 0;
+}
+
+.nom-flip.is-flipped .nom-front {
+  opacity: 0;
+}
+.nom-flip.is-flipped .nom-back {
+  opacity: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .nom-flip.can-flip:hover .nom-front {
+    opacity: 0;
+  }
+  .nom-flip.can-flip:hover .nom-back {
+    opacity: 1;
+  }
 }
 
 .nom-front {

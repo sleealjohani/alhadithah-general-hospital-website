@@ -197,6 +197,16 @@ export async function adminUpsertStaff(row: Partial<NursingStaffAdmin>) {
   const { error } = await supabase.from("nursing_staff").upsert(row, { onConflict: "id" });
   return { error: error?.message };
 }
+export async function adminBulkUpsertStaff(rows: Partial<NursingStaffAdmin>[]) {
+  if (!supabase) return { error: "not_configured", count: 0 };
+  if (rows.length === 0) return { error: undefined, count: 0 };
+  /* Match on employee_number so re-importing updates rather than duplicates. */
+  const { error, data } = await supabase
+    .from("nursing_staff")
+    .upsert(rows, { onConflict: "employee_number" })
+    .select("id");
+  return { error: error?.message, count: data?.length ?? 0 };
+}
 export async function adminSetManager(id: string, is_manager: boolean) {
   if (!supabase) return { error: "not_configured" };
   const { error } = await supabase.from("nursing_staff").update({ is_manager }).eq("id", id);

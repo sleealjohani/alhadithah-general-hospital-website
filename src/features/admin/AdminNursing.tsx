@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
-import { Award, Eye, EyeOff, KeyRound, Pencil, ShieldCheck, Sparkles, Trash2 } from "lucide-react";
+import { Award, Eye, EyeOff, KeyRound, Pencil, ShieldCheck, Sparkles, Trash2, Upload } from "lucide-react";
 import { usePortal } from "../../providers/PortalProvider";
 import { SectionHeading } from "../../components/ui/SectionHeading";
+import { Modal } from "../../components/ui/Modal";
 import { logAdminAction } from "../../lib/audit";
 import { tx } from "../../utils/i18n";
 import {
+  adminBulkUpsertStaff,
   adminDeleteMedia,
   adminDeletePolicy,
   adminDeleteSpotlight,
@@ -30,6 +32,7 @@ import {
   type ProfileItem,
   type VacationPlan
 } from "../../lib/supabase/nursing";
+import { parseStaffPaste, type ParseResult } from "../nursing/staffImport";
 import { CrudFormActions, Field, TableLoadingRows, useDeleteConfirm } from "./shared";
 import { ImageField } from "./ImageField";
 
@@ -80,6 +83,7 @@ function StaffManager({ notify }: { notify: Notify }) {
   const [form, setForm] = useState<Partial<NursingStaffAdmin>>({});
   const [busy, setBusy] = useState(false);
   const [q, setQ] = useState("");
+  const [importOpen, setImportOpen] = useState(false);
   const editing = Boolean(form.id);
   const load = () => adminFetchStaff().then(setRows);
   useEffect(() => { load(); }, []);
@@ -133,7 +137,13 @@ function StaffManager({ notify }: { notify: Notify }) {
         <label className="inbox-filter">{t(tx("بحث", "Search"))}
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder={t(tx("اسم / رقم وظيفي / قسم", "name / number / dept"))} dir="auto" />
         </label>
-        <span className="muted">{filtered.length} {t(tx("موظف", "staff"))}</span>
+        <div className="inbox-toolbar-end">
+          <span className="muted">{filtered.length} {t(tx("موظف", "staff"))}</span>
+          <button type="button" className="btn btn-secondary" onClick={() => setImportOpen(true)}>
+            <Upload size={16} />
+            {t(tx("استيراد من Excel", "Import from Excel"))}
+          </button>
+        </div>
       </div>
 
       <div className="admin-panel admin-table-wrap">
@@ -166,7 +176,91 @@ function StaffManager({ notify }: { notify: Notify }) {
           </tbody>
         </table>
       </div>
+
+      {importOpen ? (
+        <StaffImportModal
+          notify={notify}
+          onClose={() => setImportOpen(false)}
+          onImported={() => { setImportOpen(false); load(); }}
+        />
+      ) : null}
     </>
+  );
+}
+
+/* ---- Staff bulk import (paste from Excel) ------------------------------- */
+function StaffImportModal({ notify, onClose, onImported }: { notify: Notify; onClose: () => void; onImported: () => void }) {
+  const { t } = usePortal();
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [result, setResult] = useState<ParseResult | null>(null);
+
+  const preview = () => setResult(parseStaffPaste(text));
+
+  const runImport = async () => {
+    const parsed = result ?? parseStaffPaste(text);
+    setResult(parsed);
+    if (parsed.error === "missing_required")
+      return notify(t(tx("لم يتم العثور على عمودَي الرقم الوظيفي والاسم في الصف الأول.", "Couldn't find the employee-number and name columns in the header row.")), "error");
+    if (parsed.error === "need_header_and_rows")
+      return notify(t(tx("الصق صف العناوين ثم صفوف البيانات.", "Paste a header row followed by data rows.")), "error");
+    if (parsed.rows.length === 0)
+      return notify(t(tx("لا توجد صفوف صالحة.", "No valid rows found.")), "error");
+    setBusy(true);
+    const { error, count } = await adminBulkUpsertStaff(parsed.rows);
+    setBusy(false);
+    if (error) return notify(error, "error");
+    logAdminAction("nursing.staff.import", "nursing_staff", null);
+    notify(t(tx(`تم استيراد ${count} موظف.`, `Imported ${count} staff.`)), "success");
+    onImported();
+  };
+
+  return (
+    <Modal title={t(tx("استيراد كادر التمريض", "Import nursing staff"))} onClose={onClose} wide>
+      <div className="staff-import">
+        <ol className="staff-import-steps">
+          <li>{t(tx("افتح ملف Excel وحدّد صف العناوين مع كل الصفوف.", "Open your Excel sheet and select the header row plus all data rows."))}</li>
+          <li>{t(tx("انسخ (Ctrl+C) ثم الصق في الصندوق أدناه.", "Copy (Ctrl+C) and paste into the box below."))}</li>
+          <li>{t(tx("عمودا «الرقم الوظيفي» و«الاسم» مطلوبان؛ بقية الأعمدة تُطابَق تلقائيًا.", "Employee-number and name columns are required; the rest are matched automatically."))}</li>
+        </ol>
+        <textarea
+          className="staff-import-box"
+          value={text}
+          onChange={(e) => { setText(e.target.value); setResult(null); }}
+          onBlur={preview}
+          rows={10}
+          dir="auto"
+          placeholder={t(tx("الرقم الوظيفي\tالاسم\tالتخصص\tالقسم …", "Employee No\tName\tSpecialty\tDepartment …"))}
+        />
+        {result ? (
+          <div className="staff-import-summary">
+            {result.error ? (
+              <p className="portal-alert" style={{ margin: 0 }}>
+                {result.error === "missing_required"
+                  ? t(tx("لم يُعثر على عمودَي الرقم الوظيفي والاسم.", "Employee-number and name columns not found."))
+                  : t(tx("الصق صف العناوين ثم صفوف البيانات.", "Paste a header row followed by data rows."))}
+              </p>
+            ) : (
+              <>
+                <p><strong>{result.rows.length}</strong> {t(tx("صف جاهز للاستيراد", "rows ready to import"))}
+                  {result.skipped > 0 ? ` · ${result.skipped} ${t(tx("تم تجاهله", "skipped"))}` : ""}</p>
+                <p className="muted">{t(tx("الأعمدة المتطابقة:", "Matched columns:"))} {result.mapped.join(", ")}</p>
+                {result.unmatchedHeaders.length > 0 ? (
+                  <p className="muted">{t(tx("أعمدة غير متطابقة (ستُتجاهل):", "Unmatched (ignored):"))} {result.unmatchedHeaders.join(", ")}</p>
+                ) : null}
+              </>
+            )}
+          </div>
+        ) : null}
+        <div className="staff-import-actions">
+          <button type="button" className="btn btn-ghost" onClick={preview}>{t(tx("معاينة", "Preview"))}</button>
+          <button type="button" className="btn btn-primary" disabled={busy} onClick={runImport}>
+            <Upload size={16} />
+            {busy ? t(tx("جارٍ الاستيراد…", "Importing…")) : t(tx("استيراد", "Import"))}
+          </button>
+        </div>
+      </div>
+    </Modal>
   );
 }
 

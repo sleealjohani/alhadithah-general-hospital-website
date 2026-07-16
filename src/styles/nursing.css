@@ -1,5 +1,51 @@
 /* Nursing portal — public page + staff portal. */
 
+/* --- Staff bulk import modal --------------------------------------------- */
+.staff-import {
+  display: grid;
+  gap: 14px;
+}
+
+.staff-import-steps {
+  margin: 0;
+  padding-inline-start: 20px;
+  display: grid;
+  gap: 4px;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.staff-import-box {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  resize: vertical;
+}
+
+.staff-import-summary {
+  display: grid;
+  gap: 4px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-sunken);
+}
+
+.staff-import-summary p {
+  margin: 0;
+}
+
+.staff-import-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
 /* Admin table thumbnails for media + spotlight rows. */
 .media-thumb {
   width: 96px;

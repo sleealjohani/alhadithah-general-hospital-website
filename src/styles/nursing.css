@@ -1,5 +1,322 @@
 /* Nursing portal — public page + staff portal. */
 
+/* --- Landscape auto-scrolling media reel --------------------------------- */
+.nursing-reel-wrap {
+  margin-top: 26px;
+}
+
+.nursing-reel {
+  position: relative;
+  overflow: hidden;
+  padding-block: 6px;
+  /* Feather the edges so slides glide in/out instead of hard-clipping. */
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+}
+
+.nursing-reel-track {
+  display: flex;
+  gap: 18px;
+  width: max-content;
+  /* Reel glides to the right: start shifted one loop left, animate to 0. */
+  animation: nursing-reel-slide calc(var(--reel-count, 6) * 5s) linear infinite;
+}
+
+.nursing-reel:hover .nursing-reel-track,
+.nursing-reel:focus-within .nursing-reel-track {
+  animation-play-state: paused;
+}
+
+@keyframes nursing-reel-slide {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.nursing-reel-slide {
+  position: relative;
+  flex: 0 0 auto;
+  width: clamp(280px, 42vw, 460px);
+  aspect-ratio: 16 / 9;
+  margin: 0;
+  border-radius: var(--radius-bloom);
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+  background: var(--surface-strong);
+  isolation: isolate;
+}
+
+.nursing-reel-slide img,
+.nursing-reel-slide video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.nursing-reel-caption {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  padding: 30px 16px 14px;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.98rem;
+  line-height: 1.4;
+  background: linear-gradient(to top, rgba(8, 17, 28, 0.86), rgba(8, 17, 28, 0.42) 55%, transparent);
+}
+
+.nursing-reel-caption span {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.nursing-reel-edge {
+  position: absolute;
+  inset-block: 0;
+  width: 60px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* --- Nurse of the Month flip card ---------------------------------------- */
+.nom-section {
+  background:
+    radial-gradient(120% 120% at 50% 0%, color-mix(in srgb, var(--accent) 10%, transparent), transparent 60%),
+    transparent;
+}
+
+.nom-stage {
+  display: flex;
+  justify-content: center;
+  margin-top: 26px;
+  perspective: 1600px;
+}
+
+.nom-flip {
+  position: relative;
+  width: min(440px, 100%);
+  min-height: 560px;
+  transform-style: preserve-3d;
+  transition: transform var(--duration-lux) var(--ease-bloom);
+  outline: none;
+}
+
+.nom-flip:hover,
+.nom-flip:focus-visible {
+  transform: rotateY(180deg);
+}
+
+.nom-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 30px 28px 34px;
+  border-radius: var(--radius-bloom);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  overflow: hidden;
+}
+
+.nom-front {
+  color: #fdf6e6;
+  background:
+    radial-gradient(130% 90% at 50% -10%, color-mix(in srgb, var(--accent) 55%, transparent), transparent 55%),
+    linear-gradient(160deg, #12233a 0%, #0b1626 55%, #0a121f 100%);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  box-shadow: var(--shadow-xl), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.nom-back {
+  color: #12233a;
+  transform: rotateY(180deg);
+  background:
+    radial-gradient(120% 90% at 50% -10%, color-mix(in srgb, var(--accent) 30%, transparent), transparent 55%),
+    linear-gradient(160deg, #fbf5e8 0%, #f4ead4 100%);
+  border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  box-shadow: var(--shadow-xl);
+  gap: 6px;
+}
+
+.nom-ribbon {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 16px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: #1a1206;
+  background: linear-gradient(100deg, #f4d488, #e9b949 45%, #c8901f);
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.nom-ribbon-back {
+  color: #1a1206;
+}
+
+.nom-portrait {
+  position: relative;
+  margin-top: 22px;
+  width: 168px;
+  height: 168px;
+  border-radius: var(--radius-pill);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: linear-gradient(135deg, #1d3b5c, #12233a);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+}
+
+.nom-portrait img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.nom-portrait-ring {
+  position: absolute;
+  inset: -5px;
+  border-radius: var(--radius-pill);
+  padding: 5px;
+  background: conic-gradient(from 180deg, #f4d488, #c8901f, #f9e6b0, #c8901f, #f4d488);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: nom-ring-spin 9s linear infinite;
+}
+
+@keyframes nom-ring-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+.nom-initials {
+  font-family: var(--font-display);
+  font-size: 3.4rem;
+  font-weight: 700;
+  color: #f4d488;
+  text-transform: uppercase;
+}
+
+.nom-name {
+  margin: 22px 0 0;
+  font-size: clamp(1.5rem, 4vw, 1.95rem);
+  color: #fff;
+}
+
+.nom-name-back {
+  color: #12233a;
+  margin: 4px 0 2px;
+  font-size: 1.4rem;
+}
+
+.nom-specialty {
+  margin: 8px 0 0;
+  font-weight: 700;
+  letter-spacing: var(--tracking-wide);
+  color: #f4d488;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+}
+
+.nom-message {
+  margin: 14px 0 0;
+  color: rgba(253, 246, 230, 0.86);
+  line-height: 1.7;
+  font-size: 1rem;
+}
+
+.nom-back .nom-message {
+  color: #3a4a5e;
+}
+
+.nom-flip-hint {
+  margin-top: auto;
+  padding-top: 18px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: rgba(244, 212, 136, 0.85);
+}
+
+.nom-achievements {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  text-align: start;
+  overflow-y: auto;
+}
+
+.nom-achievements li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  font-weight: 600;
+  line-height: 1.55;
+}
+
+.nom-achievements svg {
+  flex: 0 0 auto;
+  margin-top: 3px;
+  color: var(--accent-strong);
+}
+
+/* Gold sparkle field on the front face. */
+.nom-sparkles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.nom-sparkle {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0%, #f4d488 35%, transparent 70%);
+  filter: drop-shadow(0 0 6px #f4d488);
+  opacity: 0;
+  animation: nom-twinkle 2.6s ease-in-out infinite;
+}
+
+@keyframes nom-twinkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.nom-front > *:not(.nom-sparkles) {
+  position: relative;
+  z-index: 1;
+}
+
 .nursing-values {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

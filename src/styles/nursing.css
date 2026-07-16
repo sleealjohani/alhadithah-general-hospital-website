@@ -162,15 +162,40 @@
 .nom-flip {
   position: relative;
   width: min(440px, 100%);
-  min-height: 560px;
-  transform-style: preserve-3d;
-  transition: transform var(--duration-lux) var(--ease-bloom);
-  outline: none;
+  min-height: 588px;
+  border-radius: var(--radius-bloom);
 }
 
-.nom-flip:hover,
-.nom-flip:focus-visible {
+.nom-flip.can-flip {
+  cursor: pointer;
+}
+
+/* The inner layer is what actually rotates — keeping the rotation off the
+   interactive/outer element avoids sticky :hover/:focus flips on touch. */
+.nom-flip-inner {
+  position: relative;
+  width: 100%;
+  min-height: inherit;
+  transform-style: preserve-3d;
+  transition: transform var(--duration-lux) var(--ease-bloom);
+  will-change: transform;
+}
+
+/* Hover-flip only where a real pointer can hover; touch uses tap (.is-flipped). */
+@media (hover: hover) and (pointer: fine) {
+  .nom-flip.can-flip:hover .nom-flip-inner {
+    transform: rotateY(180deg);
+  }
+}
+
+.nom-flip.is-flipped .nom-flip-inner {
   transform: rotateY(180deg);
+}
+
+.nom-flip:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 6px;
+  border-radius: var(--radius-bloom);
 }
 
 .nom-face {
@@ -184,16 +209,19 @@
   border-radius: var(--radius-bloom);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  overflow: hidden;
+  /* NOTE: no `overflow: hidden` here — combined with backface-visibility it
+     triggers the iOS Safari bug where both faces bleed through. Each face
+     clips its own children instead. */
 }
 
 .nom-front {
   color: #fdf6e6;
   background:
-    radial-gradient(130% 90% at 50% -10%, color-mix(in srgb, var(--accent) 55%, transparent), transparent 55%),
-    linear-gradient(160deg, #12233a 0%, #0b1626 55%, #0a121f 100%);
-  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
-  box-shadow: var(--shadow-xl), inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+    radial-gradient(130% 90% at 50% -10%, color-mix(in srgb, var(--accent) 52%, transparent), transparent 58%),
+    radial-gradient(90% 60% at 50% 108%, color-mix(in srgb, var(--primary-decorative) 22%, transparent), transparent 60%),
+    linear-gradient(160deg, #143050 0%, #0c1a2c 52%, #0a121f 100%);
+  border: 1px solid color-mix(in srgb, var(--accent) 48%, transparent);
+  box-shadow: var(--shadow-xl), inset 0 0 0 1px rgba(244, 212, 136, 0.14);
 }
 
 .nom-back {
@@ -201,10 +229,45 @@
   transform: rotateY(180deg);
   background:
     radial-gradient(120% 90% at 50% -10%, color-mix(in srgb, var(--accent) 30%, transparent), transparent 55%),
-    linear-gradient(160deg, #fbf5e8 0%, #f4ead4 100%);
+    linear-gradient(160deg, #fdf8ee 0%, #f2e6cd 100%);
   border: 1px solid color-mix(in srgb, var(--accent) 55%, transparent);
-  box-shadow: var(--shadow-xl);
-  gap: 6px;
+  box-shadow: var(--shadow-xl), inset 0 0 0 1px rgba(200, 144, 31, 0.16);
+  gap: 4px;
+  justify-content: flex-start;
+}
+
+/* Gold gloss that sweeps across the front — clipped by border-radius (the box
+   never moves; only its gradient position animates). */
+.nom-sheen {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    115deg,
+    transparent 32%,
+    rgba(249, 230, 176, 0.16) 46%,
+    rgba(255, 255, 255, 0.28) 50%,
+    rgba(249, 230, 176, 0.16) 54%,
+    transparent 68%
+  );
+  background-size: 260% 100%;
+  animation: nom-sheen-sweep 6.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes nom-sheen-sweep {
+  0%, 100% { background-position: 130% 0; }
+  50% { background-position: -30% 0; }
+}
+
+.nom-back-glow {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border-radius: inherit;
+  background: radial-gradient(70% 50% at 50% 30%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 70%);
+  pointer-events: none;
 }
 
 .nom-ribbon {
@@ -229,18 +292,42 @@
 
 .nom-portrait {
   position: relative;
-  margin-top: 22px;
-  width: 168px;
-  height: 168px;
+  margin-top: 20px;
+  width: 172px;
+  height: 172px;
+  display: grid;
+  place-items: center;
+}
+
+/* Soft radiant halo behind the portrait — the "spotlight" glow. */
+.nom-halo {
+  position: absolute;
+  inset: -34px;
+  border-radius: var(--radius-pill);
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 45%, transparent), transparent 62%);
+  animation: nom-halo-pulse 4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes nom-halo-pulse {
+  0%, 100% { opacity: 0.55; transform: scale(0.96); }
+  50% { opacity: 0.9; transform: scale(1.04); }
+}
+
+.nom-portrait-inner {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
   border-radius: var(--radius-pill);
   display: grid;
   place-items: center;
   overflow: hidden;
   background: linear-gradient(135deg, #1d3b5c, #12233a);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45), inset 0 0 0 4px rgba(10, 18, 31, 0.9);
 }
 
-.nom-portrait img {
+.nom-portrait-inner img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -248,14 +335,16 @@
 
 .nom-portrait-ring {
   position: absolute;
-  inset: -5px;
+  inset: -6px;
+  z-index: 2;
   border-radius: var(--radius-pill);
-  padding: 5px;
+  padding: 6px;
   background: conic-gradient(from 180deg, #f4d488, #c8901f, #f9e6b0, #c8901f, #f4d488);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   animation: nom-ring-spin 9s linear infinite;
+  pointer-events: none;
 }
 
 @keyframes nom-ring-spin {
@@ -329,19 +418,14 @@
 .nom-achievements li {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: 11px;
   padding: 12px 14px;
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.55);
-  border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid color-mix(in srgb, var(--accent) 32%, transparent);
+  box-shadow: 0 2px 8px rgba(120, 90, 20, 0.06);
   font-weight: 600;
   line-height: 1.55;
-}
-
-.nom-achievements svg {
-  flex: 0 0 auto;
-  margin-top: 3px;
-  color: var(--accent-strong);
 }
 
 /* Gold sparkle field on the front face. */
@@ -373,9 +457,66 @@
   }
 }
 
-.nom-front > *:not(.nom-sparkles) {
+.nom-front > *:not(.nom-sparkles):not(.nom-sheen),
+.nom-back > *:not(.nom-back-glow) {
   position: relative;
   z-index: 1;
+}
+
+/* Laurel / gem divider (gold on front, deeper gold on back). */
+.nom-laurel-wrap {
+  display: block;
+  margin: 14px 0 2px;
+  color: #f4d488;
+}
+
+.nom-laurel-back {
+  color: var(--accent-strong);
+}
+
+.nom-laurel {
+  width: 190px;
+  max-width: 70%;
+  height: auto;
+}
+
+/* Gold ECG heartbeat — nursing motif across the base of the front face. */
+.nom-pulse-wrap {
+  position: absolute;
+  inset-inline: 26px;
+  bottom: 52px;
+  z-index: 1;
+  color: color-mix(in srgb, var(--accent) 70%, transparent);
+  opacity: 0.65;
+  pointer-events: none;
+}
+
+.nom-pulse {
+  width: 100%;
+  height: 34px;
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--accent) 60%, transparent));
+  stroke-dasharray: 620;
+  stroke-dashoffset: 620;
+  animation: nom-pulse-draw 4.5s ease-in-out infinite;
+}
+
+@keyframes nom-pulse-draw {
+  0% { stroke-dashoffset: 620; }
+  55% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -620; }
+}
+
+.nom-ach-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  margin-top: 1px;
+  border-radius: var(--radius-pill);
+  color: #6b4c12;
+  background: linear-gradient(135deg, #f6dd9c, #d7a63f);
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--accent) 40%, transparent);
 }
 
 .nursing-values {

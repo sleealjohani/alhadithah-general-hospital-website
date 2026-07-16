@@ -77,8 +77,8 @@ export function NursingPage() {
               eyebrow={tx("تكريم", "Recognition")}
               title={tx("ممرض/ممرضة الشهر", "Nurse of the Month")}
               description={tx(
-                "نحتفي بمن قدّم رعاية استثنائية هذا الشهر — مرّر المؤشر على البطاقة لاكتشاف إنجازاته.",
-                "Celebrating exceptional care this month — hover the card to reveal the achievements."
+                "نحتفي بمن قدّم رعاية استثنائية هذا الشهر — اضغط أو مرّر المؤشر على البطاقة لاكتشاف إنجازاته.",
+                "Celebrating exceptional care this month — tap or hover the card to reveal the achievements."
               )}
             />
             <NurseOfMonth spotlight={spotlight} />

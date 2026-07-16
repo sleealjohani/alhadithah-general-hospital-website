@@ -1,5 +1,20 @@
 /* Nursing portal — public page + staff portal. */
 
+/* Admin table thumbnails for media + spotlight rows. */
+.media-thumb {
+  width: 96px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  background: var(--surface-strong);
+}
+
+.media-thumb-round {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--radius-pill);
+}
+
 /* --- Landscape auto-scrolling media reel --------------------------------- */
 .nursing-reel-wrap {
   margin-top: 26px;

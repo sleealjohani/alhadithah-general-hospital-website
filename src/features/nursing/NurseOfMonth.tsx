@@ -63,6 +63,7 @@ export function NurseOfMonth({ spotlight }: { spotlight: NursingSpotlight }) {
      first mount. `touch` records whether the last interaction was a touch, so a
      tap toggles while a mouse relies on hover (pointer-enter/leave). */
   const [moved, setMoved] = useState(false);
+  const [flipping, setFlipping] = useState(false);
   const touch = useRef(false);
   const name = spotlight.name;
   const specialty = spotlight.specialty || "";
@@ -84,6 +85,7 @@ export function NurseOfMonth({ spotlight }: { spotlight: NursingSpotlight }) {
   const setTo = (next: boolean) => {
     if (!canFlip) return;
     setMoved(true);
+    setFlipping(true);
     setFlipped(next);
   };
 
@@ -94,11 +96,18 @@ export function NurseOfMonth({ spotlight }: { spotlight: NursingSpotlight }) {
   return (
     <div className="nom-stage">
       <div
-        className={`nom-flip ${canFlip ? "can-flip" : ""} ${dirClass}`}
+        className={`nom-flip ${canFlip ? "can-flip" : ""} ${dirClass} ${flipping ? "is-flipping" : ""}`}
         role={canFlip ? "button" : undefined}
         tabIndex={canFlip ? 0 : undefined}
         aria-pressed={canFlip ? flipped : undefined}
         aria-label={t(tx("بطاقة ممرض الشهر — للعرض والقلب", "Nurse of the month card — tap or hover to flip"))}
+        onAnimationEnd={(e) => {
+          /* Only the rotation ending clears the flip; freeing the decorative
+             loops that were paused for a jank-free turn. */
+          if (e.animationName === "nom-flip-back" || e.animationName === "nom-flip-front") {
+            setFlipping(false);
+          }
+        }}
         onPointerDown={(e) => {
           touch.current = e.pointerType !== "mouse";
         }}

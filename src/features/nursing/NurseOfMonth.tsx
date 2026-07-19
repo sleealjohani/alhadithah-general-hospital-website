@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Award, Heart, Sparkles } from "lucide-react";
 import { usePortal } from "../../providers/PortalProvider";
 import { tx } from "../../utils/i18n";
@@ -59,6 +59,11 @@ function PulseLine() {
 export function NurseOfMonth({ spotlight }: { spotlight: NursingSpotlight }) {
   const { t, locale } = usePortal();
   const [flipped, setFlipped] = useState(false);
+  /* `moved` gates the flip animation classes so the card doesn't play a flip on
+     first mount. `touch` records whether the last interaction was a touch, so a
+     tap toggles while a mouse relies on hover (pointer-enter/leave). */
+  const [moved, setMoved] = useState(false);
+  const touch = useRef(false);
   const name = spotlight.name;
   const specialty = spotlight.specialty || "";
   const monthLabel = t(tx(spotlight.month_label_ar || "", spotlight.month_label_en || ""));
@@ -76,21 +81,40 @@ export function NurseOfMonth({ spotlight }: { spotlight: NursingSpotlight }) {
     .join("");
 
   const canFlip = achievements.length > 0;
-  const toggle = () => canFlip && setFlipped((v) => !v);
+  const setTo = (next: boolean) => {
+    if (!canFlip) return;
+    setMoved(true);
+    setFlipped(next);
+  };
+
+  /* Animation direction class — only after the first interaction, so mount is
+     static. `to-back` / `to-front` each carry their own cinematic keyframes. */
+  const dirClass = moved ? (flipped ? "to-back" : "to-front") : "";
 
   return (
     <div className="nom-stage">
       <div
-        className={`nom-flip ${flipped ? "is-flipped" : ""} ${canFlip ? "can-flip" : ""}`}
+        className={`nom-flip ${canFlip ? "can-flip" : ""} ${dirClass}`}
         role={canFlip ? "button" : undefined}
         tabIndex={canFlip ? 0 : undefined}
         aria-pressed={canFlip ? flipped : undefined}
         aria-label={t(tx("بطاقة ممرض الشهر — للعرض والقلب", "Nurse of the month card — tap or hover to flip"))}
-        onClick={toggle}
+        onPointerDown={(e) => {
+          touch.current = e.pointerType !== "mouse";
+        }}
+        onPointerEnter={(e) => {
+          if (e.pointerType === "mouse") setTo(true);
+        }}
+        onPointerLeave={(e) => {
+          if (e.pointerType === "mouse") setTo(false);
+        }}
+        onClick={() => {
+          if (touch.current) setTo(!flipped);
+        }}
         onKeyDown={(e) => {
           if (canFlip && (e.key === "Enter" || e.key === " ")) {
             e.preventDefault();
-            toggle();
+            setTo(!flipped);
           }
         }}
       >

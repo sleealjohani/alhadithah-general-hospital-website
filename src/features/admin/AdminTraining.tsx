@@ -24,8 +24,9 @@ import {
 } from "../../lib/supabase/training";
 import { CrudFormActions, Field, TableLoadingRows, useDeleteConfirm } from "./shared";
 import { ImageField } from "./ImageField";
+import { AdminAttendance } from "./AdminAttendance";
 
-type Tab = "courses" | "media" | "registrations" | "requests";
+type Tab = "courses" | "media" | "registrations" | "requests" | "attendance";
 
 const EMPTY_COURSE: Partial<TrainingCourse> = {
   title_ar: "",
@@ -164,6 +165,9 @@ export function AdminTraining() {
         <button type="button" className={tab === "requests" ? "is-active" : ""} onClick={() => setTab("requests")}>
           {t(tx("طلبات إقامة دورة", "Hosting requests"))}
         </button>
+        <button type="button" className={tab === "attendance" ? "is-active" : ""} onClick={() => setTab("attendance")}>
+          {t(tx("الحضور والشهادات", "Attendance & certificates"))}
+        </button>
       </div>
 
       {tab === "courses" ? (
@@ -180,6 +184,7 @@ export function AdminTraining() {
           }}
         />
       ) : null}
+      {tab === "attendance" ? <AdminAttendance notify={notify} /> : null}
     </div>
   );
 }

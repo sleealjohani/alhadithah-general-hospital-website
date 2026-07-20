@@ -133,7 +133,7 @@ function AttendanceCard({
   fmt: ReturnType<typeof useLocaleFmt>;
   durationText: string;
 }) {
-  const { t, locale } = usePortal();
+  const { t } = usePortal();
   const title = t(tx(course.title_ar, course.title_en));
   const [saved, setSaved] = useState<Saved | null>(() => loadSaved(course.id));
   const [name, setName] = useState(saved?.name ?? "");

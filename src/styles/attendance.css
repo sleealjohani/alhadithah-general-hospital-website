@@ -301,27 +301,6 @@
 }
 .cert-fallback-sub { font-size: 2.2cqw; color: var(--text-secondary); font-weight: 700; }
 
-@page { size: A4 landscape; margin: 0; }
-
-@media print {
-  body * { visibility: hidden !important; }
-  .cert-print-root,
-  .cert-print-root * { visibility: visible !important; }
-  .cert-overlay {
-    position: static;
-    padding: 0;
-    background: #fff;
-  }
-  .cert-toolbar { display: none !important; }
-  .cert-print-root { position: fixed; inset: 0; }
-  .cert-sheet {
-    width: 100vw;
-    height: 100vh;
-    aspect-ratio: auto;
-    box-shadow: none;
-  }
-}
-
 @media (max-width: 640px) {
   .attend-card { grid-template-columns: 1fr; }
   .attend-poster img { max-height: 260px; }

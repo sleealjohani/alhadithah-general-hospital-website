@@ -284,7 +284,7 @@ function AttendanceCard({
           config={config}
           values={certValues}
           onClose={() => setCertOpen(false)}
-          onPrinted={() => saved && markPrinted(saved.id)}
+          onDownloaded={() => saved && markPrinted(saved.id)}
         />
       ) : null}
     </article>

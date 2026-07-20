@@ -441,3 +441,10 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Hero CTA row on the Training page (browse + attendance check-in). */
+.training-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}

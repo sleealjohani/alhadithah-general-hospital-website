@@ -489,9 +489,14 @@ export function TrainingPage() {
                 )
               )}
             </p>
-            <a className="btn btn-primary" href="#courses">
-              {t(tx("استعرض الدورات", "Browse courses"))}
-            </a>
+            <div className="training-cta-row">
+              <a className="btn btn-primary" href="#courses">
+                {t(tx("استعرض الدورات", "Browse courses"))}
+              </a>
+              <a className="btn btn-secondary" href="/attend">
+                {t(tx("تسجيل حضور دورة", "Course check-in"))}
+              </a>
+            </div>
           </article>
         </div>
       </section>

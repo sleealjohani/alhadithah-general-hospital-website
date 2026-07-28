@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import QRCode from "qrcode";
-import { Award, Download, FileText, QrCode, Save, UploadCloud } from "lucide-react";
+import { Award, Download, FileText, QrCode, Save, UploadCloud, UserPlus } from "lucide-react";
 import { usePortal } from "../../providers/PortalProvider";
 import { supabase } from "../../lib/supabase/client";
 import { exportRowsToExcel } from "../../lib/exports";
@@ -8,6 +8,7 @@ import { logAdminAction } from "../../lib/audit";
 import { tx } from "../../utils/i18n";
 import { fetchAllCourses, type TrainingCourse } from "../../lib/supabase/training";
 import {
+  adminAddAttendance,
   adminFetchAttendance,
   adminUpdateConfig,
   certField,
@@ -57,7 +58,7 @@ export function AdminAttendance({ notify }: { notify: Notify }) {
       </div>
       {sub === "config" ? <ConfigPanel notify={notify} /> : null}
       {sub === "qr" ? <QrPanel /> : null}
-      {sub === "records" ? <RecordsPanel /> : null}
+      {sub === "records" ? <RecordsPanel notify={notify} /> : null}
     </div>
   );
 }
@@ -241,21 +242,30 @@ function QrPanel() {
 }
 
 /* ---- Attendance records ------------------------------------------------- */
-function RecordsPanel() {
+function RecordsPanel({ notify }: { notify: Notify }) {
   const { t } = usePortal();
   const [courses, setCourses] = useState<TrainingCourse[]>([]);
   const [courseId, setCourseId] = useState<string>("");
   const [rows, setRows] = useState<AttendanceRecord[] | null>(null);
   const [cfg, setCfg] = useState<TrainingConfig | null>(null);
   const [cert, setCert] = useState<Record<CertFieldKey, string> | null>(null);
+  /* Admin manual entry (bypasses the timing windows). */
+  const [mName, setMName] = useState("");
+  const [mEmp, setMEmp] = useState("");
+  const [mNational, setMNational] = useState("");
+  const [mBusy, setMBusy] = useState(false);
 
   useEffect(() => {
     fetchAllCourses().then(setCourses);
     fetchTrainingConfig().then(setCfg);
   }, []);
-  useEffect(() => {
+  const reload = () => {
     setRows(null);
     adminFetchAttendance(courseId || undefined).then(setRows);
+  };
+  useEffect(() => {
+    reload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseId]);
 
   const course = useMemo(() => courses.find((c) => c.id === courseId), [courses, courseId]);
@@ -264,6 +274,33 @@ function RecordsPanel() {
     const m = Math.round((new Date(course.ends_at).getTime() - new Date(course.starts_at).getTime()) / 60000);
     return m > 0 ? `${Math.floor(m / 60)}h ${m % 60}m` : "";
   }, [course]);
+
+  const registerAttendee = async () => {
+    if (!courseId) return notify(t(tx("اختر دورة أولًا.", "Select a course first.")), "error");
+    if (!mName.trim()) return notify(t(tx("الاسم مطلوب.", "Name is required.")), "error");
+    setMBusy(true);
+    const { error } = await adminAddAttendance(courseId, mName, mNational, mEmp);
+    setMBusy(false);
+    if (error) return notify(error, "error");
+    logAdminAction("training.attendance.add", "training_attendance", null);
+    notify(t(tx("تم تسجيل الحضور.", "Attendee registered.")), "success");
+    setMName("");
+    setMEmp("");
+    setMNational("");
+    reload();
+  };
+
+  const makeCertManual = () => {
+    if (!cfg) return;
+    if (!mName.trim()) return notify(t(tx("أدخل الاسم لإصدار الشهادة.", "Enter a name to issue the certificate.")), "error");
+    setCert({
+      name: mName.trim(),
+      employee_number: mEmp.trim(),
+      course: course ? t(tx(course.title_ar, course.title_en)) : "",
+      duration: durationText,
+      date: new Intl.DateTimeFormat("en-GB", { dateStyle: "long" }).format(new Date())
+    });
+  };
 
   const exportRows = () => {
     if (!rows || rows.length === 0) return;
@@ -306,6 +343,37 @@ function RecordsPanel() {
           <span className="muted">{rows?.length ?? 0} {t(tx("حضور", "attended"))}</span>
           <button type="button" className="btn btn-secondary" disabled={!rows || rows.length === 0} onClick={exportRows}>
             <Download size={16} />{t(tx("تصدير Excel", "Export Excel"))}
+          </button>
+        </div>
+      </div>
+
+      {/* Admin manual actions — bypass the timing windows entirely. */}
+      <div className="admin-panel attend-manual">
+        <h3>{t(tx("إجراءات المشرف (تجاوز التوقيت)", "Admin actions (bypass timing)"))}</h3>
+        <p className="muted">
+          {courseId
+            ? t(tx("سجّل حاضرًا أو أصدر شهادة لأي شخص حتى بعد إغلاق الدورة.", "Register an attendee or issue a certificate for anyone, even after the course has closed."))
+            : t(tx("اختر دورة من الأعلى لتفعيل التسجيل اليدوي وإصدار الشهادة.", "Select a course above to enable manual registration and certificate issuing."))}
+        </p>
+        <div className="attend-manual-grid">
+          <label>{t(tx("الاسم", "Name"))}
+            <input value={mName} onChange={(e) => setMName(e.target.value)} dir="auto" disabled={!courseId} />
+          </label>
+          <label>{t(tx("الرقم الوظيفي", "Employee number"))}
+            <input value={mEmp} onChange={(e) => setMEmp(e.target.value)} dir="auto" disabled={!courseId} />
+          </label>
+          <label>{t(tx("رقم الهوية (اختياري)", "National ID (optional)"))}
+            <input value={mNational} onChange={(e) => setMNational(e.target.value)} dir="auto" disabled={!courseId} />
+          </label>
+        </div>
+        <div className="attend-manual-actions">
+          <button type="button" className="btn btn-secondary" disabled={!courseId || mBusy} onClick={registerAttendee}>
+            <UserPlus size={16} />
+            {t(tx("تسجيل حاضر", "Register attendee"))}
+          </button>
+          <button type="button" className="btn btn-primary" disabled={!courseId} onClick={makeCertManual}>
+            <Award size={16} />
+            {t(tx("إصدار شهادة", "Issue certificate"))}
           </button>
         </div>
       </div>

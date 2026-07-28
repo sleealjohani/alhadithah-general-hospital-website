@@ -192,6 +192,32 @@ export async function adminFetchAttendance(courseId?: string): Promise<Attendanc
   return (data ?? []) as AttendanceRecord[];
 }
 
+/* Admin manual check-in — bypasses the public timing windows entirely, so staff
+   can be registered even after a course has closed. De-dupes on employee number. */
+export async function adminAddAttendance(courseId: string, name: string, national: string, emp: string) {
+  if (!supabase) return { error: "not_configured" };
+  const full_name = name.trim();
+  const national_id = national.trim() || null;
+  const employee_number = emp.trim() || null;
+  if (!courseId || !full_name) return { error: "missing_fields" };
+  if (employee_number) {
+    const { data: existing } = await supabase
+      .from("training_attendance")
+      .select("id")
+      .eq("course_id", courseId)
+      .eq("employee_number", employee_number)
+      .maybeSingle();
+    if (existing) {
+      const { error } = await supabase.from("training_attendance").update({ full_name, national_id }).eq("id", existing.id);
+      return { error: error?.message };
+    }
+  }
+  const { error } = await supabase
+    .from("training_attendance")
+    .insert({ course_id: courseId, full_name, national_id, employee_number });
+  return { error: error?.message };
+}
+
 export async function adminUpdateConfig(patch: Partial<Record<string, unknown>>) {
   if (!supabase) return { error: "not_configured" };
   const { error } = await supabase.from("training_config").update(patch).eq("id", true);

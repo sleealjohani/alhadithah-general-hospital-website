@@ -359,3 +359,23 @@
   color: var(--text-secondary);
   word-break: break-all;
 }
+
+/* Admin manual actions (register / issue certificate past closing time). */
+.attend-manual { margin-bottom: 20px; display: grid; gap: 12px; }
+.attend-manual h3 { margin: 0; display: flex; align-items: center; gap: 8px; }
+.attend-manual > p { margin: 0; }
+.attend-manual-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: 12px;
+}
+.attend-manual-grid label { display: grid; gap: 5px; font-weight: 700; font-size: 0.88rem; }
+.attend-manual-grid input {
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 9px 12px;
+  background: var(--surface);
+  color: var(--text);
+}
+.attend-manual-grid input:disabled { opacity: 0.55; }
+.attend-manual-actions { display: flex; flex-wrap: wrap; gap: 10px; }

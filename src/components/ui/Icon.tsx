@@ -1,5 +1,6 @@
 import {
   Accessibility,
+  Award,
   BadgePlus,
   BarChart3,
   BookOpen,
@@ -51,6 +52,7 @@ import {
 
 const icons: Record<string, LucideIcon> = {
   Accessibility,
+  Award,
   BadgePlus,
   BarChart3,
   BookOpen,

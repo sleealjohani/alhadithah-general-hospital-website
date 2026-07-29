@@ -9,6 +9,7 @@ export const adminNav = [
   { path: "/admin/quick-links", label: tx("الروابط السريعة", "Quick Links"), icon: "Zap" },
   { path: "/admin/doctors", label: tx("الأطباء", "Doctors"), icon: "Stethoscope" },
   { path: "/admin/training", label: tx("الشؤون الأكاديمية والتدريب", "Academic Affairs & Training"), icon: "GraduationCap" },
+  { path: "/admin/certificates", label: tx("شهادات المحاضرات", "Lecture Certificates"), icon: "Award" },
   { path: "/admin/nursing", label: tx("التمريض", "Nursing"), icon: "Stethoscope" },
   { path: "/admin/media", label: tx("مكتبة الوسائط", "Media Library"), icon: "Images" },
   { path: "/admin/submissions", label: tx("الرسائل", "Submissions"), icon: "MessageSquareText" },

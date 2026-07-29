@@ -20,6 +20,7 @@ import { AdminSubmissions } from "./AdminSubmissions";
 import { AdminTools } from "./AdminTools";
 import { AdminSettings } from "./AdminSettings";
 import { AdminSetupContent } from "./AdminSetupContent";
+import { AdminCertificates } from "./AdminCertificates";
 
 export function AdminLayout() {
   const { t, notify } = usePortal();
@@ -83,6 +84,7 @@ export function AdminLayout() {
           <Route path="quick-links" element={<AdminQuickLinks />} />
           <Route path="doctors" element={<AdminDoctors />} />
           <Route path="training" element={<AdminTraining />} />
+          <Route path="certificates" element={<AdminCertificates notify={notify} />} />
           <Route path="nursing" element={<AdminNursing />} />
           <Route path="media" element={<AdminMedia />} />
           <Route path="submissions" element={<AdminSubmissions />} />

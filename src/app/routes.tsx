@@ -24,6 +24,7 @@ const SearchPage = lazy(() => import("../features/public/pages/SearchPage").then
 const CmsPage = lazy(() => import("../features/public/pages/CmsPage").then((m) => ({ default: m.CmsPage })));
 const TrainingPage = lazy(() => import("../features/public/pages/TrainingPage").then((m) => ({ default: m.TrainingPage })));
 const AttendancePage = lazy(() => import("../features/training/AttendancePage").then((m) => ({ default: m.AttendancePage })));
+const CertificateLookupPage = lazy(() => import("../features/training/CertificateLookupPage").then((m) => ({ default: m.CertificateLookupPage })));
 const NotFoundPage = lazy(() => import("../features/public/pages/NotFoundPage").then((m) => ({ default: m.NotFoundPage })));
 
 const AdminLoginPage = lazy(() => import("../features/auth/AdminLoginPage").then((m) => ({ default: m.AdminLoginPage })));
@@ -64,6 +65,7 @@ export function AppRoutes() {
         </Route>
         {/* Standalone QR attendance flow (no site chrome — kiosk + clean print). */}
         <Route path="/attend" element={<AttendancePage />} />
+        <Route path="/certificates" element={<CertificateLookupPage />} />
         <Route path="/admin/login" element={<AdminLoginPage />} />
         <Route path="/admin-setup" element={<AdminSetupNotice />} />
         <Route

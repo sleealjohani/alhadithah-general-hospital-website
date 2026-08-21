@@ -25,6 +25,7 @@ const CmsPage = lazy(() => import("../features/public/pages/CmsPage").then((m) =
 const TrainingPage = lazy(() => import("../features/public/pages/TrainingPage").then((m) => ({ default: m.TrainingPage })));
 const AttendancePage = lazy(() => import("../features/training/AttendancePage").then((m) => ({ default: m.AttendancePage })));
 const CertificateLookupPage = lazy(() => import("../features/training/CertificateLookupPage").then((m) => ({ default: m.CertificateLookupPage })));
+const AppointmentsPage = lazy(() => import("../features/appointments/AppointmentsPage").then((m) => ({ default: m.AppointmentsPage })));
 const NotFoundPage = lazy(() => import("../features/public/pages/NotFoundPage").then((m) => ({ default: m.NotFoundPage })));
 
 const AdminLoginPage = lazy(() => import("../features/auth/AdminLoginPage").then((m) => ({ default: m.AdminLoginPage })));
@@ -57,6 +58,7 @@ export function AppRoutes() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/faq" element={<FaqPage />} />
           <Route path="/search" element={<SearchPage />} />
+          <Route path="/appointments" element={<AppointmentsPage />} />
           {/* Custom Training experience — served at the generated CMS slug and a
               clean /training alias; must precede the dynamic :slug route. */}
           <Route path="/training" element={<TrainingPage />} />

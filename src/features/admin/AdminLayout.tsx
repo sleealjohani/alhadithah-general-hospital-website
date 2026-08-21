@@ -15,6 +15,7 @@ import { AdminQuickLinks } from "./AdminQuickLinks";
 import { AdminDoctors } from "./AdminDoctors";
 import { AdminTraining } from "./AdminTraining";
 import { AdminNursing } from "./AdminNursing";
+import { AdminRegistrations } from "./AdminRegistrations";
 import { AdminMedia } from "./AdminMedia";
 import { AdminSubmissions } from "./AdminSubmissions";
 import { AdminTools } from "./AdminTools";
@@ -86,6 +87,7 @@ export function AdminLayout() {
           <Route path="training" element={<AdminTraining />} />
           <Route path="certificates" element={<AdminCertificates notify={notify} />} />
           <Route path="nursing" element={<AdminNursing />} />
+          <Route path="registrations" element={<AdminRegistrations />} />
           <Route path="media" element={<AdminMedia />} />
           <Route path="submissions" element={<AdminSubmissions />} />
           <Route path="tools" element={<AdminTools />} />

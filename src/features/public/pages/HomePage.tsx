@@ -111,6 +111,37 @@ export function HomePage() {
       </section>
       )}
 
+      {/* Clinic appointment booking — direct entry to the request flow. */}
+      <section className="section" aria-label={t(tx("حجز موعد", "Book an appointment"))}>
+        <div className="container">
+          <article className="appointment-cta" data-reveal>
+            <span className="appointment-cta-icon">
+              <CalendarCheck size={34} />
+            </span>
+            <div>
+              <span className="eyebrow">{t(tx("العيادات الخارجية", "Outpatient clinics"))}</span>
+              <h2>{t(tx("احجز موعدك في العيادات", "Book your clinic appointment"))}</h2>
+              <p>
+                {t(
+                  tx(
+                    "اختر العيادة والوقت المناسب وأرسل طلبك خلال دقيقة — ستحصل على رقم طلب فريد وسيتواصل معك قسم التسجيل لتأكيد الموعد.",
+                    "Pick your clinic and a time that suits you in under a minute — you'll get a unique reference number and our registration team will call you to confirm."
+                  )
+                )}
+              </p>
+            </div>
+            <div className="appointment-cta-actions">
+              <Link className="btn btn-primary" to="/appointments">
+                {t(tx("حجز موعد", "Book an appointment"))}
+              </Link>
+              <Link className="btn btn-ghost" to="/appointments">
+                {t(tx("متابعة طلب سابق", "Track a request"))}
+              </Link>
+            </div>
+          </article>
+        </div>
+      </section>
+
       {isActive("institution") && (
       <section className="institution-section">
         <div className="container institution-grid">

@@ -1,46 +1,72 @@
 #!/usr/bin/env python3
 """Builds the self-contained Arabic presentation deck.
 
-Embeds the hospital logo and the real site captures as data URIs so the
-published artifact needs no external assets (only Google Fonts, which the
-Artifact CSP allows).
+Embeds the hospital logo, live screen-recording clips (MP4), and still captures
+as data URIs so the published artifact needs no external assets (only Google
+Fonts, which the Artifact CSP allows).
 
-Usage: python3 scripts/build-deck.py
+Inputs:  /tmp/site-shots/*.jpg   (stills)
+         /tmp/deck-clips/*.mp4   (screen recordings)
+Usage:   python3 scripts/build-deck.py
 """
 import base64
 import pathlib
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SHOTS = pathlib.Path("/tmp/site-shots")
+CLIPS = pathlib.Path("/tmp/deck-clips")
 OUT = ROOT / "presentation" / "hadetha-portal-deck.html"
+
+MIME = {"jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png",
+        "webp": "image/webp", "mp4": "video/mp4", "webm": "video/webm"}
 
 
 def data_uri(path: pathlib.Path) -> str:
-    mime = {"jpg": "image/jpeg", "jpeg": "image/jpeg", "png": "image/png", "webp": "image/webp"}[
-        path.suffix.lstrip(".").lower()
-    ]
+    mime = MIME[path.suffix.lstrip(".").lower()]
     return f"data:{mime};base64," + base64.b64encode(path.read_bytes()).decode()
 
 
 IMG = {p.stem: data_uri(p) for p in sorted(SHOTS.glob("*.jpg"))}
+# Two encodings per clip: VP9/WebM for Chrome, Firefox and Edge; H.264/MP4 for
+# Safari and any build without open-codec support.
+VID = {p.stem: data_uri(p) for p in sorted(CLIPS.glob("*.mp4"))}
+VID_WEBM = {p.stem: data_uri(p) for p in sorted(CLIPS.glob("*.webm"))}
 LOGO = data_uri(ROOT / "public/assets/brand/hospital-logo-white.webp")
 MARK = data_uri(ROOT / "public/assets/brand/brand-mark-white.webp")
 
 
-def browser(src_key: str, url: str = "had-hos.vercel.app") -> str:
-    """Desktop capture in a browser window frame."""
+def chrome_bar(url: str) -> str:
+    return (f'<div class="chrome"><span class="dots"><i></i><i></i><i></i></span>'
+            f'<span class="url">{url}</span></div>')
+
+
+def browser_video(key: str, url: str = "had-hos.vercel.app", live: bool = True) -> str:
+    """Desktop screen recording in a browser window frame."""
+    badge = '<span class="live"><i></i>تسجيل مباشر</span>' if live else ""
     return f"""<figure class="shot browser">
-        <div class="chrome"><span class="dots"><i></i><i></i><i></i></span>
-          <span class="url">{url}</span></div>
-        <img src="{IMG[src_key]}" alt="" loading="lazy" />
+        {chrome_bar(url)}
+        <div class="screen">
+          <video muted loop playsinline preload="none"
+                 data-webm="{VID_WEBM[key]}" data-mp4="{VID[key]}"></video>
+          {badge}
+        </div>
       </figure>"""
 
 
-def phone(src_key: str) -> str:
-    """Mobile capture in a phone bezel."""
+def browser_img(key: str, url: str = "had-hos.vercel.app", crop: bool = True) -> str:
+    cls = "shot browser" + ("" if crop else " nocrop")
+    return f"""<figure class="{cls}">
+        {chrome_bar(url)}
+        <div class="screen"><img src="{IMG[key]}" alt="" loading="lazy" /></div>
+      </figure>"""
+
+
+def phone_video(key: str) -> str:
+    """Mobile screen recording in a phone bezel."""
     return f"""<figure class="shot phone">
         <span class="notch" aria-hidden="true"></span>
-        <img src="{IMG[src_key]}" alt="" loading="lazy" />
+        <video muted loop playsinline preload="none"
+               data-webm="{VID_WEBM[key]}" data-mp4="{VID[key]}"></video>
       </figure>"""
 
 
@@ -48,154 +74,151 @@ SLIDES = []
 
 # ---- 1. Cover ------------------------------------------------------------
 SLIDES.append(f"""<section class="slide cover" aria-label="الغلاف">
+  <span class="aura" aria-hidden="true"></span>
   <div class="cover-inner">
-    <img class="cover-logo" src="{LOGO}" alt="مستشفى الحديثة العام" />
-    <p class="eyebrow">تجمع الجوف الصحي</p>
-    <h1>البوابة الرقمية<br /><span>لمستشفى الحديثة العام</span></h1>
-    <p class="lede">واجهة رقمية واحدة تجمع الخدمات والمعلومات وحجز المواعيد،
+    <img class="cover-logo r" src="{LOGO}" alt="مستشفى الحديثة العام" />
+    <p class="eyebrow r">تجمع الجوف الصحي</p>
+    <h1 class="r">البوابة الرقمية<br /><span>لمستشفى الحديثة العام</span></h1>
+    <p class="lede r">واجهة رقمية واحدة تجمع الخدمات والمعلومات وحجز المواعيد،
       ويديرها فريق المستشفى بالكامل دون الحاجة إلى مبرمج.</p>
-    <p class="cover-meta"><span class="mono">had-hos.vercel.app</span></p>
+    <p class="cover-meta r"><span class="mono">had-hos.vercel.app</span></p>
   </div>
   <img class="cover-mark" src="{MARK}" alt="" aria-hidden="true" />
 </section>""")
 
-# ---- 2. Why --------------------------------------------------------------
+# ---- 2. Why (live homepage) ---------------------------------------------
 SLIDES.append(f"""<section class="slide split" aria-label="لماذا بوابة رقمية">
   <div class="col-text">
-    <p class="eyebrow">لماذا بوابة رقمية؟</p>
-    <h2>نقطة وصول واحدة للمراجع والموظف</h2>
-    <ul class="points">
+    <p class="eyebrow r">لماذا بوابة رقمية؟</p>
+    <h2 class="r">نقطة وصول واحدة للمراجع والموظف</h2>
+    <ul class="points r">
       <li><strong>مصدر رسمي واحد</strong><span>كل الخدمات والأدلة والأخبار في مكان واحد بدل تفرّقها.</span></li>
       <li><strong>خدمة ذاتية على مدار الساعة</strong><span>المراجع ينجز طلبه دون اتصال أو حضور مسبق.</span></li>
       <li><strong>تحديث فوري</strong><span>المحتوى يُدار من لوحة تحكم عربية دون تدخل تقني.</span></li>
       <li><strong>هوية موحّدة</strong><span>ألوان التجمع وشعار المستشفى في كل صفحة.</span></li>
     </ul>
   </div>
-  <div class="col-shot">{browser("home-desktop", "had-hos.vercel.app")}</div>
+  <div class="col-shot r">{browser_video("home")}</div>
 </section>""")
 
-# ---- 3. Responsive -------------------------------------------------------
+# ---- 3. Responsive (live mobile + desktop still) ------------------------
 SLIDES.append(f"""<section class="slide split" aria-label="تجربة على كل الأجهزة">
   <div class="col-text">
-    <p class="eyebrow">التجربة</p>
-    <h2>تجربة واحدة على الحاسب والجوال</h2>
-    <p class="body">صُمّمت البوابة عربية أولًا مع دعم كامل للإنجليزية، وتتكيّف تلقائيًا
+    <p class="eyebrow r">التجربة</p>
+    <h2 class="r">تجربة واحدة على الحاسب والجوال</h2>
+    <p class="body r">صُمّمت البوابة عربية أولًا مع دعم كامل للإنجليزية، وتتكيّف تلقائيًا
       مع مقاس الشاشة — فما يراه المراجع على جواله هو نفس المحتوى بترتيب يناسب يده.</p>
-    <div class="chips">
+    <div class="chips r">
       <span>عربي / English</span><span>تصميم متجاوب</span><span>الوضع الليلي</span><span>وصول ميسّر</span>
     </div>
   </div>
-  <div class="col-shot pair">
-    {browser("home-desktop")}
-    {phone("home-mobile")}
+  <div class="col-shot pair r">
+    {browser_img("home-desktop")}
+    {phone_video("mobile")}
   </div>
 </section>""")
 
-# ---- 4. Services ---------------------------------------------------------
-SLIDES.append(f"""<section class="slide split" aria-label="الخدمات والمحتوى">
+# ---- 4. Content + staff (live nursing flip) -----------------------------
+SLIDES.append(f"""<section class="slide split" aria-label="المحتوى والكوادر">
   <div class="col-text">
-    <p class="eyebrow">المحتوى</p>
-    <h2>خدمات وأقسام ومحتوى متجدّد</h2>
-    <ul class="points compact">
+    <p class="eyebrow r">المحتوى</p>
+    <h2 class="r">خدمات وتدريب ومحتوى للكوادر</h2>
+    <ul class="points compact r">
       <li><strong>الخدمات والأقسام</strong><span>عرض منظّم لكل خدمة مع تفاصيلها وموقعها.</span></li>
-      <li><strong>الأخبار والمبادرات</strong><span>نشر فوري لأنشطة المستشفى وحملاته.</span></li>
-      <li><strong>مركز المعرفة</strong><span>أدلة وإرشادات صحية موثوقة للمراجعين.</span></li>
       <li><strong>الشؤون الأكاديمية والتدريب</strong><span>الدورات والتسجيل فيها وشهادات الحضور.</span></li>
+      <li><strong>بوابة التمريض</strong><span>السياسات وخطط الإجازات والملف المهني.</span></li>
+      <li><strong>تكريم المتميّزين</strong><span>بطاقة «ممرض الشهر» تُدار وتُحدَّث شهريًا.</span></li>
     </ul>
   </div>
-  <div class="col-shot pair">
-    {browser("services-desktop", "had-hos.vercel.app/services")}
-    {browser("training-desktop", "had-hos.vercel.app/training")}
+  <div class="col-shot pair r">
+    {browser_video("nursing", "had-hos.vercel.app/nursing")}
+    {browser_img("training-desktop", "had-hos.vercel.app/training")}
   </div>
 </section>""")
 
-# ---- 5. Staff content ----------------------------------------------------
-SLIDES.append(f"""<section class="slide split" aria-label="محتوى الكوادر">
-  <div class="col-text">
-    <p class="eyebrow">للكوادر</p>
-    <h2>بوابة التمريض وتكريم المتميّزين</h2>
-    <p class="body">قسم مخصّص لكادر التمريض: السياسات، خطط الإجازات، والملف المهني —
-      إضافة إلى بطاقة «ممرض الشهر» التي تُدار من لوحة التحكم وتُحدَّث شهريًا.</p>
-    <div class="chips">
-      <span>دخول آمن بالرقم الوظيفي</span><span>سياسات التمريض</span><span>ممرض الشهر</span>
-    </div>
-  </div>
-  <div class="col-shot pair">
-    {browser("nursing-desktop", "had-hos.vercel.app/nursing")}
-    {phone("nursing-mobile")}
-  </div>
-</section>""")
-
-# ---- 6. Appointments: intro ---------------------------------------------
+# ---- 5. Appointments: intro ---------------------------------------------
 SLIDES.append(f"""<section class="slide split feature" aria-label="حجز المواعيد">
   <div class="col-text">
-    <p class="eyebrow gold">الميزة الجديدة</p>
-    <h2>حجز موعد في العيادات<br /><span class="gold">إلكترونيًا وبدون اتصال</span></h2>
-    <p class="body">بطاقة مباشرة في الصفحة الرئيسية تنقل المراجع إلى صفحة الحجز.
+    <p class="eyebrow gold r">الميزة الجديدة</p>
+    <h2 class="r">حجز موعد في العيادات<br /><span class="gold">إلكترونيًا وبدون اتصال</span></h2>
+    <p class="body r">بطاقة مباشرة في الصفحة الرئيسية تنقل المراجع إلى صفحة الحجز.
       يختار العيادة والوقت المناسب ويرسل طلبه في أقل من دقيقة، في أي وقت وبدون
       انتظار على الهاتف.</p>
-    <ul class="points compact">
+    <ul class="points compact r">
       <li><strong>متاح ٢٤ ساعة</strong><span>الطلب يُرسل في أي وقت، ويراجعه قسم التسجيل في الدوام.</span></li>
       <li><strong>مواعيد حقيقية</strong><span>الأوقات المعروضة مبنية على جدول كل عيادة فعليًا.</span></li>
     </ul>
   </div>
-  <div class="col-shot">{browser("home-appt-card")}</div>
+  <div class="col-shot r">{browser_img("home-appt-card")}</div>
 </section>""")
 
-# ---- 7. Appointments: steps ---------------------------------------------
-SLIDES.append(f"""<section class="slide steps feature" aria-label="خطوات الحجز">
-  <header class="steps-head">
-    <p class="eyebrow gold">الميزة الجديدة · خطوات الحجز</p>
-    <h2>ثلاث خطوات فقط لإتمام الطلب</h2>
-  </header>
-  <div class="steps-grid">
-    <article><span class="step-no mono">١</span><h3>اختيار العيادة</h3>
-      {browser("appt-clinics", "had-hos.vercel.app/appointments")}
-      <p>ست عيادات وأكثر، تُضاف وتُعدّل من لوحة التحكم.</p></article>
-    <article><span class="step-no mono">٢</span><h3>التاريخ والوقت</h3>
-      {browser("appt-slots", "had-hos.vercel.app/appointments")}
-      <p>أيام عمل العيادة فقط، والأوقات المكتملة تظهر غير متاحة.</p></article>
-    <article><span class="step-no mono">٣</span><h3>بيانات المريض</h3>
-      {browser("appt-form", "had-hos.vercel.app/appointments")}
-      <p>الاسم والهوية والجوال وتاريخ الميلاد ميلادي أو هجري.</p></article>
-  </div>
-</section>""")
-
-# ---- 8. Appointments: reference + tracking ------------------------------
-SLIDES.append(f"""<section class="slide split feature" aria-label="رقم الطلب والمتابعة">
+# ---- 6. Appointments: booking in motion ---------------------------------
+SLIDES.append(f"""<section class="slide split feature wide-shot" aria-label="خطوات الحجز">
   <div class="col-text">
-    <p class="eyebrow gold">الميزة الجديدة · بعد الإرسال</p>
-    <h2>رقم طلب فريد ومتابعة ذاتية</h2>
-    <p class="body">بمجرد الإرسال يحصل المراجع على رقم طلب فريد ورسالة تأكيد،
+    <p class="eyebrow gold r">الميزة الجديدة · خطوات الحجز</p>
+    <h2 class="r">ثلاث خطوات فقط</h2>
+    <ol class="steps-list r">
+      <li><span class="mono">١</span><div><strong>اختيار العيادة</strong><span>ست عيادات وأكثر، تُضاف وتُعدّل من لوحة التحكم.</span></div></li>
+      <li><span class="mono">٢</span><div><strong>التاريخ والوقت</strong><span>أيام عمل العيادة فقط، والأوقات المكتملة تظهر غير متاحة.</span></div></li>
+      <li><span class="mono">٣</span><div><strong>بيانات المريض</strong><span>الاسم والهوية والجوال وتاريخ الميلاد ميلادي أو هجري.</span></div></li>
+    </ol>
+  </div>
+  <div class="col-shot r">{browser_video("booking", "had-hos.vercel.app/appointments")}</div>
+</section>""")
+
+# ---- 7. Appointments: reference + tracking (two clips) ------------------
+SLIDES.append(f"""<section class="slide split feature wide-shot" aria-label="رقم الطلب والمتابعة">
+  <div class="col-text">
+    <p class="eyebrow gold r">الميزة الجديدة · بعد الإرسال</p>
+    <h2 class="r">رقم طلب فريد ومتابعة ذاتية</h2>
+    <p class="body r">بمجرد الإرسال يحصل المراجع على رقم طلب فريد ورسالة تأكيد،
       ويستطيع لاحقًا متابعة حالة طلبه بثلاث طرق.</p>
-    <p class="ref-chip mono">HGH-260821-3947</p>
-    <ul class="points compact">
+    <p class="ref-chip mono r">HGH-260821-3947</p>
+    <ul class="points compact r">
       <li><strong>متابعة بثلاث طرق</strong><span>رقم الطلب أو رقم الهوية أو رقم الجوال.</span></li>
       <li><strong>تعديل أو إلغاء ذاتي</strong><span>دون الحاجة للاتصال بالمستشفى.</span></li>
       <li><strong>ملاحظات وتعليمات</strong><span>يكتبها قسم التسجيل وتظهر للمراجع مع موعده.</span></li>
     </ul>
   </div>
-  <div class="col-shot pair">
-    {browser("appt-success", "had-hos.vercel.app/appointments")}
-    {browser("appt-track", "had-hos.vercel.app/appointments")}
+  <div class="col-shot pair r">
+    {browser_video("submit", "had-hos.vercel.app/appointments")}
+    {browser_video("track", "had-hos.vercel.app/appointments")}
   </div>
+</section>""")
+
+# ---- 8. Future idea: choose the care provider ---------------------------
+SLIDES.append(f"""<section class="slide split future" aria-label="فكرة مستقبلية">
+  <div class="col-text">
+    <p class="eyebrow future-tag r">فكرة مستقبلية</p>
+    <h2 class="r">اختيار مقدم الرعاية<br /><span class="sky">عند حجز الموعد</span></h2>
+    <p class="body r">إذا كان لكل عيادة أطباء ثابتون، تُضاف خطوة يختار فيها المراجع
+      الطبيب المعالج — فيرى اسمه وتخصصه وأقرب موعد متاح لديه، أو يترك الخيار
+      «أي طبيب متاح» ليُخصَّص له أقرب موعد شاغر.</p>
+    <ul class="points compact r">
+      <li><strong>استمرارية الرعاية</strong><span>يتابع المراجع مع الطبيب نفسه في كل زيارة.</span></li>
+      <li><strong>توزيع أدق للمواعيد</strong><span>جدول كل طبيب مستقل بدل جدول واحد للعيادة.</span></li>
+      <li><strong>شفافية للمراجع</strong><span>يعرف مسبقًا من سيقابله ومتى.</span></li>
+    </ul>
+  </div>
+  <div class="col-shot r">{browser_img("future-doctor", "had-hos.vercel.app/appointments", crop=False)}</div>
 </section>""")
 
 # ---- 9. Impact / close ---------------------------------------------------
 SLIDES.append(f"""<section class="slide closing" aria-label="الخلاصة">
+  <span class="aura" aria-hidden="true"></span>
   <div class="closing-inner">
-    <p class="eyebrow gold">الخلاصة</p>
-    <h2>من صفحة تعريفية إلى بوابة خدمات</h2>
-    <div class="stats">
+    <p class="eyebrow gold r">الخلاصة</p>
+    <h2 class="r">من صفحة تعريفية إلى بوابة خدمات</h2>
+    <div class="stats r">
       <div><strong class="mono">٢٤/٧</strong><span>استقبال طلبات المواعيد</span></div>
       <div><strong class="mono">٣</strong><span>طرق لمتابعة الطلب</span></div>
       <div><strong class="mono">٦</strong><span>عيادات قابلة للتوسعة</span></div>
       <div><strong class="mono">١٠٠٪</strong><span>إدارة ذاتية من اللوحة</span></div>
     </div>
-    <p class="closing-body">كل ما سبق يُدار من لوحة تحكم عربية: المحتوى والعيادات وأوقاتها،
+    <p class="closing-body r">كل ما سبق يُدار من لوحة تحكم عربية: المحتوى والعيادات وأوقاتها،
       وطلبات المواعيد في قسم «التسجيل والمواعيد» مع إمكانية التصدير إلى Excel
       وتحديث الحالة وكتابة الملاحظات.</p>
-    <img class="closing-logo" src="{LOGO}" alt="مستشفى الحديثة العام" />
+    <img class="closing-logo r" src="{LOGO}" alt="مستشفى الحديثة العام" />
   </div>
 </section>""")
 
@@ -213,7 +236,6 @@ HTML = f"""<title>بوابة الحديثة الرقمية</title>
   /* Cluster palette, taken from the site's own token system. */
   --ink: #0a1a2b;
   --ink-2: #0e2841;
-  --ink-3: #123f5c;
   --sky: #2ea3e0;
   --sky-lit: #78c5ee;
   --sand: #c89a4c;
@@ -222,6 +244,7 @@ HTML = f"""<title>بوابة الحديثة الرقمية</title>
   --muted: #a8bccc;
   --line: rgba(120, 197, 238, .20);
   --bloom: 24px 8px 8px 8px;
+  --ease: cubic-bezier(.22, 1, .36, 1);
   --ar: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, monospace;
   color-scheme: dark;
@@ -247,17 +270,69 @@ body {{
   display: grid;
   align-content: center;
   gap: 28px;
-  padding: clamp(28px, 4vw, 64px) clamp(28px, 5vw, 88px);
+  padding: clamp(26px, 3.6vw, 60px) clamp(28px, 5vw, 88px);
   opacity: 0;
   visibility: hidden;
-  transform: translateY(18px);
-  transition: opacity .5s ease, transform .5s cubic-bezier(.22, 1, .36, 1), visibility .5s;
+  pointer-events: none;
+  transform: scale(.985);
+  transition: opacity .55s ease, transform .7s var(--ease), visibility .55s;
   background:
     radial-gradient(90% 70% at 88% -10%, rgba(46, 163, 224, .16), transparent 60%),
     radial-gradient(70% 60% at 6% 100%, rgba(200, 154, 76, .10), transparent 62%),
     linear-gradient(180deg, var(--ink-2), var(--ink));
 }}
-.slide.is-active {{ opacity: 1; visibility: visible; transform: none; }}
+.slide.is-active {{ opacity: 1; visibility: visible; pointer-events: auto; transform: none; }}
+/* Slides already seen sit slightly further back as they leave. */
+.slide.is-past {{ transform: scale(.97); }}
+
+/* Ambient drift behind cover + closing. */
+.aura {{
+  position: absolute;
+  inset: -25%;
+  background:
+    radial-gradient(38% 38% at 30% 40%, rgba(46, 163, 224, .22), transparent 70%),
+    radial-gradient(32% 32% at 72% 62%, rgba(200, 154, 76, .16), transparent 70%);
+  filter: blur(10px);
+  animation: drift 22s ease-in-out infinite alternate;
+  pointer-events: none;
+}}
+@keyframes drift {{
+  from {{ transform: translate3d(-2%, -1%, 0) scale(1); }}
+  to   {{ transform: translate3d(3%, 2%, 0) scale(1.08); }}
+}}
+
+/* ---- Staggered reveal on the active slide ------------------------------ */
+.r {{ opacity: 0; transform: translateY(16px); }}
+.slide.is-active .r {{ animation: rise .72s var(--ease) both; }}
+.slide.is-active .r:nth-child(1) {{ animation-delay: .10s; }}
+.slide.is-active .r:nth-child(2) {{ animation-delay: .18s; }}
+.slide.is-active .r:nth-child(3) {{ animation-delay: .26s; }}
+.slide.is-active .r:nth-child(4) {{ animation-delay: .34s; }}
+.slide.is-active .r:nth-child(5) {{ animation-delay: .42s; }}
+.slide.is-active .col-shot.r {{ animation-delay: .28s; animation-duration: .85s; }}
+@keyframes rise {{ to {{ opacity: 1; transform: none; }} }}
+
+/* Points animate in one after another. */
+.slide.is-active .points li,
+.slide.is-active .steps-list li,
+.slide.is-active .chips span,
+.slide.is-active .stats div {{ animation: rise .6s var(--ease) both; }}
+.points li, .steps-list li, .chips span, .stats div {{ opacity: 0; }}
+.slide.is-active .points li:nth-child(1),
+.slide.is-active .steps-list li:nth-child(1),
+.slide.is-active .chips span:nth-child(1),
+.slide.is-active .stats div:nth-child(1) {{ animation-delay: .40s; }}
+.slide.is-active .points li:nth-child(2),
+.slide.is-active .steps-list li:nth-child(2),
+.slide.is-active .chips span:nth-child(2),
+.slide.is-active .stats div:nth-child(2) {{ animation-delay: .50s; }}
+.slide.is-active .points li:nth-child(3),
+.slide.is-active .steps-list li:nth-child(3),
+.slide.is-active .chips span:nth-child(3),
+.slide.is-active .stats div:nth-child(3) {{ animation-delay: .60s; }}
+.slide.is-active .points li:nth-child(4),
+.slide.is-active .chips span:nth-child(4),
+.slide.is-active .stats div:nth-child(4) {{ animation-delay: .70s; }}
 
 /* ---- Type -------------------------------------------------------------- */
 .eyebrow {{
@@ -278,10 +353,21 @@ body {{
   background: currentColor;
   opacity: .7;
 }}
+.future-tag {{ color: var(--sand-lit); }}
+.future-tag::after {{
+  content: "تصوّر مقترح";
+  margin-inline-start: 12px;
+  padding: 3px 11px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: .72rem;
+  letter-spacing: 0;
+}}
 
 h1 {{
   margin: 14px 0 0;
-  font-size: clamp(2.1rem, 5.4vw, 4.1rem);
+  font-size: clamp(2rem, 5vw, 3.9rem);
   font-weight: 700;
   line-height: 1.22;
   text-wrap: balance;
@@ -289,18 +375,18 @@ h1 {{
 h1 span {{ color: var(--sky-lit); }}
 h2 {{
   margin: 12px 0 0;
-  font-size: clamp(1.5rem, 3.1vw, 2.5rem);
+  font-size: clamp(1.45rem, 3vw, 2.4rem);
   font-weight: 700;
   line-height: 1.3;
   text-wrap: balance;
 }}
 h2 .gold {{ color: var(--sand-lit); }}
-h3 {{ margin: 0; font-size: clamp(1rem, 1.5vw, 1.2rem); font-weight: 600; }}
+h2 .sky {{ color: var(--sky-lit); }}
 .lede {{
   margin: 18px 0 0;
   max-width: 46ch;
   color: var(--muted);
-  font-size: clamp(.98rem, 1.5vw, 1.2rem);
+  font-size: clamp(.96rem, 1.4vw, 1.16rem);
   font-weight: 300;
   line-height: 1.85;
 }}
@@ -308,7 +394,7 @@ h3 {{ margin: 0; font-size: clamp(1rem, 1.5vw, 1.2rem); font-weight: 600; }}
   margin: 16px 0 0;
   max-width: 44ch;
   color: var(--muted);
-  font-size: clamp(.92rem, 1.25vw, 1.05rem);
+  font-size: clamp(.9rem, 1.2vw, 1.02rem);
   font-weight: 300;
   line-height: 1.9;
 }}
@@ -318,30 +404,52 @@ h3 {{ margin: 0; font-size: clamp(1rem, 1.5vw, 1.2rem); font-weight: 600; }}
 .split {{
   grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr);
   align-items: center;
-  gap: clamp(26px, 4vw, 62px);
+  gap: clamp(26px, 4vw, 60px);
 }}
+.split.wide-shot {{ grid-template-columns: minmax(0, .74fr) minmax(0, 1.26fr); }}
 .col-text {{ min-width: 0; }}
-.col-shot {{ min-width: 0; display: grid; gap: 18px; }}
-.col-shot.pair {{ grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }}
+.col-shot {{ min-width: 0; display: grid; gap: 16px; }}
+.col-shot.pair {{ grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; }}
 
 .points {{
   list-style: none;
   margin: 22px 0 0;
   padding: 0;
   display: grid;
-  gap: 15px;
+  gap: 14px;
 }}
-.points.compact {{ gap: 12px; }}
+.points.compact {{ gap: 11px; }}
 .points li {{
   display: grid;
   gap: 3px;
   padding-inline-start: 16px;
   border-inline-start: 2px solid var(--line);
 }}
-.points strong {{ font-size: clamp(.95rem, 1.3vw, 1.08rem); font-weight: 600; }}
+.points strong {{ font-size: clamp(.93rem, 1.25vw, 1.05rem); font-weight: 600; }}
 .points span {{
   color: var(--muted);
-  font-size: clamp(.84rem, 1.1vw, .96rem);
+  font-size: clamp(.82rem, 1.05vw, .94rem);
+  font-weight: 300;
+  line-height: 1.7;
+}}
+
+.steps-list {{ list-style: none; margin: 24px 0 0; padding: 0; display: grid; gap: 16px; }}
+.steps-list li {{ display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: start; }}
+.steps-list li > span {{
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--sand-lit), var(--sand));
+  color: #16223a;
+  font-size: 1rem;
+  font-weight: 600;
+}}
+.steps-list strong {{ display: block; font-size: clamp(.95rem, 1.3vw, 1.08rem); font-weight: 600; }}
+.steps-list div span {{
+  color: var(--muted);
+  font-size: clamp(.82rem, 1.05vw, .94rem);
   font-weight: 300;
   line-height: 1.7;
 }}
@@ -364,7 +472,7 @@ h3 {{ margin: 0; font-size: clamp(1rem, 1.5vw, 1.2rem); font-weight: 600; }}
   border-radius: 10px;
   background: rgba(200, 154, 76, .10);
   color: var(--sand-lit);
-  font-size: clamp(1rem, 1.7vw, 1.35rem);
+  font-size: clamp(1rem, 1.6vw, 1.3rem);
   font-weight: 600;
   letter-spacing: .05em;
 }}
@@ -405,12 +513,48 @@ h3 {{ margin: 0; font-size: clamp(1rem, 1.5vw, 1.2rem); font-weight: 600; }}
   overflow: hidden;
   text-overflow: ellipsis;
 }}
-.browser img {{ display: block; width: 100%; height: auto; }}
+.screen {{ position: relative; line-height: 0; }}
+.browser :is(img, video) {{
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  object-position: top center;
+}}
+.browser.nocrop :is(img, video) {{ aspect-ratio: auto; object-fit: contain; }}
+
+/* "live recording" badge on video frames */
+.live {{
+  position: absolute;
+  top: 10px;
+  inset-inline-start: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(10, 26, 43, .78);
+  border: 1px solid var(--line);
+  color: var(--paper);
+  font-size: .68rem;
+  font-weight: 600;
+  line-height: 1;
+  backdrop-filter: blur(4px);
+}}
+.live i {{
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ff5f57;
+  animation: blip 1.6s ease-in-out infinite;
+}}
+@keyframes blip {{ 0%, 100% {{ opacity: 1; }} 50% {{ opacity: .25; }} }}
 
 .phone {{
   position: relative;
   justify-self: center;
-  width: min(100%, 240px);
+  width: min(100%, 232px);
   padding: 11px;
   border-radius: 30px;
   background: linear-gradient(160deg, #1b3048, #0c1725);
@@ -428,12 +572,12 @@ h3 {{ margin: 0; font-size: clamp(1rem, 1.5vw, 1.2rem); font-weight: 600; }}
   background: rgba(255, 255, 255, .18);
   z-index: 2;
 }}
-.phone img {{ display: block; width: 100%; height: auto; border-radius: 20px; }}
+.phone video {{ display: block; width: 100%; height: auto; border-radius: 20px; }}
 
 /* ---- Cover ------------------------------------------------------------- */
 .cover {{ place-content: center; justify-items: start; }}
 .cover-inner {{ max-width: 74ch; position: relative; z-index: 1; }}
-.cover-logo {{ width: clamp(200px, 24vw, 310px); height: auto; margin-bottom: 30px; }}
+.cover-logo {{ width: clamp(190px, 22vw, 300px); height: auto; margin-bottom: 28px; }}
 .cover-meta {{ margin: 30px 0 0; }}
 .cover-meta .mono {{
   padding: 8px 16px;
@@ -451,44 +595,16 @@ h3 {{ margin: 0; font-size: clamp(1rem, 1.5vw, 1.2rem); font-weight: 600; }}
   width: min(56vh, 520px);
   opacity: .07;
   pointer-events: none;
+  animation: sway 26s ease-in-out infinite alternate;
 }}
-
-/* ---- Steps slide ------------------------------------------------------- */
-.steps {{ align-content: center; gap: 22px; }}
-.steps-head {{ text-align: center; }}
-.steps-head .eyebrow::before {{ display: none; }}
-.steps-head h2 {{ margin-top: 8px; }}
-.steps-grid {{
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: clamp(16px, 2.2vw, 30px);
-}}
-.steps-grid article {{ display: grid; gap: 10px; align-content: start; }}
-.step-no {{
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--sand-lit), var(--sand));
-  color: #16223a;
-  font-size: 1rem;
-  font-weight: 600;
-}}
-.steps-grid .browser img {{ aspect-ratio: 16 / 9; object-fit: cover; object-position: top center; }}
-/* Paired desktop captures: trim the page footer so the UI fills more of the frame. */
-.col-shot.pair .browser img {{ aspect-ratio: 16 / 9; object-fit: cover; object-position: top center; }}
-.steps-grid p {{
-  margin: 0;
-  color: var(--muted);
-  font-size: clamp(.78rem, 1vw, .9rem);
-  font-weight: 300;
-  line-height: 1.7;
+@keyframes sway {{
+  from {{ transform: rotate(-3deg) scale(1); }}
+  to   {{ transform: rotate(3deg) scale(1.05); }}
 }}
 
 /* ---- Closing ----------------------------------------------------------- */
 .closing {{ place-content: center; justify-items: center; text-align: center; }}
-.closing-inner {{ max-width: 74ch; display: grid; justify-items: center; }}
+.closing-inner {{ max-width: 74ch; display: grid; justify-items: center; position: relative; z-index: 1; }}
 .closing .eyebrow::before {{ display: none; }}
 .stats {{
   display: grid;
@@ -516,11 +632,11 @@ h3 {{ margin: 0; font-size: clamp(1rem, 1.5vw, 1.2rem); font-weight: 600; }}
   margin: 30px 0 0;
   max-width: 62ch;
   color: var(--muted);
-  font-size: clamp(.88rem, 1.2vw, 1.02rem);
+  font-size: clamp(.86rem, 1.15vw, 1rem);
   font-weight: 300;
   line-height: 1.9;
 }}
-.closing-logo {{ width: clamp(170px, 18vw, 240px); margin-top: 38px; opacity: .95; }}
+.closing-logo {{ width: clamp(160px, 17vw, 230px); margin-top: 34px; opacity: .95; }}
 
 /* ---- Chrome: rail, nav, progress --------------------------------------- */
 .rail {{
@@ -544,7 +660,7 @@ h3 {{ margin: 0; font-size: clamp(1rem, 1.5vw, 1.2rem); font-weight: 600; }}
   height: 3px;
   background: linear-gradient(90deg, var(--sand), var(--sky));
   width: 0;
-  transition: width .45s cubic-bezier(.22, 1, .36, 1);
+  transition: width .55s var(--ease);
   z-index: 30;
 }}
 
@@ -569,9 +685,9 @@ h3 {{ margin: 0; font-size: clamp(1rem, 1.5vw, 1.2rem); font-weight: 600; }}
   color: var(--paper);
   font-size: 1.05rem;
   cursor: pointer;
-  transition: border-color .2s ease, background .2s ease;
+  transition: border-color .2s ease, background .2s ease, transform .2s var(--ease);
 }}
-.nav button:hover {{ border-color: var(--sky); background: rgba(46, 163, 224, .18); }}
+.nav button:hover:not(:disabled) {{ border-color: var(--sky); background: rgba(46, 163, 224, .18); transform: scale(1.08); }}
 .nav button:disabled {{ opacity: .3; cursor: default; }}
 .dotbar {{ display: flex; gap: 7px; }}
 .dot {{
@@ -582,9 +698,9 @@ h3 {{ margin: 0; font-size: clamp(1rem, 1.5vw, 1.2rem); font-weight: 600; }}
   border: 0;
   background: rgba(168, 188, 204, .35);
   cursor: pointer;
-  transition: background .25s ease, width .25s ease;
+  transition: background .3s ease, width .35s var(--ease);
 }}
-.dot.is-active {{ width: 24px; border-radius: 999px; background: var(--sand-lit); }}
+.dot.is-active {{ width: 26px; border-radius: 999px; background: var(--sand-lit); }}
 
 :focus-visible {{ outline: 2px solid var(--sand-lit); outline-offset: 3px; }}
 
@@ -596,17 +712,25 @@ h3 {{ margin: 0; font-size: clamp(1rem, 1.5vw, 1.2rem); font-weight: 600; }}
     position: static;
     opacity: 1;
     visibility: visible;
+    pointer-events: auto;
     transform: none;
     min-height: 100dvh;
     border-bottom: 1px solid var(--line);
   }}
-  .split, .col-shot.pair, .steps-grid, .stats {{ grid-template-columns: minmax(0, 1fr); }}
+  .r, .points li, .steps-list li, .chips span, .stats div {{ opacity: 1; transform: none; animation: none !important; }}
+  .split, .split.wide-shot, .col-shot.pair, .stats {{ grid-template-columns: minmax(0, 1fr); }}
   .nav, .progress {{ display: none; }}
   .rail {{ position: static; }}
 }}
 
 @media (prefers-reduced-motion: reduce) {{
-  .slide {{ transition: opacity .2s ease; transform: none; }}
+  .slide {{ transition: opacity .25s ease; transform: none !important; }}
+  .aura, .cover-mark, .live i {{ animation: none !important; }}
+  .r, .points li, .steps-list li, .chips span, .stats div {{
+    opacity: 1;
+    transform: none;
+    animation: none !important;
+  }}
   .progress {{ transition: none; }}
 }}
 </style>
@@ -629,8 +753,8 @@ h3 {{ margin: 0; font-size: clamp(1rem, 1.5vw, 1.2rem); font-weight: 600; }}
 
 <script>
 (function () {{
-  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
-  var dots = Array.prototype.slice.call(document.querySelectorAll('.dot'));
+  var slides = [].slice.call(document.querySelectorAll('.slide'));
+  var dots = [].slice.call(document.querySelectorAll('.dot'));
   var progress = document.getElementById('progress');
   var count = document.getElementById('count');
   var prev = document.getElementById('prev');
@@ -638,15 +762,49 @@ h3 {{ margin: 0; font-size: clamp(1rem, 1.5vw, 1.2rem); font-weight: 600; }}
   var i = 0;
   var AR = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
   var toAr = function (n) {{ return String(n).replace(/[0-9]/g, function (d) {{ return AR[+d]; }}); }};
+  var narrow = window.matchMedia('(max-width: 860px)');
+
+  /* Pick the encoding this browser can decode, and only attach it when the
+     clip is actually needed so the deck opens fast. */
+  var probe = document.createElement('video');
+  var preferWebm = !!probe.canPlayType('video/webm; codecs="vp9"');
+  function attach(v) {{
+    if (v.src) {{ return; }}
+    v.src = preferWebm ? v.dataset.webm : v.dataset.mp4;
+    v.addEventListener('error', function () {{
+      var alt = preferWebm ? v.dataset.mp4 : v.dataset.webm;
+      if (v.src !== alt) {{ v.src = alt; v.play().catch(function () {{}}); }}
+    }}, {{ once: true }});
+  }}
+
+  /* Videos are embedded but only loaded/played on the slide in view, so the
+     deck opens fast and idle slides cost nothing. */
+  function playFor(slide) {{
+    slides.forEach(function (s) {{
+      s.querySelectorAll('video').forEach(function (v) {{
+        if (s === slide) {{
+          attach(v);
+          var p = v.play();
+          if (p && p.catch) {{ p.catch(function () {{}}); }}
+        }} else if (!v.paused) {{
+          v.pause();
+        }}
+      }});
+    }});
+  }}
 
   function show(n) {{
     i = Math.max(0, Math.min(slides.length - 1, n));
-    slides.forEach(function (s, k) {{ s.classList.toggle('is-active', k === i); }});
+    slides.forEach(function (s, k) {{
+      s.classList.toggle('is-active', k === i);
+      s.classList.toggle('is-past', k < i);
+    }});
     dots.forEach(function (d, k) {{ d.classList.toggle('is-active', k === i); }});
     progress.style.width = ((i + 1) / slides.length * 100) + '%';
     count.textContent = toAr(i + 1) + ' / ' + toAr(slides.length);
     prev.disabled = i === 0;
     next.disabled = i === slides.length - 1;
+    playFor(slides[i]);
   }}
 
   next.addEventListener('click', function () {{ show(i + 1); }});
@@ -663,7 +821,22 @@ h3 {{ margin: 0; font-size: clamp(1rem, 1.5vw, 1.2rem); font-weight: 600; }}
     else if (e.key === 'End') {{ show(slides.length - 1); }}
   }});
 
-  show(0);
+  if (narrow.matches) {{
+    /* Stacked view: load every clip and play whichever is on screen. */
+    var io = new IntersectionObserver(function (entries) {{
+      entries.forEach(function (en) {{
+        var v = en.target;
+        if (en.isIntersecting) {{
+          attach(v);
+          var p = v.play(); if (p && p.catch) {{ p.catch(function () {{}}); }}
+        }} else {{ v.pause(); }}
+      }});
+    }}, {{ threshold: .35 }});
+    document.querySelectorAll('video').forEach(function (v) {{ io.observe(v); }});
+    slides.forEach(function (s) {{ s.classList.add('is-active'); }});
+  }} else {{
+    show(0);
+  }}
 }})();
 </script>
 """

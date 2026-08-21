@@ -8,6 +8,7 @@ export const adminNav = [
   { path: "/admin/homepage", label: tx("أقسام الرئيسية", "Homepage Sections"), icon: "Home" },
   { path: "/admin/quick-links", label: tx("الروابط السريعة", "Quick Links"), icon: "Zap" },
   { path: "/admin/doctors", label: tx("الأطباء", "Doctors"), icon: "Stethoscope" },
+  { path: "/admin/registrations", label: tx("التسجيل والمواعيد", "Registration & Appointments"), icon: "CalendarCheck" },
   { path: "/admin/training", label: tx("الشؤون الأكاديمية والتدريب", "Academic Affairs & Training"), icon: "GraduationCap" },
   { path: "/admin/certificates", label: tx("شهادات المحاضرات", "Lecture Certificates"), icon: "Award" },
   { path: "/admin/nursing", label: tx("التمريض", "Nursing"), icon: "Stethoscope" },

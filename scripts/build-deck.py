@@ -262,21 +262,23 @@ body {{
   color: var(--paper);
   font-family: var(--ar);
   direction: rtl;
-  overflow: hidden;
 }}
+/* Without JavaScript (e.g. a downloaded file opened in a preview pane) the
+   deck degrades to a readable stacked document instead of a blank screen. */
+[data-js="on"] body {{ overflow: hidden; }}
 
 /* ---- Deck shell -------------------------------------------------------- */
-.deck {{
-  position: relative;
+.deck {{ position: relative; width: 100%; }}
+[data-js="on"] .deck {{
   height: 100vh;      /* fallback for iOS < 15.4 */
   height: 100dvh;
-  width: 100%;
   overflow: hidden;
 }}
 
 .slide {{
-  position: absolute;
-  inset: 0;
+  position: static;
+  min-height: 100vh;
+  border-bottom: 1px solid var(--line);
   display: grid;
   align-content: center;
   gap: 28px;
@@ -285,19 +287,25 @@ body {{
     max(clamp(28px, 5vw, 88px), env(safe-area-inset-right))
     max(clamp(26px, 3.6vw, 60px), env(safe-area-inset-bottom))
     max(clamp(28px, 5vw, 88px), env(safe-area-inset-left));
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transform: scale(.985);
   transition: opacity .55s ease, transform .7s var(--ease), visibility .55s;
   background:
     radial-gradient(90% 70% at 88% -10%, rgba(46, 163, 224, .16), transparent 60%),
     radial-gradient(70% 60% at 6% 100%, rgba(200, 154, 76, .10), transparent 62%),
     linear-gradient(180deg, var(--ink-2), var(--ink));
 }}
-.slide.is-active {{ opacity: 1; visibility: visible; pointer-events: auto; transform: none; }}
+[data-js="on"] .slide {{
+  position: absolute;
+  inset: 0;
+  min-height: 0;
+  border-bottom: 0;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: scale(.985);
+}}
+[data-js="on"] .slide.is-active {{ opacity: 1; visibility: visible; pointer-events: auto; transform: none; }}
 /* Slides already seen sit slightly further back as they leave. */
-.slide.is-past {{ transform: scale(.97); }}
+[data-js="on"] .slide.is-past {{ transform: scale(.97); }}
 
 /* Ambient drift behind cover + closing. */
 .aura {{
@@ -316,7 +324,7 @@ body {{
 }}
 
 /* ---- Staggered reveal on the active slide ------------------------------ */
-.r {{ opacity: 0; transform: translateY(16px); }}
+[data-js="on"] .r {{ opacity: 0; transform: translateY(16px); }}
 .slide.is-active .r {{ animation: rise .72s var(--ease) both; }}
 .slide.is-active .r:nth-child(1) {{ animation-delay: .10s; }}
 .slide.is-active .r:nth-child(2) {{ animation-delay: .18s; }}
@@ -331,7 +339,7 @@ body {{
 .slide.is-active .steps-list li,
 .slide.is-active .chips span,
 .slide.is-active .stats div {{ animation: rise .6s var(--ease) both; }}
-.points li, .steps-list li, .chips span, .stats div {{ opacity: 0; }}
+[data-js="on"] :is(.points li, .steps-list li, .chips span, .stats div) {{ opacity: 0; }}
 .slide.is-active .points li:nth-child(1),
 .slide.is-active .steps-list li:nth-child(1),
 .slide.is-active .chips span:nth-child(1),
@@ -665,7 +673,7 @@ h2 .sky {{ color: var(--sky-lit); }}
 
 /* ---- Chrome: rail, nav, progress --------------------------------------- */
 .rail {{
-  position: fixed;
+  position: static;
   top: 0;
   inset-inline: 0;
   display: flex;
@@ -679,6 +687,7 @@ h2 .sky {{ color: var(--sky-lit); }}
 .rail .count {{ color: var(--muted); font-family: var(--mono); font-size: .8rem; letter-spacing: .06em; }}
 
 .progress {{
+  display: none;
   position: fixed;
   top: 0;
   inset-inline-start: 0;
@@ -693,7 +702,7 @@ h2 .sky {{ color: var(--sky-lit); }}
   position: fixed;
   bottom: max(20px, env(safe-area-inset-bottom));
   inset-inline: 0;
-  display: flex;
+  display: none;
   align-items: center;
   justify-content: center;
   gap: 14px;
@@ -715,6 +724,9 @@ h2 .sky {{ color: var(--sky-lit); }}
 .nav > button:hover:not(:disabled) {{ border-color: var(--sky); background: rgba(46, 163, 224, .18); transform: scale(1.08); }}
 .nav > button:disabled {{ opacity: .3; cursor: default; }}
 .dotbar {{ display: flex; gap: 7px; }}
+[data-js="on"] .rail {{ position: fixed; }}
+[data-js="on"] .progress {{ display: block; }}
+[data-js="on"] .nav {{ display: flex; }}
 .nav .dot {{
   width: 8px;
   height: 8px;
@@ -792,6 +804,7 @@ h2 .sky {{ color: var(--sky-lit); }}
 }}
 </style>
 
+<script>document.documentElement.setAttribute("data-js","on");</script>
 <div class="progress" id="progress"></div>
 <header class="rail">
   <img src="{MARK}" alt="" />
@@ -941,3 +954,17 @@ h2 .sky {{ color: var(--sky-lit); }}
 OUT.parent.mkdir(parents=True, exist_ok=True)
 OUT.write_text(HTML, encoding="utf-8")
 print("WROTE", OUT, f"{OUT.stat().st_size / 1024 / 1024:.2f} MB")
+
+# A standalone copy served from the site itself (public/ is copied to the build
+# root, and Vercel checks the filesystem before applying the SPA rewrite), so
+# the deck has a plain URL that opens anywhere — iPhone Safari included.
+split = HTML.index("</style>") + len("</style>")
+head, body = HTML[:split], HTML[split:]
+standalone = (
+    "<!doctype html>\n"
+    '<html lang="ar" dir="rtl">\n<head>\n<meta charset="utf-8" />\n'
+    f"{head}\n</head>\n<body>\n{body}\n</body>\n</html>\n"
+)
+PUB = ROOT / "public" / "deck.html"
+PUB.write_text(standalone, encoding="utf-8")
+print("WROTE", PUB, f"{PUB.stat().st_size / 1024 / 1024:.2f} MB")

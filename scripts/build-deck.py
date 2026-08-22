@@ -46,7 +46,7 @@ def browser_video(key: str, url: str = "had-hos.vercel.app", live: bool = True) 
     return f"""<figure class="shot browser">
         {chrome_bar(url)}
         <div class="screen">
-          <video muted loop playsinline preload="none"
+          <video muted loop playsinline autoplay preload="none"
                  data-webm="{VID_WEBM[key]}" data-mp4="{VID[key]}"></video>
           {badge}
         </div>
@@ -65,7 +65,7 @@ def phone_video(key: str) -> str:
     """Mobile screen recording in a phone bezel."""
     return f"""<figure class="shot phone">
         <span class="notch" aria-hidden="true"></span>
-        <video muted loop playsinline preload="none"
+        <video muted loop playsinline autoplay preload="none"
                data-webm="{VID_WEBM[key]}" data-mp4="{VID[key]}"></video>
       </figure>"""
 
@@ -227,6 +227,10 @@ DOTS = "".join(
 )
 
 HTML = f"""<title>بوابة الحديثة الرقمية</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#0a1a2b" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet"
@@ -262,7 +266,13 @@ body {{
 }}
 
 /* ---- Deck shell -------------------------------------------------------- */
-.deck {{ position: relative; height: 100dvh; width: 100%; overflow: hidden; }}
+.deck {{
+  position: relative;
+  height: 100vh;      /* fallback for iOS < 15.4 */
+  height: 100dvh;
+  width: 100%;
+  overflow: hidden;
+}}
 
 .slide {{
   position: absolute;
@@ -270,7 +280,11 @@ body {{
   display: grid;
   align-content: center;
   gap: 28px;
-  padding: clamp(26px, 3.6vw, 60px) clamp(28px, 5vw, 88px);
+  padding:
+    max(clamp(26px, 3.6vw, 60px), env(safe-area-inset-top))
+    max(clamp(28px, 5vw, 88px), env(safe-area-inset-right))
+    max(clamp(26px, 3.6vw, 60px), env(safe-area-inset-bottom))
+    max(clamp(28px, 5vw, 88px), env(safe-area-inset-left));
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -540,8 +554,19 @@ h2 .sky {{ color: var(--sky-lit); }}
   font-size: .68rem;
   font-weight: 600;
   line-height: 1;
+  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
 }}
+.screen.needs-tap::after {{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 26, 43, .45) center / 54px 54px no-repeat
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%230a1a2b' fill-opacity='.85' stroke='%23eacb93' stroke-width='3'/%3E%3Cpath d='M40 32l30 18-30 18z' fill='%23eacb93'/%3E%3C/svg%3E");
+  cursor: pointer;
+}}
+.phone.needs-tap {{ position: relative; }}
+
 .live i {{
   width: 7px;
   height: 7px;
@@ -646,7 +671,7 @@ h2 .sky {{ color: var(--sky-lit); }}
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px clamp(20px, 4vw, 44px);
+  padding: max(18px, env(safe-area-inset-top)) clamp(20px, 4vw, 44px) 18px;
   pointer-events: none;
   z-index: 20;
 }}
@@ -666,7 +691,7 @@ h2 .sky {{ color: var(--sky-lit); }}
 
 .nav {{
   position: fixed;
-  bottom: 20px;
+  bottom: max(20px, env(safe-area-inset-bottom));
   inset-inline: 0;
   display: flex;
   align-items: center;
@@ -674,7 +699,7 @@ h2 .sky {{ color: var(--sky-lit); }}
   gap: 14px;
   z-index: 20;
 }}
-.nav button {{
+.nav > button {{
   display: grid;
   place-items: center;
   width: 40px;
@@ -687,10 +712,10 @@ h2 .sky {{ color: var(--sky-lit); }}
   cursor: pointer;
   transition: border-color .2s ease, background .2s ease, transform .2s var(--ease);
 }}
-.nav button:hover:not(:disabled) {{ border-color: var(--sky); background: rgba(46, 163, 224, .18); transform: scale(1.08); }}
-.nav button:disabled {{ opacity: .3; cursor: default; }}
+.nav > button:hover:not(:disabled) {{ border-color: var(--sky); background: rgba(46, 163, 224, .18); transform: scale(1.08); }}
+.nav > button:disabled {{ opacity: .3; cursor: default; }}
 .dotbar {{ display: flex; gap: 7px; }}
-.dot {{
+.nav .dot {{
   width: 8px;
   height: 8px;
   padding: 0;
@@ -700,32 +725,64 @@ h2 .sky {{ color: var(--sky-lit); }}
   cursor: pointer;
   transition: background .3s ease, width .35s var(--ease);
 }}
-.dot.is-active {{ width: 26px; border-radius: 999px; background: var(--sand-lit); }}
+.nav .dot.is-active {{ width: 26px; border-radius: 999px; background: var(--sand-lit); }}
 
 :focus-visible {{ outline: 2px solid var(--sand-lit); outline-offset: 3px; }}
 
-/* ---- Narrow screens: scrollable stack ---------------------------------- */
+/* ---- Phones: still a deck, one slide per screen, swipe to move ---------- */
 @media (max-width: 860px) {{
-  body {{ overflow: auto; }}
-  .deck {{ height: auto; }}
   .slide {{
-    position: static;
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-    transform: none;
-    min-height: 100dvh;
-    border-bottom: 1px solid var(--line);
+    align-content: start;
+    gap: 18px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding:
+      calc(58px + env(safe-area-inset-top)) 18px
+      calc(86px + env(safe-area-inset-bottom));
   }}
-  .r, .points li, .steps-list li, .chips span, .stats div {{ opacity: 1; transform: none; animation: none !important; }}
-  .split, .split.wide-shot, .col-shot.pair, .stats {{ grid-template-columns: minmax(0, 1fr); }}
-  .nav, .progress {{ display: none; }}
-  .rail {{ position: static; }}
+  .split, .split.wide-shot {{ grid-template-columns: minmax(0, 1fr); }}
+  .col-shot.pair {{ grid-template-columns: minmax(0, 1fr); gap: 12px; }}
+  .cover, .closing {{ align-content: center; }}
+  .cover-inner, .closing-inner {{ max-width: none; }}
+  .cover-logo {{ width: min(72vw, 240px); margin-bottom: 20px; }}
+  .cover-mark {{ width: 78vw; bottom: -8%; }}
+  .stats {{ grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 24px; }}
+  .closing-logo {{ width: min(56vw, 190px); margin-top: 26px; }}
+  .phone {{ width: min(74%, 200px); }}
+  .points {{ gap: 11px; margin-top: 18px; }}
+  .steps-list {{ gap: 13px; margin-top: 18px; }}
+  .lede, .body {{ max-width: none; }}
+  .rail {{ padding-inline: 18px; }}
+  .rail img {{ height: 24px; }}
+  /* Bigger touch targets, and room for a thumb at the bottom. */
+  .nav {{ gap: 10px; }}
+  .nav > button {{ width: 44px; height: 44px; }}
+  .nav .dot {{ width: 9px; height: 9px; }}
+  .nav .dot.is-active {{ width: 26px; }}
+}}
+
+/* Landscape phone: keep the two-column composition, just tighter. */
+@media (max-width: 900px) and (orientation: landscape) {{
+  .slide {{ align-content: center; gap: 20px; padding-block: 44px 68px; }}
+  .split {{ grid-template-columns: minmax(0, .95fr) minmax(0, 1.05fr); }}
+  .split.wide-shot {{ grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); }}
+  .col-shot.pair {{ grid-template-columns: repeat(2, minmax(0, 1fr)); }}
+  .stats {{ grid-template-columns: repeat(4, minmax(0, 1fr)); }}
 }}
 
 @media (prefers-reduced-motion: reduce) {{
   .slide {{ transition: opacity .25s ease; transform: none !important; }}
-  .aura, .cover-mark, .live i {{ animation: none !important; }}
+  .aura, .cover-mark, .screen.needs-tap::after {{
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 26, 43, .45) center / 54px 54px no-repeat
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='46' fill='%230a1a2b' fill-opacity='.85' stroke='%23eacb93' stroke-width='3'/%3E%3Cpath d='M40 32l30 18-30 18z' fill='%23eacb93'/%3E%3C/svg%3E");
+  cursor: pointer;
+}}
+.phone.needs-tap {{ position: relative; }}
+
+.live i {{ animation: none !important; }}
   .r, .points li, .steps-list li, .chips span, .stats div {{
     opacity: 1;
     transform: none;
@@ -762,19 +819,50 @@ h2 .sky {{ color: var(--sky-lit); }}
   var i = 0;
   var AR = ['٠','١','٢','٣','٤','٥','٦','٧','٨','٩'];
   var toAr = function (n) {{ return String(n).replace(/[0-9]/g, function (d) {{ return AR[+d]; }}); }};
-  var narrow = window.matchMedia('(max-width: 860px)');
 
   /* Pick the encoding this browser can decode, and only attach it when the
      clip is actually needed so the deck opens fast. */
   var probe = document.createElement('video');
   var preferWebm = !!probe.canPlayType('video/webm; codecs="vp9"');
+  var noop = function () {{}};
+  /* iOS Low Power Mode refuses autoplay even for muted inline video, so a
+     rejected play() surfaces a tap-to-play badge instead of a frozen frame. */
+  function hint(v, on) {{
+    var host = v.closest('.screen') || v.closest('.phone');
+    if (host) {{ host.classList.toggle('needs-tap', !!on); }}
+  }}
+  function kick(v) {{
+    var p = v.play();
+    if (p && p.then) {{
+      p.then(function () {{ hint(v, false); }}).catch(function () {{ hint(v, true); }});
+    }}
+  }}
+  document.addEventListener('click', function (e) {{
+    var host = e.target.closest && e.target.closest('.needs-tap');
+    if (!host) {{ return; }}
+    var v = host.querySelector('video');
+    if (v) {{ kick(v); }}
+  }});
+
+  /* Safari (iOS and macOS) will not play a video from a data: URI — it needs a
+     source that answers byte-range requests. Converting the embedded clip to a
+     Blob URL once gives every browser a source it can actually stream. */
   function attach(v) {{
-    if (v.src) {{ return; }}
-    v.src = preferWebm ? v.dataset.webm : v.dataset.mp4;
-    v.addEventListener('error', function () {{
-      var alt = preferWebm ? v.dataset.mp4 : v.dataset.webm;
-      if (v.src !== alt) {{ v.src = alt; v.play().catch(function () {{}}); }}
-    }}, {{ once: true }});
+    if (v.dataset.ready) {{ return; }}
+    v.dataset.ready = '1';
+    var primary = preferWebm ? v.dataset.webm : v.dataset.mp4;
+    var fallback = preferWebm ? v.dataset.mp4 : v.dataset.webm;
+    var useBlob = function (uri, next) {{
+      fetch(uri)
+        .then(function (r) {{ return r.blob(); }})
+        .then(function (blob) {{
+          v.src = URL.createObjectURL(blob);
+          v.addEventListener('error', function () {{ if (next) {{ next(); }} }}, {{ once: true }});
+          kick(v);
+        }})
+        .catch(function () {{ v.src = uri; kick(v); }});
+    }};
+    useBlob(primary, function () {{ useBlob(fallback, null); }});
   }}
 
   /* Videos are embedded but only loaded/played on the slide in view, so the
@@ -784,8 +872,7 @@ h2 .sky {{ color: var(--sky-lit); }}
       s.querySelectorAll('video').forEach(function (v) {{
         if (s === slide) {{
           attach(v);
-          var p = v.play();
-          if (p && p.catch) {{ p.catch(function () {{}}); }}
+          if (v.src) {{ kick(v); }}
         }} else if (!v.paused) {{
           v.pause();
         }}
@@ -821,22 +908,32 @@ h2 .sky {{ color: var(--sky-lit); }}
     else if (e.key === 'End') {{ show(slides.length - 1); }}
   }});
 
-  if (narrow.matches) {{
-    /* Stacked view: load every clip and play whichever is on screen. */
-    var io = new IntersectionObserver(function (entries) {{
-      entries.forEach(function (en) {{
-        var v = en.target;
-        if (en.isIntersecting) {{
-          attach(v);
-          var p = v.play(); if (p && p.catch) {{ p.catch(function () {{}}); }}
-        }} else {{ v.pause(); }}
-      }});
-    }}, {{ threshold: .35 }});
-    document.querySelectorAll('video').forEach(function (v) {{ io.observe(v); }});
-    slides.forEach(function (s) {{ s.classList.add('is-active'); }});
-  }} else {{
-    show(0);
-  }}
+  /* Swipe between slides on touch devices (RTL: swiping left advances). */
+  var deck = document.getElementById('deck');
+  var sx = 0, sy = 0, tracking = false;
+  deck.addEventListener('touchstart', function (e) {{
+    if (e.touches.length !== 1) {{ tracking = false; return; }}
+    sx = e.touches[0].clientX; sy = e.touches[0].clientY; tracking = true;
+  }}, {{ passive: true }});
+  deck.addEventListener('touchend', function (e) {{
+    if (!tracking) {{ return; }}
+    tracking = false;
+    var t = e.changedTouches[0];
+    var dx = t.clientX - sx, dy = t.clientY - sy;
+    /* Ignore mostly-vertical drags so a slide can still scroll its content. */
+    if (Math.abs(dx) < 55 || Math.abs(dx) < Math.abs(dy) * 1.3) {{ return; }}
+    show(dx < 0 ? i + 1 : i - 1);
+  }}, {{ passive: true }});
+
+  /* Re-assert playback when returning to the tab or rotating the phone. */
+  document.addEventListener('visibilitychange', function () {{
+    if (!document.hidden) {{ playFor(slides[i]); }}
+  }});
+  window.addEventListener('orientationchange', function () {{
+    setTimeout(function () {{ playFor(slides[i]); }}, 350);
+  }});
+
+  show(0);
 }})();
 </script>
 """

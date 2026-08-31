@@ -25,8 +25,9 @@ import {
 import { CrudFormActions, Field, TableLoadingRows, useDeleteConfirm } from "./shared";
 import { ImageField } from "./ImageField";
 import { AdminAttendance } from "./AdminAttendance";
+import { AdminTrainingStats } from "./AdminTrainingStats";
 
-type Tab = "courses" | "media" | "registrations" | "requests" | "attendance";
+type Tab = "courses" | "media" | "registrations" | "requests" | "attendance" | "statistics";
 
 const EMPTY_COURSE: Partial<TrainingCourse> = {
   title_ar: "",
@@ -168,6 +169,9 @@ export function AdminTraining() {
         <button type="button" className={tab === "attendance" ? "is-active" : ""} onClick={() => setTab("attendance")}>
           {t(tx("الحضور والشهادات", "Attendance & certificates"))}
         </button>
+        <button type="button" className={tab === "statistics" ? "is-active" : ""} onClick={() => setTab("statistics")}>
+          {t(tx("الإحصائيات", "Statistics"))}
+        </button>
       </div>
 
       {tab === "courses" ? (
@@ -185,6 +189,7 @@ export function AdminTraining() {
         />
       ) : null}
       {tab === "attendance" ? <AdminAttendance notify={notify} /> : null}
+      {tab === "statistics" ? <AdminTrainingStats /> : null}
     </div>
   );
 }

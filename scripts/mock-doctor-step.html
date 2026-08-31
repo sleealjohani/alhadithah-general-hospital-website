@@ -1,0 +1,135 @@
+<!doctype html>
+<html dir="rtl" lang="ar" data-theme="light">
+<head>
+<meta charset="utf-8" />
+<title>تصور مقترح — اختيار مقدم الرعاية</title>
+<link rel="stylesheet" href="../src/styles/fonts.css" />
+<link rel="stylesheet" href="../src/styles/tokens.css" />
+<link rel="stylesheet" href="../src/styles/base.css" />
+<link rel="stylesheet" href="../src/styles/cards-forms.css" />
+<link rel="stylesheet" href="../src/styles/appointments.css" />
+<style>
+  /* Proposed step — reuses the live booking styles, adds the provider card. */
+  body { background: var(--bg); padding: 30px 0; }
+  .wrap { width: min(1120px, calc(100% - 40px)); margin: 0 auto; }
+  .docs {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr));
+    gap: 12px;
+  }
+  .doc {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 12px;
+    align-items: start;
+    padding: 16px;
+    border: 1.5px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--surface);
+    text-align: start;
+  }
+  .doc.is-active {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+    box-shadow: 0 0 0 1px var(--primary);
+  }
+  .doc-avatar {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border-radius: var(--radius-pill);
+    background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.05rem;
+  }
+  .doc strong { display: block; font-size: 1rem; }
+  .doc small { display: block; color: var(--text-muted); margin-top: 2px; }
+  .doc .next {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    padding: 4px 10px;
+    border-radius: var(--radius-pill);
+    background: var(--success-soft);
+    color: var(--success);
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+  .doc .any { color: var(--text-secondary); font-weight: 600; }
+  .concept-tag {
+    display: inline-block;
+    margin-bottom: 14px;
+    padding: 6px 14px;
+    border-radius: var(--radius-pill);
+    background: color-mix(in srgb, var(--accent) 18%, transparent);
+    color: var(--accent-strong);
+    font-weight: 800;
+    font-size: 0.82rem;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <span class="concept-tag">تصوّر مقترح — غير مفعّل حاليًا</span>
+
+  <section class="appt-step" style="margin-bottom:18px">
+    <h2><span class="appt-step-no">١</span>اختر العيادة</h2>
+    <div class="appt-clinics">
+      <button class="appt-clinic is-active" type="button">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2v6a6 6 0 0012 0V2"/><circle cx="20" cy="10" r="2"/></svg>
+        <strong>العيادة الباطنية</strong><small>الفحص والمتابعة العامة</small>
+      </button>
+      <button class="appt-clinic" type="button">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2v6a6 6 0 0012 0V2"/></svg>
+        <strong>عيادة الأطفال</strong><small>من الولادة حتى ١٢ سنة</small>
+      </button>
+      <button class="appt-clinic" type="button">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2v6a6 6 0 0012 0V2"/></svg>
+        <strong>عيادة الأسنان</strong><small>علاج وتنظيف الأسنان</small>
+      </button>
+    </div>
+  </section>
+
+  <section class="appt-step">
+    <h2><span class="appt-step-no">٢</span>اختر مقدم الرعاية</h2>
+    <div class="docs">
+      <button class="doc is-active" type="button">
+        <span class="doc-avatar">خ ر</span>
+        <span>
+          <strong>د. خالد الرويلي</strong>
+          <small>استشاري الباطنة</small>
+          <span class="next">أقرب موعد: الأحد ٠٨:٢٠</span>
+        </span>
+      </button>
+      <button class="doc" type="button">
+        <span class="doc-avatar">م ش</span>
+        <span>
+          <strong>د. منيرة الشراري</strong>
+          <small>أخصائية باطنة</small>
+          <span class="next">أقرب موعد: الاثنين ٠٩:٠٠</span>
+        </span>
+      </button>
+      <button class="doc" type="button">
+        <span class="doc-avatar">أ ع</span>
+        <span>
+          <strong>د. أحمد العنزي</strong>
+          <small>استشاري باطنة وكلى</small>
+          <span class="next">أقرب موعد: الثلاثاء ١٠:٠٠</span>
+        </span>
+      </button>
+      <button class="doc" type="button">
+        <span class="doc-avatar">؟</span>
+        <span>
+          <strong class="any">أي طبيب متاح</strong>
+          <small>يُخصَّص حسب أقرب موعد شاغر</small>
+          <span class="next">أقرب موعد: اليوم ١١:٤٠</span>
+        </span>
+      </button>
+    </div>
+  </section>
+</div>
+</body>
+</html>

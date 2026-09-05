@@ -1,15 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import QRCode from "qrcode";
-import { Award, Download, FileText, QrCode, Save, UploadCloud, UserPlus } from "lucide-react";
+import { Award, Check, Download, FileArchive, FileText, Loader2, Pencil, QrCode, Save, Trash2, UploadCloud, UserPlus, X } from "lucide-react";
 import { usePortal } from "../../providers/PortalProvider";
 import { supabase } from "../../lib/supabase/client";
 import { exportRowsToExcel } from "../../lib/exports";
+import { createZip, downloadBlob, safeFileName, uniqueName, type ZipEntry } from "../../lib/zip";
 import { logAdminAction } from "../../lib/audit";
 import { tx } from "../../utils/i18n";
 import { fetchAllCourses, type TrainingCourse } from "../../lib/supabase/training";
 import {
   adminAddAttendance,
+  adminDeleteAttendance,
   adminFetchAttendance,
+  adminUpdateAttendance,
   adminUpdateConfig,
   certField,
   DEFAULT_CERT_FIELDS,
@@ -19,9 +22,10 @@ import {
   type CertFieldKey,
   type TrainingConfig
 } from "../../lib/supabase/attendance";
-import { Field, TableLoadingRows } from "./shared";
+import { Field, TableLoadingRows, useDeleteConfirm } from "./shared";
 import { ImageField } from "./ImageField";
 import { CertificateView } from "../training/CertificateView";
+import { prepareCertificateBackground, renderCertificatePdf } from "../training/certificatePdf";
 
 type Notify = (m: string, tone?: "success" | "error" | "info") => void;
 const FIELD_KEYS: CertFieldKey[] = ["name", "employee_number", "course", "duration", "date"];
@@ -243,7 +247,7 @@ function QrPanel() {
 
 /* ---- Attendance records ------------------------------------------------- */
 function RecordsPanel({ notify }: { notify: Notify }) {
-  const { t } = usePortal();
+  const { t, isRtl } = usePortal();
   const [courses, setCourses] = useState<TrainingCourse[]>([]);
   const [courseId, setCourseId] = useState<string>("");
   const [rows, setRows] = useState<AttendanceRecord[] | null>(null);
@@ -254,6 +258,12 @@ function RecordsPanel({ notify }: { notify: Notify }) {
   const [mEmp, setMEmp] = useState("");
   const [mNational, setMNational] = useState("");
   const [mBusy, setMBusy] = useState(false);
+  /* Inline row editing. */
+  const [editId, setEditId] = useState<string | null>(null);
+  const [draft, setDraft] = useState({ full_name: "", employee_number: "", national_id: "" });
+  const [editBusy, setEditBusy] = useState(false);
+  /* Bulk certificate export progress. */
+  const [bulk, setBulk] = useState<{ done: number; total: number } | null>(null);
 
   useEffect(() => {
     fetchAllCourses().then(setCourses);
@@ -269,11 +279,25 @@ function RecordsPanel({ notify }: { notify: Notify }) {
   }, [courseId]);
 
   const course = useMemo(() => courses.find((c) => c.id === courseId), [courses, courseId]);
-  const durationText = useMemo(() => {
-    if (!course?.starts_at || !course?.ends_at) return "";
-    const m = Math.round((new Date(course.ends_at).getTime() - new Date(course.starts_at).getTime()) / 60000);
+  const durationOf = (c?: TrainingCourse) => {
+    if (!c?.starts_at || !c?.ends_at) return "";
+    const m = Math.round((new Date(c.ends_at).getTime() - new Date(c.starts_at).getTime()) / 60000);
     return m > 0 ? `${Math.floor(m / 60)}h ${m % 60}m` : "";
-  }, [course]);
+  };
+  const durationText = useMemo(() => durationOf(course), [course]);
+
+  /* Certificate values for one record — resolved against that record's own
+     course, so a bulk run over "All courses" still labels each sheet right. */
+  const certValues = (r: AttendanceRecord): Record<CertFieldKey, string> => {
+    const c = courses.find((x) => x.id === r.course_id);
+    return {
+      name: r.full_name,
+      employee_number: r.employee_number ?? "",
+      course: c ? t(tx(c.title_ar, c.title_en)) : "",
+      duration: durationOf(c),
+      date: new Intl.DateTimeFormat("en-GB", { dateStyle: "long" }).format(new Date())
+    };
+  };
 
   const registerAttendee = async () => {
     if (!courseId) return notify(t(tx("اختر دورة أولًا.", "Select a course first.")), "error");
@@ -320,14 +344,86 @@ function RecordsPanel({ notify }: { notify: Notify }) {
 
   const makeCert = (r: AttendanceRecord) => {
     if (!cfg) return;
-    const c = courses.find((x) => x.id === r.course_id);
-    setCert({
-      name: r.full_name,
-      employee_number: r.employee_number ?? "",
-      course: c ? t(tx(c.title_ar, c.title_en)) : "",
-      duration: durationText,
-      date: new Intl.DateTimeFormat("en-GB", { dateStyle: "long" }).format(new Date())
-    });
+    setCert(certValues(r));
+  };
+
+  /* ---- Inline editing of the attendee list ------------------------------ */
+  const startEdit = (r: AttendanceRecord) => {
+    setEditId(r.id);
+    setDraft({ full_name: r.full_name, employee_number: r.employee_number ?? "", national_id: r.national_id ?? "" });
+  };
+
+  const saveEdit = async () => {
+    if (!editId) return;
+    if (!draft.full_name.trim()) return notify(t(tx("الاسم مطلوب.", "Name is required.")), "error");
+    setEditBusy(true);
+    const { error } = await adminUpdateAttendance(editId, draft);
+    setEditBusy(false);
+    if (error) return notify(error, "error");
+    logAdminAction("training.attendance.update", "training_attendance", editId);
+    /* Patch in place so the row keeps its position in the list. */
+    setRows((prev) =>
+      prev
+        ? prev.map((r) =>
+            r.id === editId
+              ? {
+                  ...r,
+                  full_name: draft.full_name.trim(),
+                  employee_number: draft.employee_number.trim() || null,
+                  national_id: draft.national_id.trim() || null
+                }
+              : r
+          )
+        : prev
+    );
+    setEditId(null);
+    notify(t(tx("تم تحديث البيانات.", "Attendee updated.")), "success");
+  };
+
+  const { dialog, requestDelete } = useDeleteConfirm(async (id) => {
+    const { error } = await adminDeleteAttendance(id);
+    if (error) return notify(error, "error");
+    logAdminAction("training.attendance.delete", "training_attendance", id);
+    setRows((prev) => (prev ? prev.filter((r) => r.id !== id) : prev));
+    notify(t(tx("تم حذف السجل.", "Record deleted.")), "success");
+  });
+
+  /* ---- Bulk certificates → one ZIP, a PDF per participant --------------- */
+  const downloadAllCertificates = async () => {
+    if (!cfg || !rows || rows.length === 0) return;
+    setBulk({ done: 0, total: rows.length });
+    try {
+      /* Fetch/decode the background once and reuse it for every sheet. */
+      const background = await prepareCertificateBackground(cfg);
+      const taken = new Set<string>();
+      const entries: ZipEntry[] = [];
+
+      for (let i = 0; i < rows.length; i += 1) {
+        const r = rows[i];
+        const bytes = await renderCertificatePdf(cfg, certValues(r), {
+          rtl: isRtl,
+          background,
+          fallbackEyebrow: t(tx("شهادة حضور", "Certificate of Attendance")),
+          fallbackSub: t(tx("مستشفى الحديثة العام", "Hadetha General Hospital"))
+        });
+        if (bytes) {
+          entries.push({ name: uniqueName(taken, safeFileName(r.full_name, "attendee"), ".pdf"), data: bytes });
+        }
+        setBulk({ done: i + 1, total: rows.length });
+        /* Yield to the browser so the progress label repaints. */
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      }
+
+      if (entries.length === 0) return notify(t(tx("تعذّر إنشاء الشهادات.", "Could not generate certificates.")), "error");
+      const label = safeFileName(course ? t(tx(course.title_ar, course.title_en)) : t(tx("كل الدورات", "all courses")), "certificates");
+      downloadBlob(createZip(entries), `${label} - certificates.zip`);
+      logAdminAction("training.certificates.bulk", "training_attendance", courseId || null);
+      notify(t(tx(`تم تنزيل ${entries.length} شهادة.`, `${entries.length} certificates downloaded.`)), "success");
+    } catch (err) {
+      notify(err instanceof Error ? err.message : String(err), "error");
+    } finally {
+      setBulk(null);
+    }
   };
 
   return (
@@ -343,6 +439,18 @@ function RecordsPanel({ notify }: { notify: Notify }) {
           <span className="muted">{rows?.length ?? 0} {t(tx("حضور", "attended"))}</span>
           <button type="button" className="btn btn-secondary" disabled={!rows || rows.length === 0} onClick={exportRows}>
             <Download size={16} />{t(tx("تصدير Excel", "Export Excel"))}
+          </button>
+          <button
+            type="button"
+            className="btn btn-primary"
+            disabled={!cfg || !rows || rows.length === 0 || bulk !== null}
+            onClick={downloadAllCertificates}
+            title={t(tx("ينشئ ملف ZIP يحتوي شهادة PDF لكل مشارك باسمه.", "Builds a ZIP holding one PDF certificate per participant, named after them."))}
+          >
+            {bulk ? <Loader2 className="spin" size={16} /> : <FileArchive size={16} />}
+            {bulk
+              ? `${bulk.done}/${bulk.total}`
+              : t(tx("طباعة جماعية للشهادات (ZIP)", "Print all certificates (ZIP)"))}
           </button>
         </div>
       </div>
@@ -381,30 +489,94 @@ function RecordsPanel({ notify }: { notify: Notify }) {
       <div className="admin-panel admin-table-wrap">
         <table className="admin-table">
           <thead><tr>
-            <th>{t(tx("الاسم", "Name"))}</th><th>{t(tx("الرقم الوظيفي", "Emp. No"))}</th><th>{t(tx("الحضور", "Checked in"))}</th>
-            <th>{t(tx("التقييم", "Rating"))}</th><th>{t(tx("الشهادة", "Certificate"))}</th>
+            <th>{t(tx("الاسم", "Name"))}</th><th>{t(tx("الرقم الوظيفي", "Emp. No"))}</th><th>{t(tx("رقم الهوية", "National ID"))}</th>
+            <th>{t(tx("الحضور", "Checked in"))}</th>
+            <th>{t(tx("التقييم", "Rating"))}</th><th>{t(tx("إجراءات", "Actions"))}</th>
           </tr></thead>
           <tbody>
-            {rows === null ? <TableLoadingRows cols={5} /> : rows.length === 0 ? (
-              <tr><td colSpan={5} className="muted">{t(tx("لا يوجد حضور.", "No attendance yet."))}</td></tr>
-            ) : rows.map((r) => (
-              <tr key={r.id}>
-                <td>{r.full_name}</td>
-                <td className="mono">{r.employee_number || "—"}</td>
-                <td className="mono">{r.checked_in_at.slice(0, 16).replace("T", " ")}</td>
-                <td>{r.feedback_overall ? `★ ${r.feedback_overall}/5` : "—"}</td>
-                <td>
-                  <button className="btn btn-ghost" style={{ minHeight: 32, padding: "0 10px" }} onClick={() => makeCert(r)}>
-                    <Award size={15} />{t(tx("شهادة", "Certificate"))}
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {rows === null ? <TableLoadingRows cols={6} /> : rows.length === 0 ? (
+              <tr><td colSpan={6} className="muted">{t(tx("لا يوجد حضور.", "No attendance yet."))}</td></tr>
+            ) : rows.map((r) => {
+              const editing = editId === r.id;
+              return (
+                <tr key={r.id} className={editing ? "is-editing" : ""}>
+                  <td>
+                    {editing ? (
+                      <input
+                        className="attend-edit"
+                        value={draft.full_name}
+                        onChange={(e) => setDraft((d) => ({ ...d, full_name: e.target.value }))}
+                        dir="auto"
+                        aria-label={t(tx("الاسم", "Name"))}
+                        autoFocus
+                      />
+                    ) : (
+                      r.full_name
+                    )}
+                  </td>
+                  <td className="mono">
+                    {editing ? (
+                      <input
+                        className="attend-edit"
+                        value={draft.employee_number}
+                        onChange={(e) => setDraft((d) => ({ ...d, employee_number: e.target.value }))}
+                        dir="auto"
+                        aria-label={t(tx("الرقم الوظيفي", "Employee number"))}
+                      />
+                    ) : (
+                      r.employee_number || "—"
+                    )}
+                  </td>
+                  <td className="mono">
+                    {editing ? (
+                      <input
+                        className="attend-edit"
+                        value={draft.national_id}
+                        onChange={(e) => setDraft((d) => ({ ...d, national_id: e.target.value }))}
+                        dir="auto"
+                        aria-label={t(tx("رقم الهوية", "National ID"))}
+                      />
+                    ) : (
+                      r.national_id || "—"
+                    )}
+                  </td>
+                  <td className="mono">{r.checked_in_at.slice(0, 16).replace("T", " ")}</td>
+                  <td>{r.feedback_overall ? `★ ${r.feedback_overall}/5` : "—"}</td>
+                  <td>
+                    <div className="attend-row-actions">
+                      {editing ? (
+                        <>
+                          <button type="button" className="icon-button" disabled={editBusy} onClick={saveEdit} aria-label={t(tx("حفظ", "Save"))} title={t(tx("حفظ", "Save"))}>
+                            {editBusy ? <Loader2 className="spin" size={16} /> : <Check size={16} />}
+                          </button>
+                          <button type="button" className="icon-button" onClick={() => setEditId(null)} aria-label={t(tx("إلغاء", "Cancel"))} title={t(tx("إلغاء", "Cancel"))}>
+                            <X size={16} />
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          <button type="button" className="icon-button" onClick={() => startEdit(r)} aria-label={t(tx("تعديل", "Edit"))} title={t(tx("تعديل", "Edit"))}>
+                            <Pencil size={16} />
+                          </button>
+                          <button type="button" className="icon-button" onClick={() => requestDelete(r.id, r.full_name)} aria-label={t(tx("حذف", "Delete"))} title={t(tx("حذف", "Delete"))}>
+                            <Trash2 size={16} />
+                          </button>
+                          <button type="button" className="btn btn-ghost" style={{ minHeight: 32, padding: "0 10px" }} onClick={() => makeCert(r)}>
+                            <Award size={15} />{t(tx("شهادة", "Certificate"))}
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
 
       {cert && cfg ? <CertificateView config={cfg} values={cert} onClose={() => setCert(null)} /> : null}
+      {dialog}
     </>
   );
 }

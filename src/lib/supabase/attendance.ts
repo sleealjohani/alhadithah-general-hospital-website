@@ -218,6 +218,31 @@ export async function adminAddAttendance(courseId: string, name: string, nationa
   return { error: error?.message };
 }
 
+/* Correct a mistyped name / employee number / ID on an existing check-in. */
+export async function adminUpdateAttendance(
+  id: string,
+  patch: { full_name: string; national_id: string; employee_number: string }
+) {
+  if (!supabase) return { error: "not_configured" };
+  const full_name = patch.full_name.trim();
+  if (!full_name) return { error: "missing_fields" };
+  const { error } = await supabase
+    .from("training_attendance")
+    .update({
+      full_name,
+      national_id: patch.national_id.trim() || null,
+      employee_number: patch.employee_number.trim() || null
+    })
+    .eq("id", id);
+  return { error: error?.message };
+}
+
+export async function adminDeleteAttendance(id: string) {
+  if (!supabase) return { error: "not_configured" };
+  const { error } = await supabase.from("training_attendance").delete().eq("id", id);
+  return { error: error?.message };
+}
+
 export async function adminUpdateConfig(patch: Partial<Record<string, unknown>>) {
   if (!supabase) return { error: "not_configured" };
   const { error } = await supabase.from("training_config").update(patch).eq("id", true);

@@ -379,3 +379,24 @@
 }
 .attend-manual-grid input:disabled { opacity: 0.55; }
 .attend-manual-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+
+/* --- Attendance records: inline editing --------------------------------- */
+.attend-edit {
+  inline-size: 100%;
+  min-inline-size: 110px;
+  border: 1.5px solid var(--primary);
+  border-radius: var(--radius-md);
+  padding: 6px 9px;
+  background: var(--surface);
+  color: var(--text);
+  font: inherit;
+}
+.attend-edit:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+
+.admin-table tr.is-editing > td { background: var(--primary-soft); }
+
+.attend-row-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}

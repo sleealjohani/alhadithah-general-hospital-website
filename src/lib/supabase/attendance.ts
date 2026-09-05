@@ -75,6 +75,21 @@ export function certField(config: TrainingConfig, key: CertFieldKey): CertField 
   return { ...DEFAULT_CERT_FIELDS[key], ...(config.cert_fields?.[key] ?? {}) };
 }
 
+/**
+ * The date a certificate carries is the day the course ran — not the day the
+ * certificate happens to be produced, which can be days or weeks later when
+ * attendees are entered after the fact. Falls back to the end date, then to
+ * today only if the course has no dates at all.
+ */
+export function certificateDate(course?: Pick<TrainingCourse, "starts_at" | "ends_at"> | null): Date {
+  for (const raw of [course?.starts_at, course?.ends_at]) {
+    if (!raw) continue;
+    const d = new Date(raw);
+    if (!Number.isNaN(d.getTime())) return d;
+  }
+  return new Date();
+}
+
 /* ---- Reads -------------------------------------------------------------- */
 
 export async function fetchTrainingConfig(): Promise<TrainingConfig> {

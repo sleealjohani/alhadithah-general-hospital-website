@@ -5,6 +5,7 @@ import { usePageMeta } from "../../hooks/usePageMeta";
 import { tx } from "../../utils/i18n";
 import { fetchPublishedCourses, type TrainingCourse } from "../../lib/supabase/training";
 import {
+  certificateDate,
   checkIn,
   fetchTrainingConfig,
   markPrinted,
@@ -173,9 +174,9 @@ function AttendanceCard({
       employee_number: saved?.emp ?? "",
       course: title,
       duration: durationText,
-      date: fmt.date(new Date())
+      date: fmt.date(certificateDate(course))
     }),
-    [saved, title, durationText, fmt]
+    [saved, title, durationText, fmt, course]
   );
 
   const openCertificate = () => {

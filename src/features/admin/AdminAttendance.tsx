@@ -15,6 +15,7 @@ import {
   adminUpdateAttendance,
   adminUpdateConfig,
   certField,
+  certificateDate,
   DEFAULT_CERT_FIELDS,
   fetchTrainingConfig,
   type AttendanceRecord,
@@ -295,7 +296,7 @@ function RecordsPanel({ notify }: { notify: Notify }) {
       employee_number: r.employee_number ?? "",
       course: c ? t(tx(c.title_ar, c.title_en)) : "",
       duration: durationOf(c),
-      date: new Intl.DateTimeFormat("en-GB", { dateStyle: "long" }).format(new Date())
+      date: new Intl.DateTimeFormat("en-GB", { dateStyle: "long" }).format(certificateDate(c))
     };
   };
 
@@ -322,7 +323,7 @@ function RecordsPanel({ notify }: { notify: Notify }) {
       employee_number: mEmp.trim(),
       course: course ? t(tx(course.title_ar, course.title_en)) : "",
       duration: durationText,
-      date: new Intl.DateTimeFormat("en-GB", { dateStyle: "long" }).format(new Date())
+      date: new Intl.DateTimeFormat("en-GB", { dateStyle: "long" }).format(certificateDate(course))
     });
   };
 

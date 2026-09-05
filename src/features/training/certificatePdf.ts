@@ -1,4 +1,5 @@
 import { certField, type CertFieldKey, type TrainingConfig } from "../../lib/supabase/attendance";
+import type { Bytes } from "../../lib/zip";
 
 /**
  * Renders the certificate to a high-resolution canvas and saves it as a clean
@@ -71,37 +72,56 @@ function drawFallbackFrame(
   ctx.fillText(sub, w / 2, h * 0.23);
 }
 
-export async function downloadCertificatePdf(
+/**
+ * Loads the configured background once. Bulk exports render dozens of sheets
+ * from the same image, so fetching and decoding it per certificate would be
+ * pure waste — resolve this once and pass it in.
+ */
+export async function prepareCertificateBackground(
+  config: TrainingConfig
+): Promise<HTMLImageElement | null> {
+  if (!config.cert_bg_url) return null;
+  try {
+    return await loadImage(await toDataUrl(config.cert_bg_url));
+  } catch {
+    return null;
+  }
+}
+
+export type CertificateOpts = {
+  rtl: boolean;
+  fallbackEyebrow: string;
+  fallbackSub: string;
+  /* Pass a preloaded background to skip the per-certificate fetch. */
+  background?: HTMLImageElement | null;
+};
+
+/* Renders one certificate and hands back the PDF bytes. */
+export async function renderCertificatePdf(
   config: TrainingConfig,
   values: Record<CertFieldKey, string>,
-  opts: { rtl: boolean; filename: string; fallbackEyebrow: string; fallbackSub: string }
-): Promise<void> {
+  opts: CertificateOpts
+): Promise<Bytes | null> {
   const W = 2480;
   const H = Math.round((W * 210) / 297); // A4 landscape ratio
   const canvas = document.createElement("canvas");
   canvas.width = W;
   canvas.height = H;
   const ctx = canvas.getContext("2d");
-  if (!ctx) return;
+  if (!ctx) return null;
 
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, W, H);
 
-  let drewBg = false;
-  if (config.cert_bg_url) {
-    try {
-      const dataUrl = await toDataUrl(config.cert_bg_url);
-      const img = await loadImage(dataUrl);
-      const s = Math.min(W / img.width, H / img.height);
-      const dw = img.width * s;
-      const dh = img.height * s;
-      ctx.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
-      drewBg = true;
-    } catch {
-      drewBg = false;
-    }
+  const img = opts.background === undefined ? await prepareCertificateBackground(config) : opts.background;
+  if (img) {
+    const s = Math.min(W / img.width, H / img.height);
+    const dw = img.width * s;
+    const dh = img.height * s;
+    ctx.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
+  } else {
+    drawFallbackFrame(ctx, W, H, opts.fallbackEyebrow, opts.fallbackSub);
   }
-  if (!drewBg) drawFallbackFrame(ctx, W, H, opts.fallbackEyebrow, opts.fallbackSub);
 
   /* Make sure the bundled fonts are ready before measuring/drawing text. */
   try {
@@ -156,5 +176,23 @@ export async function downloadCertificatePdf(
   const { jsPDF } = await import("jspdf");
   const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
   pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, 297, 210);
-  pdf.save(opts.filename);
+  return new Uint8Array(pdf.output("arraybuffer"));
+}
+
+/* Single-certificate download — same renderer, saved straight to disk. */
+export async function downloadCertificatePdf(
+  config: TrainingConfig,
+  values: Record<CertFieldKey, string>,
+  opts: CertificateOpts & { filename: string }
+): Promise<void> {
+  const bytes = await renderCertificatePdf(config, values, opts);
+  if (!bytes) return;
+  const url = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = opts.filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
 }
